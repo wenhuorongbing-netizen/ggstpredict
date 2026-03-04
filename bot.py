@@ -42,6 +42,18 @@ class GeminiBot:
             pages = self.context.pages
             self.page = pages[0] if pages else await self.context.new_page()
 
+            # ⚡ Bolt Optimization: Network Interception
+            # We don't need to load images, fonts, or media to read/write text.
+            # Aborting these requests drastically reduces bandwidth, memory, and TTFB.
+            async def abort_heavy_assets(route):
+                if route.request.resource_type in ["image", "media", "font"]:
+                    await route.abort()
+                else:
+                    await route.continue_()
+
+            await self.page.route("**/*", abort_heavy_assets)
+            logging.info("Network interception active: blocking images, media, and fonts.")
+
             await self.page.goto("https://gemini.google.com/")
             logging.info("Playwright initialized and Gemini loaded successfully.")
             self._initialized = True
