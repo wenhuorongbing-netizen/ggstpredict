@@ -202,7 +202,7 @@ export default function AdminPage() {
                       className="flex-1 px-4 py-2 bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none border border-red-900 hover:border-red-500 rounded-md transition-all font-bold text-sm tracking-wide disabled:opacity-50"
                       aria-label={`判定 ${match.playerA} (A) 胜`}
                     >
-                      {settlingMatchId === match.id ? "..." : "A 胜"}
+                      {settlingMatchId === match.id ? "..." : `判定 [ ${match.playerA} ] 胜`}
                     </button>
                     <button
                       onClick={() => handleSettleMatch(match.id, "B", match.playerB)}
@@ -210,7 +210,7 @@ export default function AdminPage() {
                       className="flex-1 px-4 py-2 bg-blue-950/40 hover:bg-blue-600 text-blue-400 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none border border-blue-900 hover:border-blue-500 rounded-md transition-all font-bold text-sm tracking-wide disabled:opacity-50"
                       aria-label={`判定 ${match.playerB} (B) 胜`}
                     >
-                      {settlingMatchId === match.id ? "..." : "B 胜"}
+                      {settlingMatchId === match.id ? "..." : `判定 [ ${match.playerB} ] 胜`}
                     </button>
                   </div>
                 </motion.div>
