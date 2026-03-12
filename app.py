@@ -24,8 +24,9 @@ async def get_bot():
     global bot
     if bot is None:
         try:
-            bot = GeminiBot()
-            await bot.initialize()
+            new_bot = GeminiBot()
+            await new_bot.initialize()
+            bot = new_bot
         except Exception as e:
             logging.error(f"Failed to initialize Gemini Bot: {e}")
             raise Exception("Failed to initialize bot. Ensure Chrome profile path is valid.")
