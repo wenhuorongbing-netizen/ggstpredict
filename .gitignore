@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -41,3 +42,11 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+=======
+__pycache__/
+*.py[cod]
+*$py.class
+chrome_profile/
+*.log
+.pytest_cache/
+>>>>>>> 9e6ed47f6424da66380ed67101365f254e297116
