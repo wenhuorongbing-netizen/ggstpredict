@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       }
 
       if (user.points >= 10) {
-        throw new Error("积分仍充足");
+        throw new Error("₩ 充足，无需救治");
       }
 
       const now = new Date();
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
         if (hoursSinceLastWelfare < 1) {
           const remainingMinutes = Math.ceil((1 - hoursSinceLastWelfare) * 60);
-          throw new Error(`冷却中，还需等待 ${remainingMinutes} 分钟`);
+          throw new Error(`Faust 正在冷却中，请稍后再来 (${remainingMinutes}分钟)`);
         }
       }
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        message: "Meteors falling! You gained 50 PT.",
+        message: "流星坠落！成功恢复 50 ₩。",
         points: result.points,
       },
       { status: 200 }
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
   } catch (error: any) {
     if (
       error.message === "User not found" ||
-      error.message === "积分仍充足" ||
-      error.message.startsWith("冷却中")
+      error.message === "₩ 充足，无需救治" ||
+      error.message.startsWith("Faust 正在冷却中")
     ) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

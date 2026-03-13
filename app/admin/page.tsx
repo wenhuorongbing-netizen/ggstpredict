@@ -16,14 +16,18 @@ interface Match {
 export default function AdminPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
-  const [playerA, setPlayerA] = useState("");
-  const [playerB, setPlayerB] = useState("");
+  const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
+  const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
 
   useEffect(() => {
     fetchMatches();
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("recentPlayers");
+      if (stored) setRecentPlayers(JSON.parse(stored));
+    }
   }, []);
 
   const fetchMatches = async () => {
@@ -40,18 +44,48 @@ export default function AdminPage() {
     setError(null);
     setIsCreating(true);
 
+    const lines = bulkInput.split("\n").filter(line => line.trim() !== "");
+    const newMatches = [];
+    const newPlayers = new Set(recentPlayers);
+
+    for (const line of lines) {
+      const parts = line.split(/vs/i);
+      if (parts.length === 2) {
+        const pA = parts[0].trim();
+        const pB = parts[1].trim();
+        if (pA && pB) {
+          newMatches.push({ playerA: pA, playerB: pB });
+          newPlayers.add(pA);
+          newPlayers.add(pB);
+        }
+      }
+    }
+
+    if (newMatches.length === 0) {
+      setError("未检测到有效对决，请检查格式。");
+      setIsCreating(false);
+      return;
+    }
+
     try {
-      const res = await fetch("/api/matches", {
+      const res = await fetch("/api/matches/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerA, playerB }),
+        body: JSON.stringify(newMatches),
       });
 
       if (!res.ok) {
         setError((await res.json()).error || "创建赛事失败");
       } else {
-        setPlayerA(""); setPlayerB("");
+        setBulkInput("");
         fetchMatches();
+
+        // Update recent players
+        const updatedPlayers = Array.from(newPlayers).slice(0, 10); // Keep max 10
+        setRecentPlayers(updatedPlayers);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("recentPlayers", JSON.stringify(updatedPlayers));
+        }
       }
     } catch (err) {
       setError("网络错误，请稍后再试");
@@ -60,9 +94,13 @@ export default function AdminPage() {
     }
   };
 
+  const handleChipClick = (player: string) => {
+    setBulkInput(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + player);
+  };
+
   const handleSettleMatch = async (matchId: string, winner: "A" | "B", pName: string) => {
     setError(null);
-    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？此操作不可逆，积分将立刻分发！`)) return;
+    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？此操作不可逆，₩ 将立刻分发！`)) return;
 
     setSettlingMatchId(matchId);
     try {
@@ -127,43 +165,46 @@ export default function AdminPage() {
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
              NEW BATTLE DEPLOYMENT
           </h2>
-          <form onSubmit={handleCreateMatch} className="flex flex-col md:flex-row gap-6 items-end relative z-10 transform skew-x-2">
-            <div className="flex-1 w-full group">
-              <label htmlFor="playerA" className="block text-xl text-red-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>RED SIDE (Player A)</label>
-              <input
-                id="playerA"
-                type="text"
-                value={playerA}
-                onChange={(e) => setPlayerA(e.target.value)}
-                placeholder="Player A Name"
-                className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors font-mono uppercase tracking-widest"
+          <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
+            <div className="w-full group">
+              <label htmlFor="bulkInput" className="block text-xl text-red-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>🤖 批量智能部署 (SMART DEPLOY)</label>
+              <p className="text-xs text-neutral-400 mb-2">每行输入一场对决，格式：选手A vs 选手B (例如：Sol vs Ky)</p>
+              <textarea
+                id="bulkInput"
+                value={bulkInput}
+                onChange={(e) => setBulkInput(e.target.value)}
+                placeholder={"Sol vs Ky\nMay vs Ramlethal"}
+                rows={4}
+                className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors font-mono tracking-widest leading-relaxed resize-y"
                 required
               />
             </div>
 
-            <div className="text-red-500 font-black text-4xl italic pb-4 hidden md:block select-none pointer-events-none drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "var(--font-bebas)" }}>VS</div>
+            {recentPlayers.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {recentPlayers.map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => handleChipClick(p)}
+                    className="text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-neutral-300 px-3 py-1 rounded transition-colors"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            <div className="flex-1 w-full group">
-              <label htmlFor="playerB" className="block text-xl text-blue-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>BLUE SIDE (Player B)</label>
-              <input
-                id="playerB"
-                type="text"
-                value={playerB}
-                onChange={(e) => setPlayerB(e.target.value)}
-                placeholder="Player B Name"
-                className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono uppercase tracking-widest"
-                required
-              />
+            <div className="flex justify-end mt-2">
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="ggst-button w-full md:w-64 p-4 text-xl"
+                aria-label="部署新赛事"
+              >
+                {isCreating ? "DEPLOYING..." : "LAUNCH MATCHES"}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={isCreating}
-              className="ggst-button w-full md:w-64 p-4 text-xl"
-              aria-label="部署新赛事"
-            >
-              {isCreating ? "DEPLOYING..." : "LAUNCH MATCH"}
-            </button>
           </form>
         </div>
 

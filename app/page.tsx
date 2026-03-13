@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [username, setUsername] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function Home() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, inviteCode }),
       });
 
       const data = await res.json();
@@ -80,6 +81,22 @@ export default function Home() {
               className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center uppercase tracking-widest"
               disabled={isLoading}
               autoComplete="username"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="inviteCode" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+              邀请码 (Invite Code - 仅新兵需要)
+            </label>
+            <input
+              id="inviteCode"
+              type="text"
+              placeholder="Enter Invite Code"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center uppercase tracking-widest"
+              disabled={isLoading}
+              autoComplete="off"
             />
           </div>
           

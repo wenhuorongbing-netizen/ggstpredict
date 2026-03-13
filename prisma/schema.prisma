@@ -47,3 +47,12 @@ model Bet {
   match     Match    @relation(fields: [matchId], references: [id])
   createdAt DateTime @default(now())
 }
+
+// 4. 邀请码系统
+model InviteCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  used      Boolean  @default(false)
+  usedBy    String?  // 记录使用者（如记录 userId 或 username）
+  createdAt DateTime @default(now())
+}

@@ -224,7 +224,7 @@ export default function DashboardPage() {
     const comment = betComment[matchId] || "";
 
     if (amount <= 0) return setError("下注金额必须大于0");
-    if (amount > points) return setError("积分不足，请重新输入");
+    if (amount > points) return setError("₩ 不足，请重新输入");
 
     // Optimistic Update
     const previousPoints = points;
@@ -313,16 +313,16 @@ export default function DashboardPage() {
                   key={points}
                   initial={{ scale: 1.5, color: "#fff" }}
                   animate={{ scale: 1, color: "#ef4444" }}
-                  className="font-mono text-lg font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                  className="font-mono text-lg font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] ml-1"
                 >
-                  {points.toLocaleString()}
+                  ₩ {points.toLocaleString()}
                 </motion.span>
                 {points < 10 && (
                   <button
                     onClick={handleWelfare}
                     className="ml-4 ggst-button border-red-500 hover:bg-red-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse"
                   >
-                    向 FAUST 求医 (Emergency Treatment)
+                    ⚕️ FAUST 紧急救治 (领取 50 ₩)
                   </button>
                 )}
               </div>
@@ -379,24 +379,22 @@ export default function DashboardPage() {
                   &times;
                 </button>
                 <div className="transform skew-x-2">
-                  <h2 className="text-4xl font-black text-white mb-4 tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                    OFFICIAL RULEBOOK
+                  <h2 className="text-3xl font-black text-white mb-4 tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]">
+                    📜 预测战情中心 - 玩法指南
                   </h2>
                   <div className="space-y-4 text-neutral-300 font-medium text-sm leading-relaxed">
                     <p>
-                      <strong className="text-red-400 text-lg">1. PARI-MUTUEL BETTING</strong><br/>
-                      This system uses a pool-based betting format. You are not betting against the house; you are betting against other players.
+                      <strong className="text-red-400 text-lg">🎯 基础规则</strong><br/>
+                      选择你支持的选手投入武装积分 (₩)。比赛状态为 LET'S ROCK 时可自由下注，状态变为 SLASH! 后结算。
+                    </p>
+                    <p>
+                      <strong className="text-red-400 text-lg">💰 奖池瓜分</strong><br/>
+                      本平台采用动态赔率：【胜者阵营】将按投入比例，平分【败者阵营】的所有积分！
                     </p>
                     <div className="bg-neutral-900 p-4 border-l-4 border-blue-500 font-mono text-xs">
-                      <strong>EXAMPLE:</strong><br/>
-                      Total Pool A = 100 pts<br/>
-                      Total Pool B = 200 pts<br/>
-                      If Player A wins, the 200 pts from Pool B are divided proportionally among the winners in Pool A.
+                      <strong>📊 举个栗子:</strong><br/>
+                      A池总共有 100 ₩，B池总共有 200 ₩。如果你给 A 投入了 10 ₩。当 A 获胜时，你不仅拿回自己的 10 ₩，还能分到 B池的 20 ₩。
                     </div>
-                    <p>
-                      <strong className="text-red-400 text-lg">2. FAUST'S CLINIC</strong><br/>
-                      Lost everything? If your balance drops below 10 pts, you may request emergency medical treatment from Faust once per hour to receive 50 free points.
-                    </p>
                   </div>
                   <div className="mt-8 flex justify-end">
                     <button
@@ -540,14 +538,14 @@ export default function DashboardPage() {
                       )}
 
                       <div className="flex justify-between items-center mb-3">
-                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入兵力 (Points)</label>
+                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入金额 (₩)</label>
                         <div className="flex gap-2">
                           {[100, 500].map(amt => (
                             <button
                               key={amt}
                               onClick={() => setQuickAmount(match.id, amt)}
                               className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
-                              aria-label={`快捷下注 ${amt} 积分`}
+                              aria-label={`快捷下注 ${amt} ₩`}
                             >
                               +{amt}
                             </button>
@@ -589,7 +587,7 @@ export default function DashboardPage() {
                           style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 A: ${match.playerA}`}
                         >
-                          {isBetting[match.id] ? "..." : "SUPPORT A"}
+                          {isBetting[match.id] ? "..." : "押注 A"}
                         </button>
 
                         <button
@@ -599,7 +597,7 @@ export default function DashboardPage() {
                           style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 B: ${match.playerB}`}
                         >
-                          {isBetting[match.id] ? "..." : "SUPPORT B"}
+                          {isBetting[match.id] ? "..." : "押注 B"}
                         </button>
                       </div>
                     </div>
@@ -628,7 +626,7 @@ export default function DashboardPage() {
                               <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
                                 <span className="font-black text-white">{bet.user.username}</span>
                                 <span className="text-neutral-500">投入了</span>
-                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} pts</span>
+                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} ₩</span>
                                 <span className="text-neutral-500">支持</span>
                                 <span className={`font-bold ${textColor}`}>{playerName}</span>
                               </div>
