@@ -38,6 +38,8 @@ export default function DashboardPage() {
   const [betAmount, setBetAmount] = useState<Record<string, number>>({});
   const [betComment, setBetComment] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [welfareMsg, setWelfareMsg] = useState<string | null>(null);
+  const [showRules, setShowRules] = useState(false);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
   const [isAskingAI, setIsAskingAI] = useState<Record<string, boolean>>({});
@@ -116,7 +118,8 @@ export default function DashboardPage() {
       if (res.ok) {
         setPoints(data.points);
         setError(null);
-        alert(data.message); // Could be replaced with a custom toast if available
+        setWelfareMsg(data.message);
+        setTimeout(() => setWelfareMsg(null), 4000);
       } else {
         setError(data.error);
       }
@@ -317,7 +320,7 @@ export default function DashboardPage() {
                 {points < 10 && (
                   <button
                     onClick={handleWelfare}
-                    className="ml-4 ggst-button border-yellow-500 hover:bg-yellow-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(234,179,8,0.8)] animate-pulse"
+                    className="ml-4 ggst-button border-red-500 hover:bg-red-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse"
                   >
                     向 FAUST 求医 (Emergency Treatment)
                   </button>
@@ -342,6 +345,14 @@ export default function DashboardPage() {
               刷新
             </button>
             <button
+              onClick={() => setShowRules(true)}
+              className="px-4 py-2 bg-blue-950/30 hover:bg-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none text-blue-400 rounded-lg transition-all text-sm border border-blue-900/50 font-bold tracking-widest"
+              style={{ fontFamily: "var(--font-bebas)" }}
+              aria-label="Rules"
+            >
+              RULES [?]
+            </button>
+            <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-950/30 hover:bg-red-900/50 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 rounded-lg transition-all text-sm border border-red-900/50 font-medium"
               aria-label="退出登录"
@@ -351,6 +362,56 @@ export default function DashboardPage() {
           </div>
         </header>
 
+        {/* Rulebook Modal */}
+        <AnimatePresence>
+          {showRules && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-[#111111] border-4 border-red-600 p-8 max-w-lg w-full shadow-[10px_10px_0px_rgba(239,68,68,0.5)] transform -skew-x-2 relative"
+              >
+                <button
+                  onClick={() => setShowRules(false)}
+                  className="absolute top-2 right-4 text-white hover:text-red-500 text-3xl font-bold font-sans transform skew-x-2"
+                >
+                  &times;
+                </button>
+                <div className="transform skew-x-2">
+                  <h2 className="text-4xl font-black text-white mb-4 tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                    OFFICIAL RULEBOOK
+                  </h2>
+                  <div className="space-y-4 text-neutral-300 font-medium text-sm leading-relaxed">
+                    <p>
+                      <strong className="text-red-400 text-lg">1. PARI-MUTUEL BETTING</strong><br/>
+                      This system uses a pool-based betting format. You are not betting against the house; you are betting against other players.
+                    </p>
+                    <div className="bg-neutral-900 p-4 border-l-4 border-blue-500 font-mono text-xs">
+                      <strong>EXAMPLE:</strong><br/>
+                      Total Pool A = 100 pts<br/>
+                      Total Pool B = 200 pts<br/>
+                      If Player A wins, the 200 pts from Pool B are divided proportionally among the winners in Pool A.
+                    </div>
+                    <p>
+                      <strong className="text-red-400 text-lg">2. FAUST'S CLINIC</strong><br/>
+                      Lost everything? If your balance drops below 10 pts, you may request emergency medical treatment from Faust once per hour to receive 50 free points.
+                    </p>
+                  </div>
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      onClick={() => setShowRules(false)}
+                      className="ggst-button px-8 py-3 text-xl border-red-500"
+                    >
+                      UNDERSTOOD
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* Error Notification */}
         <AnimatePresence mode="wait">
           {error && (
@@ -358,11 +419,24 @@ export default function DashboardPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mb-6 relative z-10"
+              className="overflow-hidden mb-6 relative z-10 transform -skew-x-2"
             >
-              <div className="bg-red-950/80 border border-red-500/50 text-red-200 p-4 rounded-xl flex items-center justify-between backdrop-blur-sm shadow-[0_0_20px_rgba(239,68,68,0.15)]" role="alert">
-                <span className="font-medium flex items-center gap-2">⚠️ {error}</span>
+              <div className="bg-red-950/80 border-2 border-red-500 text-red-200 p-4 flex items-center justify-between shadow-[4px_4px_0px_rgba(239,68,68,1)] animate-ggst-shake" role="alert">
+                <span className="font-bold tracking-widest flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>⚠️ {error}</span>
                 <button onClick={() => setError(null)} className="text-red-400 hover:text-white transition-colors p-1" aria-label="关闭提示">✕</button>
+              </div>
+            </motion.div>
+          )}
+          {welfareMsg && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, scale: 0.9 }}
+              animate={{ opacity: 1, height: "auto", scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.9 }}
+              className="overflow-hidden mb-6 relative z-10 transform -skew-x-2"
+            >
+              <div className="bg-yellow-500/20 border-2 border-yellow-500 text-yellow-400 p-4 flex items-center justify-between shadow-[4px_4px_0px_rgba(234,179,8,1)] animate-ggst-shake" role="alert">
+                <span className="font-bold tracking-widest flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.5rem" }}>☄️ {welfareMsg}</span>
+                <button onClick={() => setWelfareMsg(null)} className="text-yellow-500 hover:text-white transition-colors p-1" aria-label="关闭提示">✕</button>
               </div>
             </motion.div>
           )}
