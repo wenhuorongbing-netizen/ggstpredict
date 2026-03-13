@@ -52,38 +52,39 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-white p-4 font-sans selection:bg-red-500/30">
-      <div className="max-w-md w-full bg-neutral-900/80 p-8 rounded-2xl shadow-2xl border border-neutral-800/80 backdrop-blur-sm relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-[#111111] bg-[linear-gradient(to_right,#333333_1px,transparent_1px),linear-gradient(to_bottom,#333333_1px,transparent_1px)] bg-[size:40px_40px] flex flex-col items-center justify-center text-white p-4 font-sans selection:bg-red-500/30 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111111] z-0 pointer-events-none"></div>
 
-        <h1 className="text-4xl font-black mb-3 text-center text-red-500 tracking-tighter drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">
-          GGST 预测局
+      <div className="max-w-md w-full bg-[#000000]/90 p-10 shadow-[0_0_30px_rgba(239,68,68,0.2)] border-t-4 border-l-4 border-r-4 border-b-8 border-t-white border-l-white border-r-white border-b-red-600 relative z-10 transform -skew-x-2">
+        {/* Decorative elements */}
+        <div className="absolute -top-6 -right-6 w-24 h-24 bg-red-600/20 blur-2xl pointer-events-none"></div>
+
+        <h1 className="text-6xl text-center mb-1 text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+          HEAVEN OR HELL
         </h1>
-        <p className="text-neutral-400 text-center mb-8 text-sm font-medium tracking-wide">
-          输入凭证码即刻开战。新玩家自动获赠 <span className="text-red-400 font-mono">1000</span> 积分。
+        <p className="text-red-500 text-center mb-8 text-xl tracking-widest font-bold" style={{ fontFamily: "var(--font-bebas)" }}>
+          DUEL 1 - LET'S ROCK
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+        <form onSubmit={handleLogin} className="space-y-6 transform skew-x-2 relative z-10">
           <div className="flex flex-col gap-2">
-            <label htmlFor="username" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1">
+            <label htmlFor="username" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
               Login ID (凭证码)
             </label>
             <input
               id="username"
               type="text"
-              placeholder="留空直接开战 (Leave blank to auto-generate)"
+              placeholder="Leave blank to auto-generate"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-neutral-950/80 border border-neutral-700/80 rounded-lg p-3.5 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-neutral-600 font-medium"
+              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center uppercase tracking-widest"
               disabled={isLoading}
               autoComplete="username"
             />
           </div>
           
           {error && (
-            <div className="bg-red-950/50 border border-red-500/30 text-red-400 text-sm p-3.5 rounded-lg text-center animate-pulse font-medium shadow-inner" role="alert">
+            <div className="bg-red-950/80 border-2 border-red-500 text-red-400 text-sm p-3 text-center animate-ggst-shake font-bold shadow-inner" role="alert">
               {error}
             </div>
           )}
@@ -91,14 +92,10 @@ export default function Home() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-4 rounded-lg font-black uppercase tracking-widest transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 focus-visible:ring-red-500 ${
-              isLoading
-                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700"
-                : "bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] border border-red-500/50"
-            }`}
+            className={`w-full py-4 text-xl ${isLoading ? "opacity-50 cursor-not-allowed bg-neutral-800 border-neutral-600 text-neutral-500" : "ggst-button"}`}
             aria-busy={isLoading}
           >
-            {isLoading ? "正在链接..." : "进入战场 (Enter)"}
+            {isLoading ? "LOADING..." : "ENTER THE BATTLEFIELD"}
           </button>
         </form>
       </div>

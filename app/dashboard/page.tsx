@@ -338,19 +338,20 @@ export default function DashboardPage() {
         </AnimatePresence>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-8 bg-neutral-900/60 p-1.5 rounded-xl w-fit border border-neutral-800/80 backdrop-blur-sm shadow-inner relative z-10">
+        <div className="flex gap-2 mb-8 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] relative z-10 transform -skew-x-2">
           {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-6 py-2 text-sm font-bold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none ${
+              className={`px-6 py-2 font-bold tracking-widest transition-all focus-visible:outline-none ${
                 filter === f
-                  ? "bg-neutral-700/80 text-white shadow-md scale-100"
-                  : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 scale-95"
+                  ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
               }`}
+              style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}
               aria-pressed={filter === f}
             >
-              {f === "OPEN" ? "🟢 开放下注" : f === "SETTLED" ? "🏁 已结算" : "📋 全部档案"}
+              {f === "OPEN" ? "🔥 LET'S ROCK" : f === "SETTLED" ? "⚔️ SLASH!" : "📋 ALL"}
             </button>
           ))}
         </div>
@@ -360,12 +361,12 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20 bg-neutral-900/20 rounded-3xl border border-neutral-800/50 border-dashed backdrop-blur-sm relative z-10"
+            className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2"
           >
-            <p className="text-neutral-600 font-bold text-lg tracking-widest">NO ACTIVE DATA</p>
+            <p className="text-neutral-500 font-bold text-2xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>NO ACTIVE BATTLES</p>
           </motion.div>
         ) : (
-          <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10" layout>
+          <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10" layout>
             <AnimatePresence>
               {filteredMatches.map((match) => (
                 <motion.div
@@ -375,36 +376,42 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2 }}
-                  className={`bg-neutral-900/40 border rounded-3xl p-6 relative overflow-hidden backdrop-blur-md transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
-                    match.status === "OPEN" ? "border-neutral-700/50 hover:border-neutral-500/50" : "border-neutral-800/50 opacity-70"
+                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] ${
+                    match.status === "OPEN" ? "border-neutral-600 hover:border-red-500/50" : "border-neutral-800 opacity-80"
                   }`}
                 >
                   {/* Settled Badge */}
                   {match.status === "SETTLED" && (
-                    <div className="absolute top-4 right-4 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500/90 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)] z-20">
-                      🏆 胜者: {match.winner}
+                    <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold flex items-center shadow-[-4px_4px_0px_rgba(234,179,8,0.2)] z-20" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
+                      WINNER: {match.winner}
                     </div>
                   )}
 
+                  {/* Decorative Corner */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white pointer-events-none z-20"></div>
+
                   {/* Players Info */}
-                  <div className="flex justify-between items-center mb-6 mt-4 relative">
+                  <div className="flex justify-between items-center mb-6 mt-8 relative px-6 transform skew-x-2">
                     {/* VS Divider */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none">
-                      <div className="h-8 w-px bg-gradient-to-b from-transparent via-neutral-500 to-transparent"></div>
-                      <span className="text-neutral-500 font-black text-xl italic my-2 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)]">VS</span>
-                      <div className="h-8 w-px bg-gradient-to-b from-transparent via-neutral-500 to-transparent"></div>
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
+                      <span
+                        className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                        style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
+                      >
+                        VS
+                      </span>
                     </div>
 
                     <div className="flex-1 text-center relative z-10">
-                      <h3 className="text-2xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">{match.playerA}</h3>
-                      <p className="text-xs text-red-500/50 font-mono tracking-widest uppercase">Player A</p>
+                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                      <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
                     </div>
 
                     <div className="w-16"></div> {/* Spacer for VS */}
 
                     <div className="flex-1 text-center relative z-10">
-                      <h3 className="text-2xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-l from-blue-400 to-blue-600 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">{match.playerB}</h3>
-                      <p className="text-xs text-blue-500/50 font-mono tracking-widest uppercase">Player B</p>
+                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                      <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
                     </div>
                   </div>
 
@@ -470,27 +477,25 @@ export default function DashboardPage() {
                       />
 
                       <div className="flex gap-3">
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                        <button
                           onClick={() => handleBet(match.id, "A")}
                           disabled={isBetting[match.id] || !betAmount[match.id]}
-                          className="flex-1 py-3 bg-gradient-to-r from-red-600/20 to-red-500/10 hover:from-red-600/40 hover:to-red-500/20 disabled:opacity-50 border border-red-500/30 text-red-400 font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none flex items-center justify-center gap-2"
+                          className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 A: ${match.playerA}`}
                         >
-                          {isBetting[match.id] ? <span className="animate-spin inline-block">⚙</span> : "押注 A"}
-                        </motion.button>
+                          {isBetting[match.id] ? "..." : "SUPPORT A"}
+                        </button>
 
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                        <button
                           onClick={() => handleBet(match.id, "B")}
                           disabled={isBetting[match.id] || !betAmount[match.id]}
-                          className="flex-1 py-3 bg-gradient-to-l from-blue-600/20 to-blue-500/10 hover:from-blue-600/40 hover:to-blue-500/20 disabled:opacity-50 border border-blue-500/30 text-blue-400 font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none flex items-center justify-center gap-2"
+                          className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 B: ${match.playerB}`}
                         >
-                          {isBetting[match.id] ? <span className="animate-spin inline-block">⚙</span> : "押注 B"}
-                        </motion.button>
+                          {isBetting[match.id] ? "..." : "SUPPORT B"}
+                        </button>
                       </div>
                     </div>
                   )}
