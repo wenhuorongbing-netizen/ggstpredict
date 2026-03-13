@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const { userId, matchId, choice, amount } = await request.json();
+    const { userId, matchId, choice, amount, comment } = await request.json();
 
     if (!userId || !matchId || !choice || !amount) {
       return NextResponse.json(
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
           matchId,
           amount,
           choice,
+          comment,
         },
       });
 

@@ -40,6 +40,7 @@ model Bet {
   matchId   String
   amount    Int      // 下注积分数量
   choice    String   // 选择支持哪一方："A" 或 "B"
+  comment   String?  // 用户的下注留言分析
   user      User     @relation(fields: [userId], references: [id])
   match     Match    @relation(fields: [matchId], references: [id])
   createdAt DateTime @default(now())

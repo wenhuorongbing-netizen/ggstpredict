@@ -5,12 +5,25 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
+interface Bet {
+  id: string;
+  userId: string;
+  matchId: string;
+  amount: number;
+  choice: "A" | "B";
+  comment?: string;
+  user: {
+    username: string;
+  };
+}
+
 interface Match {
   id: string;
   playerA: string;
   playerB: string;
   status: string;
   winner?: string | null;
+  bets?: Bet[];
 }
 
 export default function DashboardPage() {
@@ -20,9 +33,12 @@ export default function DashboardPage() {
   const [points, setPoints] = useState(0);
   const [matches, setMatches] = useState<Match[]>([]);
   const [betAmount, setBetAmount] = useState<Record<string, number>>({});
+  const [betComment, setBetComment] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
+  const [isAskingAI, setIsAskingAI] = useState<Record<string, boolean>>({});
+  const [aiPredictions, setAiPredictions] = useState<Record<string, string>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -38,6 +54,13 @@ export default function DashboardPage() {
       setUserId(storedUserId);
       setUsername(storedUsername || "Unknown");
       fetchData(storedUserId);
+
+      const intervalId = setInterval(() => {
+        fetchMatches();
+        fetchUserPoints(storedUserId);
+      }, 10000);
+
+      return () => clearInterval(intervalId);
     }
   }, [router]);
 
@@ -74,9 +97,65 @@ export default function DashboardPage() {
     router.push("/");
   };
 
+  const handleAskAI = async (matchId: string, playerA: string, playerB: string) => {
+    setIsAskingAI(prev => ({ ...prev, [matchId]: true }));
+    setAiPredictions(prev => ({ ...prev, [matchId]: "Thinking..." }));
+
+    try {
+      const payload = {
+        steps: [
+          {
+            new_chat: true,
+            prompt: `Analyze this Guilty Gear Strive match: ${playerA} vs ${playerB}. Give a brief, hype 2-sentence prediction on who might win and why.`,
+          }
+        ]
+      };
+
+      // Send request to proxy route /api/bot/execute -> Python Bot
+      const res = await fetch("/api/bot/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error("AI Oracle failed to respond.");
+      }
+
+      // Reading SSE from fetch manually for simplicity in MVP
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      let finalPrediction = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          // Simple parsing: just show it. A full SSE implementation would parse "data: {...}" properly.
+          // Since it might stream, we can just say "Prediction generated!" when done or append text.
+          finalPrediction += chunk;
+        }
+
+        // Very basic extraction of the response message if we can find it
+        // The gemini bot returns chunks of data.
+        // We'll just display a success message or raw text for MVP.
+        setAiPredictions(prev => ({ ...prev, [matchId]: "Prediction generated! (Check terminal/logs for full output or implement full SSE parser)" }));
+      }
+    } catch (err) {
+      console.error(err);
+      setAiPredictions(prev => ({ ...prev, [matchId]: "Failed to consult the AI Oracle." }));
+    } finally {
+      setIsAskingAI(prev => ({ ...prev, [matchId]: false }));
+    }
+  };
+
   const handleBet = async (matchId: string, choice: "A" | "B") => {
     setError(null);
     const amount = betAmount[matchId] || 0;
+    const comment = betComment[matchId] || "";
 
     if (amount <= 0) return setError("下注金额必须大于0");
     if (amount > points) return setError("积分不足，请重新输入");
@@ -90,7 +169,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/bets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, matchId, choice, amount }),
+        body: JSON.stringify({ userId, matchId, choice, amount, comment }),
       });
 
       const data = await res.json();
@@ -101,7 +180,9 @@ export default function DashboardPage() {
       } else {
         // Sync with server on success
         fetchUserPoints(userId);
+        fetchMatches(); // refresh match list to show updated bets
         setBetAmount((prev) => ({ ...prev, [matchId]: 0 }));
+        setBetComment((prev) => ({ ...prev, [matchId]: "" }));
       }
     } catch (err) {
       console.error("Bet error:", err);
@@ -267,6 +348,22 @@ export default function DashboardPage() {
                   {/* Betting Area */}
                   {match.status === "OPEN" && (
                     <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
+                      <div className="flex justify-between items-center mb-4">
+                        <button
+                          onClick={() => handleAskAI(match.id, match.playerA, match.playerB)}
+                          disabled={isAskingAI[match.id]}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-purple-500/30 bg-purple-950/30 text-purple-300 hover:bg-purple-900/50 hover:text-purple-200 hover:border-purple-400/50 transition-all shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50"
+                        >
+                          {isAskingAI[match.id] ? <span className="animate-spin inline-block">✨</span> : <span>✨ AI 分析</span>}
+                        </button>
+                      </div>
+
+                      {aiPredictions[match.id] && (
+                        <div className="mb-4 p-3 rounded-lg bg-purple-950/20 border border-purple-500/20 text-purple-200 text-xs italic shadow-inner">
+                          {aiPredictions[match.id]}
+                        </div>
+                      )}
+
                       <div className="flex justify-between items-center mb-3">
                         <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入兵力 (Points)</label>
                         <div className="flex gap-2">
@@ -300,6 +397,15 @@ export default function DashboardPage() {
                         className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
                       />
 
+                      <input
+                        type="text"
+                        value={betComment[match.id] || ""}
+                        onChange={(e) => setBetComment((prev) => ({ ...prev, [match.id]: e.target.value }))}
+                        placeholder="可选: 留下你的毒奶/分析 (最多50字)..."
+                        maxLength={50}
+                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
+                      />
+
                       <div className="flex gap-3">
                         <motion.button
                           whileHover={{ scale: 1.02 }}
@@ -325,6 +431,34 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Comments & Bets Feed */}
+                  {match.bets && match.bets.length > 0 && (
+                    <div className="mt-6 pt-4 border-t border-neutral-800/50">
+                      <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
+                        <span>💬 最新战报</span>
+                      </h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+                        {match.bets.map(bet => (
+                          <div key={bet.id} className="bg-neutral-900/40 rounded-lg p-3 text-sm border border-neutral-800/30">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-neutral-300 flex items-center gap-1">
+                                {bet.user.username}
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${bet.choice === 'A' ? 'bg-red-950/50 text-red-400' : 'bg-blue-950/50 text-blue-400'}`}>
+                                  押 {bet.choice === 'A' ? match.playerA : match.playerB}
+                                </span>
+                              </span>
+                              <span className="font-mono text-yellow-500/80 font-bold">{bet.amount} pts</span>
+                            </div>
+                            {bet.comment && (
+                              <p className="text-neutral-400 text-xs italic mt-1 break-words">"{bet.comment}"</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                 </motion.div>
               ))}
             </AnimatePresence>
