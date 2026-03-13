@@ -103,6 +103,29 @@ export default function DashboardPage() {
     router.push("/");
   };
 
+  const handleWelfare = async () => {
+    try {
+      const res = await fetch("/api/users/welfare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setPoints(data.points);
+        setError(null);
+        alert(data.message); // Could be replaced with a custom toast if available
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("网络错误，无法请求救济金");
+    }
+  };
+
   const handleUpdateName = async () => {
     if (!newName.trim() || newName.trim() === displayName) {
       setIsEditingName(false);
@@ -291,6 +314,14 @@ export default function DashboardPage() {
                 >
                   {points.toLocaleString()}
                 </motion.span>
+                {points < 10 && (
+                  <button
+                    onClick={handleWelfare}
+                    className="ml-4 ggst-button border-yellow-500 hover:bg-yellow-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(234,179,8,0.8)] animate-pulse"
+                  >
+                    向 FAUST 求医 (Emergency Treatment)
+                  </button>
+                )}
               </div>
             </div>
           </div>
