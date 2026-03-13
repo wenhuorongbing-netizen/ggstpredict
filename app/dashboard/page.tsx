@@ -401,7 +401,7 @@ export default function DashboardPage() {
                         type="text"
                         value={betComment[match.id] || ""}
                         onChange={(e) => setBetComment((prev) => ({ ...prev, [match.id]: e.target.value }))}
-                        placeholder="可选: 留下你的毒奶/分析 (最多50字)..."
+                        placeholder="赛事分析 / 留言 (Optional Comment)..."
                         maxLength={50}
                         className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
                       />
@@ -433,31 +433,45 @@ export default function DashboardPage() {
                   )}
 
                   {/* Comments & Bets Feed */}
-                  {match.bets && match.bets.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-neutral-800/50">
-                      <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
-                        <span>💬 最新战报</span>
-                      </h4>
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
-                        {match.bets.map(bet => (
-                          <div key={bet.id} className="bg-neutral-900/40 rounded-lg p-3 text-sm border border-neutral-800/30">
-                            <div className="flex justify-between items-start mb-1">
-                              <span className="font-bold text-neutral-300 flex items-center gap-1">
-                                {bet.user.username}
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${bet.choice === 'A' ? 'bg-red-950/50 text-red-400' : 'bg-blue-950/50 text-blue-400'}`}>
-                                  押 {bet.choice === 'A' ? match.playerA : match.playerB}
-                                </span>
-                              </span>
-                              <span className="font-mono text-yellow-500/80 font-bold">{bet.amount} pts</span>
-                            </div>
-                            {bet.comment && (
-                              <p className="text-neutral-400 text-xs italic mt-1 break-words">"{bet.comment}"</p>
-                            )}
-                          </div>
-                        ))}
+                  <div className="mt-6 pt-4 border-t border-neutral-800/50">
+                    <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
+                      <span>📡 Live Intel Feed</span>
+                    </h4>
+
+                    {(!match.bets || match.bets.length === 0) ? (
+                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded-xl bg-neutral-900/20">
+                        No intel yet. Be the first to analyze this matchup.
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+                        {match.bets.map(bet => {
+                          const isRed = bet.choice === 'A';
+                          const accentColor = isRed ? 'border-l-red-500 bg-gradient-to-r from-red-950/30 to-transparent' : 'border-l-blue-500 bg-gradient-to-r from-blue-950/30 to-transparent';
+                          const textColor = isRed ? 'text-red-400' : 'text-blue-400';
+                          const playerName = isRed ? match.playerA : match.playerB;
+
+                          return (
+                            <div key={bet.id} className={`rounded-r-lg p-3 text-sm border-l-2 ${accentColor} border-y border-r border-neutral-800/30`}>
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
+                                <span className="font-black text-white">{bet.user.username}</span>
+                                <span className="text-neutral-500">投入了</span>
+                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} pts</span>
+                                <span className="text-neutral-500">支持</span>
+                                <span className={`font-bold ${textColor}`}>{playerName}</span>
+                              </div>
+
+                              {bet.comment && (
+                                <div className="mt-2 text-neutral-400 text-xs italic break-words relative">
+                                  <div className={`absolute -left-2 top-0 bottom-0 w-0.5 rounded ${isRed ? 'bg-red-900/50' : 'bg-blue-900/50'}`}></div>
+                                  <p className="pl-2">"{bet.comment}"</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
                 </motion.div>
               ))}
