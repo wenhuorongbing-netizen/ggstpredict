@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface Match {
   id: string;
@@ -22,11 +23,8 @@ export default function AdminPage() {
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (localStorage.getItem("role") !== "ADMIN") return router.push("/");
-      fetchMatches();
-    }
-  }, [router]);
+    fetchMatches();
+  }, []);
 
   const fetchMatches = async () => {
     try {
@@ -87,8 +85,9 @@ export default function AdminPage() {
   const settledMatches = matches.filter(m => m.status === "SETTLED");
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 p-4 sm:p-8 font-sans selection:bg-purple-500/30 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
-      <div className="max-w-5xl mx-auto">
+    <ProtectedRoute requireAdmin={true}>
+      <div className="min-h-screen bg-neutral-950 text-neutral-100 p-4 sm:p-8 font-sans selection:bg-purple-500/30 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
+        <div className="max-w-5xl mx-auto">
 
         {/* Header */}
         <header className="flex justify-between items-center py-6 border-b border-purple-900/30 mb-8 bg-neutral-900/50 px-6 rounded-2xl shadow-lg border-l-4 border-l-purple-500">
@@ -243,10 +242,11 @@ export default function AdminPage() {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
-        </motion.div>
+            </AnimatePresence>
+          </motion.div>
 
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

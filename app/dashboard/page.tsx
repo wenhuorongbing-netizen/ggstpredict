@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface Match {
   id: string;
@@ -123,8 +124,9 @@ export default function DashboardPage() {
   }, [matches, filter]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black text-neutral-100 p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-x-hidden">
-      <div className="max-w-5xl mx-auto">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-neutral-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black text-neutral-100 p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-x-hidden">
+        <div className="max-w-5xl mx-auto">
         {/* Header Section */}
         <header className="flex flex-col sm:flex-row justify-between items-center py-6 border-b border-neutral-800/50 mb-8 gap-4 bg-neutral-900/20 px-6 rounded-2xl backdrop-blur-md shadow-lg relative z-10">
           <div className="flex items-center gap-4">
@@ -327,8 +329,9 @@ export default function DashboardPage() {
               ))}
             </AnimatePresence>
           </motion.div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
