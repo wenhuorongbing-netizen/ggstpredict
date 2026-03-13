@@ -141,7 +141,7 @@ export default function AdminPage() {
 
   const handleSettleMatch = async (matchId: string, winner: "A" | "B", pName: string) => {
     setError(null);
-    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？此操作不可逆，₩ 将立刻分发！`)) return;
+    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？此操作不可逆，积分将立刻分发！`)) return;
 
     setSettlingMatchId(matchId);
     try {

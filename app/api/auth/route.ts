@@ -5,13 +5,16 @@ import crypto from 'crypto';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, inviteCode } = body;
+    const { username, password, inviteCode } = body;
 
-    let finalUsername = username?.trim();
+    const finalUsername = username?.trim();
 
-    // If no username provided, auto-generate one
     if (!finalUsername) {
-      finalUsername = `GZ-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+      return NextResponse.json({ error: "账号不能为空" }, { status: 400 });
+    }
+
+    if (!password || password.trim() === "") {
+      return NextResponse.json({ error: "密码不能为空" }, { status: 400 });
     }
 
     // Find user
@@ -19,10 +22,21 @@ export async function POST(request: Request) {
       where: { username: finalUsername },
     });
 
-    if (!user) {
-      // It's a new user registration, check for a valid invite code
+    if (user) {
+      // Case 1: Existing User
+      if (user.password && user.password !== password) {
+        return NextResponse.json({ error: "账号或密码错误 (Invalid Credentials)" }, { status: 401 });
+      }
+      // If user exists but has no password (from legacy auto-gen), we should probably allow login or force set password.
+      // For MVP, if it matches or is legacy empty, we let them in or check strict match.
+      // Strict match is preferred:
+      if (user.password !== password && user.password !== null) {
+         return NextResponse.json({ error: "账号或密码错误 (Invalid Credentials)" }, { status: 401 });
+      }
+    } else {
+      // Case 2 & 3: New User Registration
       if (!inviteCode || inviteCode.trim() === "") {
-        return NextResponse.json({ error: "需要有效的邀请码 (Invalid Invite Code)" }, { status: 400 });
+        return NextResponse.json({ error: "账号不存在，且邀请码无效 (Invalid Invite Code for new registration)" }, { status: 400 });
       }
 
       const validCode = await prisma.inviteCode.findUnique({
@@ -30,15 +44,16 @@ export async function POST(request: Request) {
       });
 
       if (!validCode || validCode.used) {
-        return NextResponse.json({ error: "需要有效的邀请码 (Invalid Invite Code)" }, { status: 400 });
+        return NextResponse.json({ error: "账号不存在，且邀请码无效 (Invalid Invite Code for new registration)" }, { status: 400 });
       }
 
-      // Proceed with Auto-registration
+      // Proceed with Registration
       user = await prisma.$transaction(async (tx) => {
         const randomDisplayName = `Challenger_${Math.floor(Math.random() * 10000)}`;
         const newUser = await tx.user.create({
           data: {
             username: finalUsername,
+            password: password,
             displayName: randomDisplayName,
             points: 1000,
             role: finalUsername.toLowerCase() === 'admin' ? 'ADMIN' : 'USER',

@@ -43,8 +43,6 @@ export default function DashboardPage() {
   const [showRules, setShowRules] = useState(false);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
-  const [isAskingAI, setIsAskingAI] = useState<Record<string, boolean>>({});
-  const [aiPredictions, setAiPredictions] = useState<Record<string, string>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -173,68 +171,13 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAskAI = async (matchId: string, playerA: string, playerB: string) => {
-    setIsAskingAI(prev => ({ ...prev, [matchId]: true }));
-    setAiPredictions(prev => ({ ...prev, [matchId]: "Thinking..." }));
-
-    try {
-      const payload = {
-        steps: [
-          {
-            new_chat: true,
-            prompt: `Analyze this Guilty Gear Strive match: ${playerA} vs ${playerB}. Give a brief, hype 2-sentence prediction on who might win and why.`,
-          }
-        ]
-      };
-
-      // Send request to proxy route /api/bot/execute -> Python Bot
-      const res = await fetch("/api/bot/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        throw new Error("AI Oracle failed to respond.");
-      }
-
-      // Reading SSE from fetch manually for simplicity in MVP
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-
-      let finalPrediction = "";
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          // Simple parsing: just show it. A full SSE implementation would parse "data: {...}" properly.
-          // Since it might stream, we can just say "Prediction generated!" when done or append text.
-          finalPrediction += chunk;
-        }
-
-        // Very basic extraction of the response message if we can find it
-        // The gemini bot returns chunks of data.
-        // We'll just display a success message or raw text for MVP.
-        setAiPredictions(prev => ({ ...prev, [matchId]: "Prediction generated! (Check terminal/logs for full output or implement full SSE parser)" }));
-      }
-    } catch (err) {
-      console.error(err);
-      setAiPredictions(prev => ({ ...prev, [matchId]: "Failed to consult the AI Oracle." }));
-    } finally {
-      setIsAskingAI(prev => ({ ...prev, [matchId]: false }));
-    }
-  };
-
   const handleBet = async (matchId: string, choice: "A" | "B") => {
     setError(null);
     const amount = betAmount[matchId] || 0;
     const comment = betComment[matchId] || "";
 
     if (amount <= 0) return setError("下注金额必须大于0");
-    if (amount > points) return setError("₩ 不足，请重新输入");
+    if (amount > points) return setError("积分不足，请重新输入");
 
     // Optimistic Update
     const previousPoints = points;
@@ -318,21 +261,21 @@ export default function DashboardPage() {
                   </span>
                 )}
                 <span className="text-neutral-700">|</span>
-                武装积分:
+                积分:
                 <motion.span
                   key={points}
                   initial={{ scale: 1.5, color: "#fff" }}
                   animate={{ scale: 1, color: "#ef4444" }}
                   className="font-mono text-lg font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] ml-1"
                 >
-                  ₩ {points.toLocaleString()}
+                  {points.toLocaleString()}
                 </motion.span>
                 {points < 10 && (
                   <button
                     onClick={handleWelfare}
                     className="ml-4 ggst-button border-red-500 hover:bg-red-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse"
                   >
-                    ⚕️ FAUST 紧急救治 (领取 50 ₩)
+                    ⚕️ FAUST 紧急救治 (领取 50 积分)
                   </button>
                 )}
               </div>
@@ -403,7 +346,7 @@ export default function DashboardPage() {
                   <div className="space-y-4 text-neutral-300 font-medium text-sm leading-relaxed">
                     <p>
                       <strong className="text-red-400 text-lg">🎯 基础规则</strong><br/>
-                      选择你支持的选手投入武装积分 (₩)。比赛状态为 LET'S ROCK 时可自由下注，状态变为 SLASH! 后结算。
+                      选择你支持的选手投入积分。比赛状态为 LET'S ROCK 时可自由下注，状态变为 SLASH! 后结算。
                     </p>
                     <p>
                       <strong className="text-red-400 text-lg">💰 奖池瓜分</strong><br/>
@@ -411,7 +354,7 @@ export default function DashboardPage() {
                     </p>
                     <div className="bg-neutral-900 p-4 border-l-4 border-blue-500 font-mono text-xs">
                       <strong>📊 举个栗子:</strong><br/>
-                      A池总共有 100 ₩，B池总共有 200 ₩。如果你给 A 投入了 10 ₩。当 A 获胜时，你不仅拿回自己的 10 ₩，还能分到 B池的 20 ₩。
+                      A池总共有 100 积分，B池总共有 200 积分。如果你给 A 投入了 10 积分。当 A 获胜时，你不仅拿回自己的 10 积分，还能分到 B池的 20 积分。
                     </div>
                   </div>
                   <div className="mt-8 flex justify-end">
@@ -539,31 +482,15 @@ export default function DashboardPage() {
                   {/* Betting Area */}
                   {match.status === "OPEN" && (
                     <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
-                      <div className="flex justify-between items-center mb-4">
-                        <button
-                          onClick={() => handleAskAI(match.id, match.playerA, match.playerB)}
-                          disabled={isAskingAI[match.id]}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-purple-500/30 bg-purple-950/30 text-purple-300 hover:bg-purple-900/50 hover:text-purple-200 hover:border-purple-400/50 transition-all shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50"
-                        >
-                          {isAskingAI[match.id] ? <span className="animate-spin inline-block">✨</span> : <span>✨ AI 分析</span>}
-                        </button>
-                      </div>
-
-                      {aiPredictions[match.id] && (
-                        <div className="mb-4 p-3 rounded-lg bg-purple-950/20 border border-purple-500/20 text-purple-200 text-xs italic shadow-inner">
-                          {aiPredictions[match.id]}
-                        </div>
-                      )}
-
                       <div className="flex justify-between items-center mb-3">
-                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入金额 (₩)</label>
+                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score)</label>
                         <div className="flex gap-2">
                           {[100, 500].map(amt => (
                             <button
                               key={amt}
                               onClick={() => setQuickAmount(match.id, amt)}
                               className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
-                              aria-label={`快捷下注 ${amt} ₩`}
+                              aria-label={`快捷下注 ${amt} 积分`}
                             >
                               +{amt}
                             </button>
@@ -605,7 +532,7 @@ export default function DashboardPage() {
                           style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 A: ${match.playerA}`}
                         >
-                          {isBetting[match.id] ? "..." : "押注 A"}
+                          {isBetting[match.id] ? "..." : (!betAmount[match.id] ? "请输入分数 (Enter Score)" : "押注 A")}
                         </button>
 
                         <button
@@ -615,7 +542,7 @@ export default function DashboardPage() {
                           style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
                           aria-label={`押注选手 B: ${match.playerB}`}
                         >
-                          {isBetting[match.id] ? "..." : "押注 B"}
+                          {isBetting[match.id] ? "..." : (!betAmount[match.id] ? "请输入分数 (Enter Score)" : "押注 B")}
                         </button>
                       </div>
                     </div>
@@ -647,7 +574,7 @@ export default function DashboardPage() {
                               <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
                                 <span className="font-black text-white">{bet.user.username}</span>
                                 <span className="text-neutral-500">投入了</span>
-                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} ₩</span>
+                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} 积分</span>
                                 <span className="text-neutral-500">支持</span>
                                 <span className={`font-bold ${textColor}`}>{playerName}</span>
                               </div>

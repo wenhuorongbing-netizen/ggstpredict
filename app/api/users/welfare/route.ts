@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       }
 
       if (user.points >= 10) {
-        throw new Error("₩ 充足，无需救治");
+        throw new Error("积分充足，无需救治");
       }
 
       const now = new Date();
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        message: "流星坠落！成功恢复 50 ₩。",
+        message: "流星坠落！成功恢复 50 积分。",
         points: result.points,
       },
       { status: 200 }
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     if (
       error.message === "User not found" ||
-      error.message === "₩ 充足，无需救治" ||
+      error.message === "积分充足，无需救治" ||
       error.message.startsWith("Faust 正在冷却中")
     ) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +28,7 @@ export default function Home() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, inviteCode }),
+        body: JSON.stringify({ username, password, inviteCode }),
       });
 
       const data = await res.json();
@@ -70,23 +71,39 @@ export default function Home() {
         <form onSubmit={handleLogin} className="space-y-6 transform skew-x-2 relative z-10">
           <div className="flex flex-col gap-2">
             <label htmlFor="username" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
-              Login ID (凭证码)
+              账号 (Account ID)
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Leave blank to auto-generate"
+              placeholder="Enter Account ID"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center uppercase tracking-widest"
+              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center tracking-widest"
               disabled={isLoading}
               autoComplete="username"
             />
           </div>
 
           <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+              密码 (Password)
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center tracking-widest"
+              disabled={isLoading}
+              autoComplete="current-password"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
             <label htmlFor="inviteCode" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
-              邀请码 (Invite Code - 仅新兵需要)
+              邀请码 (Invite Code - 仅新注册需要)
             </label>
             <input
               id="inviteCode"

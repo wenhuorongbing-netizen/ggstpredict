@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       }
 
       if (user.points < amount) {
-        throw new Error("₩ 不足");
+        throw new Error("积分不足");
       }
 
       // 2. Check match status
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Betting error:", error);
     // Determine if it's a known error from our transaction
-    if (error.message === "User not found" || error.message === "₩ 不足" || error.message === "Match not found" || error.message === "Match is no longer open for betting") {
+    if (error.message === "User not found" || error.message === "积分不足" || error.message === "Match not found" || error.message === "Match is no longer open for betting") {
         return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
