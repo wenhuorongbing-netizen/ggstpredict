@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import confetti from "canvas-confetti";
 
 interface Bet {
   id: string;
@@ -119,6 +120,15 @@ export default function DashboardPage() {
         setPoints(data.points);
         setError(null);
         setWelfareMsg(data.message);
+
+        // Trigger Confetti!
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#ef4444', '#facc15', '#ffffff']
+        });
+
         setTimeout(() => setWelfareMsg(null), 4000);
       } else {
         setError(data.error);
@@ -351,6 +361,14 @@ export default function DashboardPage() {
               aria-label="Rules"
             >
               RULES [?]
+            </button>
+            <button
+              onClick={() => router.push("/docs")}
+              className="px-4 py-2 bg-neutral-900/50 hover:bg-neutral-800 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 rounded-lg transition-all text-sm border border-neutral-700 font-bold tracking-widest"
+              style={{ fontFamily: "var(--font-bebas)" }}
+              aria-label="Docs"
+            >
+              📚 DOCS
             </button>
             <button
               onClick={handleLogout}
@@ -614,7 +632,10 @@ export default function DashboardPage() {
                         No intel yet. Be the first to analyze this matchup.
                       </div>
                     ) : (
-                      <div className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+                      <div
+                        className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+                        style={{ maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)" }}
+                      >
                         {match.bets.map(bet => {
                           const isRed = bet.choice === 'A';
                           const accentColor = isRed ? 'border-l-red-500 bg-gradient-to-r from-red-950/30 to-transparent' : 'border-l-blue-500 bg-gradient-to-r from-blue-950/30 to-transparent';

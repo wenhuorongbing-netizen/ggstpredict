@@ -116,6 +116,16 @@ export default function Home() {
           </button>
         </form>
       </div>
+
+      {/* Docs Link */}
+      <div className="absolute bottom-6 z-10">
+        <a
+          href="/docs"
+          className="text-neutral-500 hover:text-red-500 hover:bg-black font-mono text-xs tracking-widest transition-all border border-transparent hover:border-red-500 px-3 py-1"
+        >
+          [ 📖 查阅战地手册 / READ MANUALS ]
+        </a>
+      </div>
     </div>
   );
 }

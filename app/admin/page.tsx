@@ -85,7 +85,7 @@ export default function AdminPage() {
     setError(null);
     setIsCreating(true);
 
-    const lines = bulkInput.split("\n").filter(line => line.trim() !== "");
+    const lines = bulkInput.split("\n").map(l => l.trim()).filter(line => line !== "" && /vs/i.test(line));
     const newMatches = [];
     const newPlayers = new Set(recentPlayers);
 
@@ -175,14 +175,24 @@ export default function AdminPage() {
             <h1 className="text-4xl font-black text-white tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>OVERSEER PANEL</h1>
             <p className="text-red-500 text-sm tracking-widest font-bold uppercase">System Administration</p>
           </div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black"
-            style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
-            aria-label="返回大厅"
-          >
-            RETURN ➔
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => router.push("/docs")}
+              className="ggst-button px-6 py-2 transform skew-x-2 border-blue-500 hover:bg-blue-600"
+              style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
+              aria-label="Docs"
+            >
+              📚 DOCS
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black"
+              style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
+              aria-label="返回大厅"
+            >
+              RETURN ➔
+            </button>
+          </div>
         </header>
 
         <AnimatePresence mode="wait">
