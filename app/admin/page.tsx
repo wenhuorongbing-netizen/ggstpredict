@@ -13,17 +13,27 @@ interface Match {
   winner: string | null;
 }
 
+interface InviteCode {
+  id: string;
+  code: string;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
+  const [invites, setInvites] = useState<InviteCode[]>([]);
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMatches();
+    fetchInvites();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
       if (stored) setRecentPlayers(JSON.parse(stored));
@@ -37,6 +47,37 @@ export default function AdminPage() {
     } catch (err) {
       console.error("Failed to fetch matches", err);
     }
+  };
+
+  const fetchInvites = async () => {
+    try {
+      const res = await fetch("/api/invites");
+      if (res.ok) setInvites(await res.json());
+    } catch (err) {
+      console.error("Failed to fetch invites", err);
+    }
+  };
+
+  const handleGenerateInvite = async () => {
+    setIsGeneratingInvite(true);
+    try {
+      const res = await fetch("/api/invites", { method: "POST" });
+      if (res.ok) {
+        fetchInvites();
+      } else {
+        setError("生成邀请码失败");
+      }
+    } catch (err) {
+      setError("网络错误");
+    } finally {
+      setIsGeneratingInvite(false);
+    }
+  };
+
+  const copyToClipboard = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const handleCreateMatch = async (e: React.FormEvent) => {
@@ -206,6 +247,59 @@ export default function AdminPage() {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Invite Codes Section */}
+        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
+          <div className="flex justify-between items-center mb-6 transform skew-x-2">
+            <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+              🔑 通行密钥管理 (ACCESS CODES)
+            </h2>
+            <button
+              onClick={handleGenerateInvite}
+              disabled={isGeneratingInvite}
+              className="ggst-button px-6 py-2 border-yellow-500 hover:bg-yellow-600 text-lg"
+              style={{ boxShadow: "4px 4px 0px 0px rgba(234, 179, 8, 0.8)" }}
+            >
+              {isGeneratingInvite ? "..." : "生成新密钥 (GENERATE)"}
+            </button>
+          </div>
+
+          <div className="transform skew-x-2">
+            {invites.length === 0 ? (
+              <p className="text-neutral-500 font-mono text-sm">暂无未使用的邀请码</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <AnimatePresence>
+                  {invites.map((invite) => (
+                    <motion.div
+                      key={invite.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="relative group"
+                    >
+                      <button
+                        onClick={() => copyToClipboard(invite.code)}
+                        className={`w-full text-center p-3 border-2 transition-all font-mono tracking-widest text-sm
+                          ${copiedCode === invite.code
+                            ? 'bg-green-900/50 border-green-500 text-green-400'
+                            : 'bg-[#1a1a1a] border-neutral-700 text-white hover:border-yellow-500 hover:text-yellow-400'
+                          }`}
+                      >
+                        {invite.code}
+                      </button>
+                      {copiedCode === invite.code && (
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
+                          COPIED!
+                        </span>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Active Matches Section */}
