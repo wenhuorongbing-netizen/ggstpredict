@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCrawling, setIsCrawling] = useState(false);
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
@@ -78,6 +79,26 @@ export default function AdminPage() {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleCrawlAWT = async () => {
+    setError(null);
+    setIsCrawling(true);
+    try {
+      const res = await fetch("/api/matches/crawl", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "抓取失败");
+      } else if (data.data && Array.isArray(data.data)) {
+        // Append crawled matches to textarea
+        const newMatchesStr = data.data.join("\n");
+        setBulkInput(prev => prev + (prev.trim() === "" ? "" : "\n") + newMatchesStr);
+      }
+    } catch (err) {
+      setError("网络错误，无法连接抓取服务");
+    } finally {
+      setIsCrawling(false);
+    }
   };
 
   const handleCreateMatch = async (e: React.FormEvent) => {
@@ -216,6 +237,16 @@ export default function AdminPage() {
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
              NEW BATTLE DEPLOYMENT
           </h2>
+          <div className="flex justify-between items-end mb-4 relative z-10 transform skew-x-2">
+            <button
+              onClick={handleCrawlAWT}
+              disabled={isCrawling}
+              className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)]"
+            >
+              {isCrawling ? "CRAWLING..." : "🕷️ 自动抓取 AWT 赛事数据"}
+            </button>
+          </div>
+
           <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
             <div className="w-full group">
               <label htmlFor="bulkInput" className="block text-xl text-red-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>🤖 批量智能部署 (SMART DEPLOY)</label>

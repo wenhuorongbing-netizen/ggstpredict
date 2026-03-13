@@ -427,7 +427,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1 }}
             className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2"
           >
-            <p className="text-neutral-500 font-bold text-2xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>NO ACTIVE BATTLES</p>
+            <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
           </motion.div>
         ) : (
           <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10" layout>
@@ -466,14 +466,24 @@ export default function DashboardPage() {
                       </span>
                     </div>
 
-                    <div className="flex-1 text-center relative z-10">
+                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                      <div className="w-16 h-16 rounded-full border-2 bg-gradient-to-br from-red-600 to-red-900 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] mb-3 flex items-center justify-center overflow-hidden">
+                        <span className="text-2xl font-bold text-white drop-shadow-md" style={{ fontFamily: "var(--font-bebas)" }}>
+                          {match.playerA.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
                       <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
                     </div>
 
                     <div className="w-16"></div> {/* Spacer for VS */}
 
-                    <div className="flex-1 text-center relative z-10">
+                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                      <div className="w-16 h-16 rounded-full border-2 bg-gradient-to-bl from-blue-600 to-blue-900 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] mb-3 flex items-center justify-center overflow-hidden">
+                        <span className="text-2xl font-bold text-white drop-shadow-md" style={{ fontFamily: "var(--font-bebas)" }}>
+                          {match.playerB.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
                       <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
                     </div>
@@ -500,7 +510,7 @@ export default function DashboardPage() {
                             className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
                             aria-label="全押"
                           >
-                            ALL IN
+                            梭哈 (ALL IN)
                           </button>
                         </div>
                       </div>
@@ -551,7 +561,7 @@ export default function DashboardPage() {
                   {/* Comments & Bets Feed */}
                   <div className="mt-6 pt-4 border-t border-neutral-800/50">
                     <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
-                      <span>📡 Live Intel Feed</span>
+                      <span>📡 弹幕 / 战况情报 (Intel Feed)</span>
                     </h4>
 
                     {(!match.bets || match.bets.length === 0) ? (

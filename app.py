@@ -36,6 +36,22 @@ async def get_bot():
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/crawl")
+async def crawl_awt():
+    """
+    Mock endpoint to simulate scraping AWT Korea tournament data.
+    To be replaced with actual Playwright scraping logic in the future.
+    """
+    await asyncio.sleep(2) # Simulate network/scraping delay
+    return {
+        "status": "success",
+        "data": [
+            "TempestNYC vs UMISHO",
+            "Sanwa vs Daru_I-No",
+            "Tyurara vs Gobou"
+        ]
+    }
+
 @app.post("/execute")
 async def execute_workflow(request: Request):
     async def error_stream(msg: str):
