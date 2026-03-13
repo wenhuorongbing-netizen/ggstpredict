@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -27,7 +26,7 @@ export default function Home() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username }),
       });
 
       const data = await res.json();
@@ -38,6 +37,7 @@ export default function Home() {
         if (typeof window !== "undefined") {
             localStorage.setItem("userId", data.user.id);
             localStorage.setItem("username", data.user.username);
+            localStorage.setItem("displayName", data.user.displayName);
             localStorage.setItem("role", data.user.role);
             localStorage.setItem("points", data.user.points.toString());
         }
@@ -62,40 +62,23 @@ export default function Home() {
           GGST 预测局
         </h1>
         <p className="text-neutral-400 text-center mb-8 text-sm font-medium tracking-wide">
-          输入账号密码即刻开战。新玩家自动获赠 <span className="text-red-400 font-mono">1000</span> 积分。
+          输入凭证码即刻开战。新玩家自动获赠 <span className="text-red-400 font-mono">1000</span> 积分。
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6 relative z-10">
           <div className="flex flex-col gap-2">
             <label htmlFor="username" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1">
-              用户代号 (Username)
+              Login ID (凭证码)
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Player1"
+              placeholder="留空直接开战 (Leave blank to auto-generate)"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-neutral-950/80 border border-neutral-700/80 rounded-lg p-3.5 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-neutral-600 font-medium"
-              required
               disabled={isLoading}
               autoComplete="username"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1">
-              通行密钥 (Password)
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-neutral-950/80 border border-neutral-700/80 rounded-lg p-3.5 text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all placeholder:text-neutral-600 font-medium tracking-widest"
-              required
-              disabled={isLoading}
-              autoComplete="current-password"
             />
           </div>
           

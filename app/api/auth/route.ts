@@ -1,38 +1,33 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, password } = body;
+    const { username } = body;
 
-    // Basic validation
-    if (!username || username.trim().length < 2) {
-      return NextResponse.json({ error: '用户代号至少需要 2 个字符' }, { status: 400 });
-    }
-    if (!password || password.length < 4) {
-      return NextResponse.json({ error: '密钥长度不足（至少 4 位）' }, { status: 400 });
-    }
+    let finalUsername = username?.trim();
 
-    const trimmedUsername = username.trim();
+    // If no username provided, auto-generate one
+    if (!finalUsername) {
+      finalUsername = `GZ-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    }
 
     // Find user
     let user = await prisma.user.findUnique({
-      where: { username: trimmedUsername },
+      where: { username: finalUsername },
     });
 
-    if (user) {
-      if (user.password !== password) {
-        return NextResponse.json({ error: '密钥错误，请重新确认' }, { status: 401 });
-      }
-    } else {
+    if (!user) {
       // Auto-registration
+      const randomDisplayName = `Challenger_${Math.floor(Math.random() * 10000)}`;
       user = await prisma.user.create({
         data: {
-          username: trimmedUsername,
-          password,
+          username: finalUsername,
+          displayName: randomDisplayName,
           points: 1000,
-          role: trimmedUsername.toLowerCase() === 'admin' ? 'ADMIN' : 'USER',
+          role: finalUsername.toLowerCase() === 'admin' ? 'ADMIN' : 'USER',
         },
       });
     }

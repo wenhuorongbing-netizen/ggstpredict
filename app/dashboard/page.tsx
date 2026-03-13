@@ -29,6 +29,9 @@ interface Match {
 export default function DashboardPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState("");
   const [userId, setUserId] = useState("");
   const [points, setPoints] = useState(0);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -45,6 +48,7 @@ export default function DashboardPage() {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("userId");
       const storedUsername = localStorage.getItem("username");
+      const storedDisplayName = localStorage.getItem("displayName");
 
       if (!storedUserId) {
         router.push("/");
@@ -53,6 +57,8 @@ export default function DashboardPage() {
 
       setUserId(storedUserId);
       setUsername(storedUsername || "Unknown");
+      setDisplayName(storedDisplayName || storedUsername || "Unknown");
+      setNewName(storedDisplayName || storedUsername || "Unknown");
       fetchData(storedUserId);
 
       const intervalId = setInterval(() => {
@@ -95,6 +101,40 @@ export default function DashboardPage() {
   const handleLogout = () => {
     if (typeof window !== "undefined") localStorage.clear();
     router.push("/");
+  };
+
+  const handleUpdateName = async () => {
+    if (!newName.trim() || newName.trim() === displayName) {
+      setIsEditingName(false);
+      setNewName(displayName); // reset
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/users/name", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, displayName: newName }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setDisplayName(data.displayName);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("displayName", data.displayName);
+        }
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to update name");
+        setNewName(displayName); // reset on error
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Network error");
+      setNewName(displayName);
+    } finally {
+      setIsEditingName(false);
+    }
   };
 
   const handleAskAI = async (matchId: string, playerA: string, playerB: string) => {
@@ -216,8 +256,31 @@ export default function DashboardPage() {
             </div>
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight">预测战情中心</h1>
-              <p className="text-neutral-400 mt-1 flex items-center gap-2 text-sm font-medium">
-                代号: <span className="text-red-400">{username}</span>
+              <div className="text-neutral-400 mt-1 flex items-center gap-2 text-sm font-medium flex-wrap">
+                代号:
+                {isEditingName ? (
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onBlur={handleUpdateName}
+                    onKeyDown={(e) => e.key === "Enter" && handleUpdateName()}
+                    maxLength={15}
+                    autoFocus
+                    className="bg-neutral-900 border border-neutral-700 text-red-400 px-2 py-0.5 rounded focus:outline-none focus:border-red-500 w-32"
+                  />
+                ) : (
+                  <span className="text-red-400 flex items-center gap-1">
+                    {displayName}
+                    <button
+                      onClick={() => setIsEditingName(true)}
+                      className="text-neutral-500 hover:text-red-400 transition-colors ml-1"
+                      aria-label="Edit Name"
+                    >
+                      ✎
+                    </button>
+                  </span>
+                )}
                 <span className="text-neutral-700">|</span>
                 武装积分:
                 <motion.span
@@ -228,7 +291,7 @@ export default function DashboardPage() {
                 >
                   {points.toLocaleString()}
                 </motion.span>
-              </p>
+              </div>
             </div>
           </div>
           <div className="flex gap-3">
