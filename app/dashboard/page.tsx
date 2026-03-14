@@ -29,6 +29,12 @@ interface Match {
   bets?: Bet[];
 }
 
+interface LeaderboardEntry {
+  id: string;
+  displayName: string;
+  points: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -38,6 +44,7 @@ export default function DashboardPage() {
   const [userId, setUserId] = useState("");
   const [points, setPoints] = useState(0);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [betAmount, setBetAmount] = useState<Record<string, number>>({});
   const [betComment, setBetComment] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +74,7 @@ export default function DashboardPage() {
       const intervalId = setInterval(() => {
         fetchMatches();
         fetchUserPoints(storedUserId);
+        fetchLeaderboard();
       }, 10000);
 
       return () => clearInterval(intervalId);
@@ -75,8 +83,17 @@ export default function DashboardPage() {
 
   const fetchData = async (id: string = userId) => {
     setIsRefreshing(true);
-    await Promise.all([fetchUserPoints(id), fetchMatches()]);
+    await Promise.all([fetchUserPoints(id), fetchMatches(), fetchLeaderboard()]);
     setTimeout(() => setIsRefreshing(false), 500); // Minimum animation time
+  };
+
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch("/api/users/leaderboard");
+      if (res.ok) setLeaderboard(await res.json());
+    } catch (err) {
+      console.error("Failed to fetch leaderboard", err);
+    }
   };
 
   const fetchUserPoints = async (id: string) => {
@@ -403,23 +420,58 @@ export default function DashboardPage() {
           )}
         </AnimatePresence>
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-8 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] relative z-10 transform -skew-x-2">
-          {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-6 py-2 font-bold tracking-widest transition-all focus-visible:outline-none ${
-                filter === f
-                  ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
-                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-              }`}
-              style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}
-              aria-pressed={filter === f}
-            >
-              {f === "OPEN" ? "🔥 LET'S ROCK" : f === "SETTLED" ? "⚔️ SLASH!" : "📋 ALL"}
-            </button>
-          ))}
+        <div className="flex flex-col xl:flex-row gap-8 mb-8 relative z-10">
+          <div className="flex-1">
+            {/* Filters */}
+            <div className="flex gap-2 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2 mb-8">
+              {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-6 py-2 font-bold tracking-widest transition-all focus-visible:outline-none ${
+                    filter === f
+                      ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                  }`}
+                  style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}
+                  aria-pressed={filter === f}
+                >
+                  {f === "OPEN" ? "🔥 LET'S ROCK" : f === "SETTLED" ? "⚔️ SLASH!" : "📋 ALL"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Leaderboard (Bounty Board) */}
+          <div className="w-full xl:w-80 flex-shrink-0">
+            <div className="bg-black/80 border-2 border-neutral-700 p-4 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-500 pointer-events-none z-20"></div>
+              <h3 className="text-xl font-bold text-white mb-4 tracking-widest transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                <span className="text-yellow-500">🏆</span> WANTED FIGHTERS
+              </h3>
+              <div className="space-y-2 transform skew-x-2">
+                {leaderboard.length === 0 ? (
+                  <p className="text-neutral-500 text-xs font-mono">NO DATA YET...</p>
+                ) : (
+                  leaderboard.map((user, index) => {
+                    const isTop3 = index < 3;
+                    const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
+                    return (
+                      <div key={user.id} className={`flex justify-between items-center text-sm font-mono p-2 border-l-2 ${isTop3 ? 'border-yellow-500 bg-yellow-900/10' : 'border-neutral-700 bg-neutral-900/30'}`}>
+                        <div className="flex items-center gap-2 truncate">
+                          <span className={`font-black w-8 ${isTop3 ? 'text-yellow-500' : 'text-neutral-500'}`}>{rankText}</span>
+                          <span className={`truncate ${isTop3 ? 'text-white font-bold' : 'text-neutral-400'}`}>{user.displayName}</span>
+                        </div>
+                        <span className={`font-bold ml-2 shrink-0 ${isTop3 ? 'text-yellow-400' : 'text-neutral-500'}`}>
+                          {user.points.toLocaleString()}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Match List */}

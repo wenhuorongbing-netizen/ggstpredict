@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [crawlUrl, setCrawlUrl] = useState("");
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
+  const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -203,6 +204,25 @@ export default function AdminPage() {
       setError("网络错误，请稍后再试");
     } finally {
       setSettlingMatchId(null);
+    }
+  };
+
+  const handleDeleteMatch = async (matchId: string) => {
+    setError(null);
+    if (!confirm(`⚠️ 警告：确定撤销该赛事吗？此操作将删除比赛并全额退还所有玩家的下注积分！`)) return;
+
+    setDeletingMatchId(matchId);
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) setError((await res.json()).error || "删除赛事失败");
+      else fetchMatches();
+    } catch (err) {
+      setError("网络错误，请稍后再试");
+    } finally {
+      setDeletingMatchId(null);
     }
   };
 
@@ -410,7 +430,7 @@ export default function AdminPage() {
                   <div className="flex gap-3 w-full md:w-auto transform skew-x-2">
                     <button
                       onClick={() => handleSettleMatch(match.id, "A", match.playerA)}
-                      disabled={settlingMatchId === match.id}
+                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
                       className="ggst-button px-6 py-2 border-red-500 text-lg hover:bg-red-600"
                       style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)" }}
                       aria-label={`判定 ${match.playerA} (A) 胜`}
@@ -419,12 +439,21 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={() => handleSettleMatch(match.id, "B", match.playerB)}
-                      disabled={settlingMatchId === match.id}
+                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
                       className="ggst-button px-6 py-2 border-blue-500 text-lg hover:bg-blue-600"
                       style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
                       aria-label={`判定 ${match.playerB} (B) 胜`}
                     >
                       {settlingMatchId === match.id ? "..." : `P2 WIN`}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMatch(match.id)}
+                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                      className="ggst-button px-6 py-2 border-neutral-500 text-lg hover:bg-neutral-600 bg-neutral-800 text-neutral-300"
+                      style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)" }}
+                      aria-label={`撤销赛事 ${match.id}`}
+                    >
+                      {deletingMatchId === match.id ? "..." : `🗑️ 撤销赛事 (VOID)`}
                     </button>
                   </div>
                 </motion.div>
