@@ -28,6 +28,8 @@ interface Match {
   status: string;
   winner?: string | null;
   bets?: Bet[];
+  poolA: number;
+  poolB: number;
 }
 
 interface LeaderboardEntry {
@@ -419,7 +421,26 @@ export default function DashboardPage() {
                   <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white pointer-events-none z-20"></div>
 
                   {/* Players Info */}
-                  <div className="flex justify-between items-center mb-6 mt-8 relative px-6 transform skew-x-2">
+                  {/* Tug of War UI */}
+                  <div className="px-6 mt-4 relative z-10 transform skew-x-2">
+                     <div className="flex justify-between text-[10px] font-mono font-bold tracking-widest text-neutral-400 mb-1">
+                        <div>POOL A: {match.poolA.toLocaleString()}</div>
+                        <div>POOL B: {match.poolB.toLocaleString()}</div>
+                     </div>
+                     <div className="w-full h-3 bg-neutral-900 border border-neutral-700/50 flex overflow-hidden transform -skew-x-[10deg]">
+                        <div
+                          className="h-full bg-red-600 transition-all duration-500"
+                          style={{ width: `${match.poolA + match.poolB === 0 ? 50 : (match.poolA / (match.poolA + match.poolB)) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                        ></div>
+                        <div
+                          className="h-full bg-blue-600 transition-all duration-500"
+                          style={{ width: `${match.poolA + match.poolB === 0 ? 50 : (match.poolB / (match.poolA + match.poolB)) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                        ></div>
+                     </div>
+                  </div>
+
+                  {/* Players Info */}
+                  <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
                     {/* VS Divider */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
                       <span
@@ -507,8 +528,13 @@ export default function DashboardPage() {
                         id={`bet-amount-${match.id}`}
                         type="number"
                         min="0"
+                        max="500"
                         value={betAmount[match.id] || ""}
-                        onChange={(e) => setBetAmount((prev) => ({ ...prev, [match.id]: parseInt(e.target.value) || 0 }))}
+                        onChange={(e) => {
+                          let val = parseInt(e.target.value) || 0;
+                          if (val > 500) val = 500;
+                          setBetAmount((prev) => ({ ...prev, [match.id]: val }));
+                        }}
                         placeholder="输入注额..."
                         className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
                       />

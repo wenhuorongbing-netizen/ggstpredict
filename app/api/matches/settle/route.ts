@@ -41,9 +41,11 @@ export async function POST(request: Request) {
       // 3. Distribute rewards to winners
       if (winningPool > 0 && losingPool > 0) {
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
+        // Apply 5% tax to the losing pool before distributing
+        const finalPool = Math.floor(losingPool * 0.95);
         for (const bet of winningBets) {
           const ratio = bet.amount / winningPool;
-          const reward = Math.floor(losingPool * ratio);
+          const reward = Math.floor(finalPool * ratio);
           const totalReturn = bet.amount + reward;
 
           await tx.user.update({
