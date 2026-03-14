@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import confetti from "canvas-confetti";
+import AppLayout from "@/components/AppLayout";
 
 interface Bet {
   id: string;
@@ -156,39 +157,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpdateName = async () => {
-    if (!newName.trim() || newName.trim() === displayName) {
-      setIsEditingName(false);
-      setNewName(displayName); // reset
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/users/name", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, displayName: newName }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setDisplayName(data.displayName);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("displayName", data.displayName);
-        }
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to update name");
-        setNewName(displayName); // reset on error
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Network error");
-      setNewName(displayName);
-    } finally {
-      setIsEditingName(false);
-    }
-  };
 
   const handleBet = async (matchId: string, choice: "A" | "B") => {
     setError(null);
@@ -244,67 +212,25 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-neutral-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black text-neutral-100 p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-x-hidden">
-        <div className="max-w-5xl mx-auto">
-        {/* Header Section */}
-        <header className="flex flex-col sm:flex-row justify-between items-center py-6 border-b border-neutral-800/50 mb-8 gap-4 bg-neutral-900/20 px-6 rounded-2xl backdrop-blur-md shadow-lg relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-600/20 rounded-xl flex items-center justify-center border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-              <span className="text-red-500 font-black text-xl">P</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-white tracking-tight">预测战情中心</h1>
-              <div className="text-neutral-400 mt-1 flex items-center gap-2 text-sm font-medium flex-wrap">
-                代号:
-                {isEditingName ? (
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    onBlur={handleUpdateName}
-                    onKeyDown={(e) => e.key === "Enter" && handleUpdateName()}
-                    maxLength={15}
-                    autoFocus
-                    className="bg-neutral-900 border border-neutral-700 text-red-400 px-2 py-0.5 rounded focus:outline-none focus:border-red-500 w-32"
-                  />
-                ) : (
-                  <span className="text-red-400 flex items-center gap-1">
-                    {displayName}
-                    <button
-                      onClick={() => setIsEditingName(true)}
-                      className="text-neutral-500 hover:text-red-400 transition-colors ml-1"
-                      aria-label="Edit Name"
-                    >
-                      ✎
-                    </button>
-                  </span>
-                )}
-                <span className="text-neutral-700">|</span>
-                积分:
-                <motion.span
-                  key={points}
-                  initial={{ scale: 1.5, color: "#fff" }}
-                  animate={{ scale: 1, color: "#ef4444" }}
-                  className="font-mono text-lg font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] ml-1"
-                >
-                  {points.toLocaleString()}
-                </motion.span>
-                {points < 10 && (
-                  <button
-                    onClick={handleWelfare}
-                    className="ml-4 ggst-button border-red-500 hover:bg-red-600 text-xs px-3 py-1 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse"
-                  >
-                    ⚕️ FAUST 紧急救治 (领取 50 积分)
-                  </button>
-                )}
-              </div>
-            </div>
+      <AppLayout>
+        <div className="max-w-5xl mx-auto p-4 sm:p-8 relative">
+
+        <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2">
+          <div className="flex gap-4 items-center">
+            {points < 10 && (
+              <button
+                onClick={handleWelfare}
+                className="ggst-button border-red-500 hover:bg-red-600 text-xs px-4 py-2 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse transform -skew-x-2"
+              >
+                ⚕️ FAUST 紧急救治 (领取 50 积分)
+              </button>
+            )}
           </div>
           <div className="flex gap-3">
             <button
               onClick={() => fetchData()}
               disabled={isRefreshing}
-              className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-800 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none rounded-lg transition-all text-sm border border-neutral-700 text-neutral-300 flex items-center gap-2 font-medium"
+              className="ggst-button border-neutral-500 hover:bg-neutral-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(115,115,115,0.8)] transform -skew-x-2 flex items-center gap-2"
               aria-label="刷新数据"
             >
               <motion.span
@@ -314,41 +240,17 @@ export default function DashboardPage() {
               >
                 ⟳
               </motion.span>
-              刷新
+              REFRESH
             </button>
             <button
               onClick={() => setShowRules(true)}
-              className="px-4 py-2 bg-blue-950/30 hover:bg-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none text-blue-400 rounded-lg transition-all text-sm border border-blue-900/50 font-bold tracking-widest"
-              style={{ fontFamily: "var(--font-bebas)" }}
+              className="ggst-button border-blue-500 hover:bg-blue-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(59,130,246,0.8)] transform -skew-x-2"
               aria-label="Rules"
             >
               RULES [?]
             </button>
-            <button
-              onClick={() => router.push("/bracket")}
-              className="px-4 py-2 bg-purple-950/30 hover:bg-purple-900/50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none text-purple-400 rounded-lg transition-all text-sm border border-purple-900/50 font-bold tracking-widest"
-              style={{ fontFamily: "var(--font-bebas)" }}
-              aria-label="Bracket"
-            >
-              🏆 STANDINGS
-            </button>
-            <button
-              onClick={() => router.push("/docs")}
-              className="px-4 py-2 bg-neutral-900/50 hover:bg-neutral-800 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 rounded-lg transition-all text-sm border border-neutral-700 font-bold tracking-widest"
-              style={{ fontFamily: "var(--font-bebas)" }}
-              aria-label="Docs"
-            >
-              📚 DOCS
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-950/30 hover:bg-red-900/50 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 rounded-lg transition-all text-sm border border-red-900/50 font-medium"
-              aria-label="退出登录"
-            >
-              撤离
-            </button>
           </div>
-        </header>
+        </div>
 
         {/* Rulebook Modal */}
         <AnimatePresence>
@@ -373,7 +275,7 @@ export default function DashboardPage() {
                   <div className="space-y-4 text-neutral-300 font-medium text-sm leading-relaxed">
                     <p>
                       <strong className="text-red-400 text-lg">🎯 基础规则</strong><br/>
-                      选择你支持的选手投入积分。比赛状态为 LET'S ROCK 时可自由下注，状态变为 SLASH! 后结算。
+                      选择你支持的选手投入积分。比赛状态为 LET&apos;S ROCK 时可自由下注，状态变为 SLASH! 后结算。
                     </p>
                     <p>
                       <strong className="text-red-400 text-lg">💰 奖池瓜分</strong><br/>
@@ -487,12 +389,12 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2"
+            className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2 w-full"
           >
             <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
           </motion.div>
         ) : (
-          <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10" layout>
+          <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 w-full" layout>
             <AnimatePresence>
               {filteredMatches.map((match) => (
                 <motion.div
@@ -678,7 +580,7 @@ export default function DashboardPage() {
                               {bet.comment && (
                                 <div className="mt-2 text-neutral-400 text-xs italic break-words relative">
                                   <div className={`absolute -left-2 top-0 bottom-0 w-0.5 rounded ${isRed ? 'bg-red-900/50' : 'bg-blue-900/50'}`}></div>
-                                  <p className="pl-2">"{bet.comment}"</p>
+                                  <p className="pl-2">&quot;{bet.comment}&quot;</p>
                                 </div>
                               )}
                             </div>
@@ -694,7 +596,7 @@ export default function DashboardPage() {
           </motion.div>
           )}
         </div>
-      </div>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

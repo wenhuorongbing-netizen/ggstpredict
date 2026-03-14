@@ -75,7 +75,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     console.error("Betting error:", error);
     // Determine if it's a known error from our transaction
     if (error.message === "User not found" || error.message === "积分不足" || error.message === "Match not found" || error.message === "Match is no longer open for betting") {

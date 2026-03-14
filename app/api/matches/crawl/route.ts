@@ -22,7 +22,8 @@ export async function POST(request: Request) {
 
     const data = await res.json();
     return NextResponse.json(data, { status: 200 });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     console.error("Crawl Proxy Error:", error);
     return NextResponse.json(
       { error: "Failed to connect to the crawler service" },

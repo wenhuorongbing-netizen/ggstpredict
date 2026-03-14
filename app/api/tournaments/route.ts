@@ -5,7 +5,7 @@ export async function GET() {
   try {
     // For MVP, just get the most recently created active tournament
     // and include all its associated matches
-    let tournament = await prisma.tournament.findFirst({
+    const tournament = await prisma.tournament.findFirst({
       orderBy: { createdAt: 'desc' },
       include: {
         matches: {

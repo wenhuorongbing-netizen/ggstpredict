@@ -3,6 +3,36 @@ import { prisma } from "@/lib/prisma";
 
 import { NextRequest } from "next/server";
 
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: matchId } = await context.params;
+    const body = await request.json();
+
+    if (!matchId) {
+      return NextResponse.json({ error: "Missing match ID" }, { status: 400 });
+    }
+
+    if (body.action === "UNLOCK") {
+      const updatedMatch = await prisma.match.update({
+        where: { id: matchId },
+        data: { status: "OPEN" },
+      });
+      return NextResponse.json({ match: updatedMatch }, { status: 200 });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  } catch (error) {
+    console.error("Failed to update match:", error);
+    return NextResponse.json(
+      { error: "Failed to update match" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -52,7 +82,8 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     console.error("Failed to delete match:", error);
     if (error.message === "Match not found" || error.message === "Cannot delete a settled match") {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -70,7 +70,7 @@ export default function Home() {
           HEAVEN OR HELL
         </h1>
         <p className="text-red-500 text-center mb-8 text-xl tracking-widest font-bold" style={{ fontFamily: "var(--font-bebas)" }}>
-          DUEL 1 - LET'S ROCK
+          DUEL 1 - LET&apos;S ROCK
         </p>
 
         <form onSubmit={handleLogin} className="space-y-6 relative z-10">

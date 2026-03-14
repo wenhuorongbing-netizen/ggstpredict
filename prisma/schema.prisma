@@ -40,7 +40,7 @@ model Match {
   playerB           String // 选手B名字
   charA             String? // 选手A角色
   charB             String? // 选手B角色
-  status            String      @default("OPEN") // 状态："OPEN"(可下注), "CLOSED"(比赛中/停止下注), "SETTLED"(已结算)
+  status            String      @default("OPEN") // 状态："OPEN"(可下注), "LOCKED"(未开盘), "CLOSED"(比赛中/停止下注), "SETTLED"(已结算)
   winner            String? // 获胜方："A" 或 "B"，结算前为 null
   tournamentId      String?
   tournament        Tournament? @relation(fields: [tournamentId], references: [id])

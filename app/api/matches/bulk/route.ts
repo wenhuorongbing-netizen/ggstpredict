@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         playerB: m.playerB.trim(),
         charA: m.charA ? m.charA.trim() : null,
         charB: m.charB ? m.charB.trim() : null,
-        status: "OPEN",
+        status: "LOCKED",
         tournamentId: tournament.id,
         stageType: stageType || "GROUP",
         groupId: groupId || "A",
@@ -46,7 +46,8 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json({ count: result.length }, { status: 201 });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     console.error("Failed to bulk create matches:", error);
     return NextResponse.json(
       { error: error.message || "Failed to create matches" },

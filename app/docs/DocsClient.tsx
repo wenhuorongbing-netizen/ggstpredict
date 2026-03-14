@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion, AnimatePresence } from "framer-motion";
+import AppLayout from "@/components/AppLayout";
 
 interface DocsClientProps {
   userManual: string;
@@ -27,24 +28,14 @@ export default function DocsClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#111111] bg-[linear-gradient(to_right,#333333_1px,transparent_1px),linear-gradient(to_bottom,#333333_1px,transparent_1px)] bg-[size:40px_40px] text-white p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111111] z-0 pointer-events-none"></div>
-
-      <div className="max-w-5xl mx-auto relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-center py-6 border-b-4 border-red-600 mb-8 bg-black/90 px-8 shadow-[8px_8px_0px_rgba(239,68,68,0.5)] transform -skew-x-2 gap-4">
+    <AppLayout>
+      <div className="max-w-5xl mx-auto relative z-10 p-4 sm:p-8">
+        <div className="flex justify-between items-center mb-8 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
           <div className="transform skew-x-2">
             <h1 className="text-4xl font-black text-white tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>TACTICAL ARCHIVES</h1>
             <p className="text-red-500 text-sm tracking-widest font-bold uppercase">System Documentation Center</p>
           </div>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black"
-            style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
-            aria-label="Return to Battlefield"
-          >
-            🔙 RETURN TO BATTLEFIELD
-          </button>
-        </header>
+        </div>
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Tabs Sidebar */}
@@ -117,6 +108,6 @@ export default function DocsClient({
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

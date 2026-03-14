@@ -78,7 +78,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     console.error("Settlement error:", error);
     if (error.message === "Match not found" || error.message === "Match is already settled") {
         return NextResponse.json({ error: error.message }, { status: 400 });

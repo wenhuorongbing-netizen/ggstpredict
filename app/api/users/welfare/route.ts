@@ -51,7 +51,8 @@ export async function POST(request: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as any;
     if (
       error.message === "User not found" ||
       error.message === "积分充足，无需救治" ||

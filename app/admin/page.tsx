@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AppLayout from "@/components/AppLayout";
 
 interface Match {
   id: string;
@@ -228,40 +229,37 @@ export default function AdminPage() {
     }
   };
 
+  const handleUnlockMatch = async (matchId: string) => {
+    setError(null);
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "UNLOCK" }),
+      });
+
+      if (!res.ok) setError((await res.json()).error || "强制开盘失败");
+      else fetchMatches();
+    } catch (err) {
+      setError("网络错误，请稍后再试");
+    }
+  };
+
   const activeMatches = matches.filter(m => m.status !== "SETTLED");
   const settledMatches = matches.filter(m => m.status === "SETTLED");
 
   return (
     <ProtectedRoute requireAdmin={true}>
-      <div className="min-h-screen bg-[#111111] bg-[linear-gradient(to_right,#333333_1px,transparent_1px),linear-gradient(to_bottom,#333333_1px,transparent_1px)] bg-[size:40px_40px] text-white p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111111] z-0 pointer-events-none"></div>
-        <div className="max-w-5xl mx-auto relative z-10">
+      <AppLayout>
+        <div className="max-w-5xl mx-auto relative z-10 p-4 sm:p-8">
 
         {/* Header */}
-        <header className="flex justify-between items-center py-6 border-b-4 border-red-600 mb-8 bg-black/90 px-8 shadow-[8px_8px_0px_rgba(239,68,68,0.5)] transform -skew-x-2">
+        <div className="flex justify-between items-center mb-8 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
           <div className="transform skew-x-2">
             <h1 className="text-4xl font-black text-white tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>OVERSEER PANEL</h1>
             <p className="text-red-500 text-sm tracking-widest font-bold uppercase">System Administration</p>
           </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => router.push("/docs")}
-              className="ggst-button px-6 py-2 transform skew-x-2 border-blue-500 hover:bg-blue-600"
-              style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
-              aria-label="Docs"
-            >
-              📚 DOCS
-            </button>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black"
-              style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
-              aria-label="返回大厅"
-            >
-              RETURN ➔
-            </button>
-          </div>
-        </header>
+        </div>
 
         <AnimatePresence mode="wait">
           {error && (
@@ -312,7 +310,7 @@ export default function AdminPage() {
                 <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">赛制段 (STAGE TYPE)</label>
                 <select
                   value={stageType}
-                  onChange={(e) => setStageType(e.target.value as any)}
+                  onChange={(e) => setStageType(e.target.value as "GROUP" | "BRACKET")}
                   className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
                 >
                   <option value="GROUP">小组赛 (GROUP STAGE)</option>
@@ -456,33 +454,45 @@ export default function AdminPage() {
                   </div>
 
                   <div className="flex gap-3 w-full md:w-auto transform skew-x-2">
-                    <button
-                      onClick={() => handleSettleMatch(match.id, "A", match.playerA)}
-                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                      className="ggst-button px-6 py-2 border-red-500 text-lg hover:bg-red-600"
-                      style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)" }}
-                      aria-label={`判定 ${match.playerA} (A) 胜`}
-                    >
-                      {settlingMatchId === match.id ? "..." : `P1 WIN`}
-                    </button>
-                    <button
-                      onClick={() => handleSettleMatch(match.id, "B", match.playerB)}
-                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                      className="ggst-button px-6 py-2 border-blue-500 text-lg hover:bg-blue-600"
-                      style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
-                      aria-label={`判定 ${match.playerB} (B) 胜`}
-                    >
-                      {settlingMatchId === match.id ? "..." : `P2 WIN`}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMatch(match.id)}
-                      disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                      className="ggst-button px-6 py-2 border-neutral-500 text-lg hover:bg-neutral-600 bg-neutral-800 text-neutral-300"
-                      style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)" }}
-                      aria-label={`撤销赛事 ${match.id}`}
-                    >
-                      {deletingMatchId === match.id ? "..." : `🗑️ 撤销赛事 (VOID)`}
-                    </button>
+                    {match.status === "LOCKED" ? (
+                      <button
+                        onClick={() => handleUnlockMatch(match.id)}
+                        className="ggst-button px-6 py-2 border-yellow-500 text-lg hover:bg-yellow-600"
+                        style={{ boxShadow: "4px 4px 0px 0px rgba(234, 179, 8, 0.8)" }}
+                      >
+                        🔓 强制开盘 (LET&apos;S ROCK)
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleSettleMatch(match.id, "A", match.playerA)}
+                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                          className="ggst-button px-6 py-2 border-red-500 text-lg hover:bg-red-600"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)" }}
+                          aria-label={`判定 ${match.playerA} (A) 胜`}
+                        >
+                          {settlingMatchId === match.id ? "..." : `P1 WIN`}
+                        </button>
+                        <button
+                          onClick={() => handleSettleMatch(match.id, "B", match.playerB)}
+                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                          className="ggst-button px-6 py-2 border-blue-500 text-lg hover:bg-blue-600"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
+                          aria-label={`判定 ${match.playerB} (B) 胜`}
+                        >
+                          {settlingMatchId === match.id ? "..." : `P2 WIN`}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMatch(match.id)}
+                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                          className="ggst-button px-6 py-2 border-neutral-500 text-lg hover:bg-neutral-600 bg-neutral-800 text-neutral-300"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)" }}
+                          aria-label={`撤销赛事 ${match.id}`}
+                        >
+                          {deletingMatchId === match.id ? "..." : `🗑️ 撤销赛事 (VOID)`}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -518,7 +528,7 @@ export default function AdminPage() {
           </motion.div>
 
         </div>
-      </div>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

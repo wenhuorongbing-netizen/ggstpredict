@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AppLayout from "@/components/AppLayout";
 
 interface Match {
   id: string;
@@ -103,13 +104,11 @@ export default function BracketPage() {
   if (!tournament) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#111111] bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] flex flex-col items-center justify-center text-white p-4 font-sans relative overflow-hidden">
-          <div className="absolute inset-0 bg-noise z-0"></div>
-          <div className="text-center z-10">
+        <AppLayout>
+          <div className="flex flex-col items-center justify-center min-h-[60vh] relative z-10 transform -skew-x-2">
             <h1 className="text-6xl text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)] mb-4" style={{ fontFamily: "var(--font-bebas)" }}>NO ACTIVE TOURNAMENT</h1>
-            <button onClick={() => router.push("/dashboard")} className="ggst-button px-6 py-2 text-xl">RETURN TO DASHBOARD</button>
           </div>
-        </div>
+        </AppLayout>
       </ProtectedRoute>
     );
   }
@@ -119,26 +118,17 @@ export default function BracketPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#111111] bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] text-white p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-x-hidden relative">
-        <div className="absolute inset-0 bg-noise z-0 pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
+      <AppLayout>
+        <div className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8">
           {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between items-center py-6 border-b-4 border-red-600 mb-12 bg-black/90 px-8 shadow-[8px_8px_0px_rgba(239,68,68,0.5)] transform -skew-x-2">
+          <div className="flex justify-between items-center mb-12 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
             <div className="transform skew-x-2">
               <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
                 {tournament.name.toUpperCase()}
               </h1>
               <p className="text-red-500 text-sm tracking-widest font-bold uppercase">{tournament.status.replace("_", " ")}</p>
             </div>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black mt-4 md:mt-0"
-              style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
-            >
-              🔙 RETURN
-            </button>
-          </header>
+          </div>
 
           {/* Group Stage Dashboard */}
           {tournament.status === "GROUP_STAGE" && groups.length > 0 ? (
@@ -211,7 +201,7 @@ export default function BracketPage() {
             </div>
           )}
         </div>
-      </div>
+      </AppLayout>
     </ProtectedRoute>
   );
 }
