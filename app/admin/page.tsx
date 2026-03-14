@@ -102,9 +102,9 @@ export default function AdminPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "抓取失败");
-      } else if (data.data && Array.isArray(data.data)) {
+      } else if (data.matches && Array.isArray(data.matches)) {
         // Append crawled matches to textarea
-        const newMatchesStr = data.data.join("\n");
+        const newMatchesStr = data.matches.join("\n");
         setBulkInput(prev => prev + (prev.trim() === "" ? "" : "\n") + newMatchesStr);
       }
     } catch (err) {

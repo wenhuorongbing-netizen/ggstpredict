@@ -8,7 +8,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing URL" }, { status: 400 });
     }
 
-    const res = await fetch("http://localhost:5000/crawl", {
+    const res = await fetch("http://localhost:8000/crawl", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
