@@ -54,13 +54,18 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#111111] bg-[linear-gradient(to_right,#333333_1px,transparent_1px),linear-gradient(to_bottom,#333333_1px,transparent_1px)] bg-[size:40px_40px] flex flex-col items-center justify-center text-white p-4 font-sans selection:bg-red-500/30 overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111111] z-0 pointer-events-none"></div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] flex flex-col items-center justify-center text-white p-4 font-sans selection:bg-red-500/30 overflow-hidden relative">
+      <div className="absolute inset-0 bg-noise z-0"></div>
 
-      <div className="max-w-md w-full bg-[#000000]/90 p-10 shadow-[0_0_30px_rgba(239,68,68,0.2)] border-t-4 border-l-4 border-r-4 border-b-8 border-t-white border-l-white border-r-white border-b-red-600 relative z-10 transform -skew-x-2">
-        {/* Decorative elements */}
-        <div className="absolute -top-6 -right-6 w-24 h-24 bg-red-600/20 blur-2xl pointer-events-none"></div>
+      {/* Huge Tilted Watermark */}
+      <div
+        className="absolute -bottom-20 -left-10 text-[8rem] sm:text-[12rem] font-black text-neutral-800/20 leading-none select-none pointer-events-none transform -skew-x-[20deg] rotate-[-5deg] whitespace-nowrap"
+        style={{ fontFamily: "var(--font-bebas)" }}
+      >
+        MANKIND KNEW THAT THEY CANNOT CHANGE SOCIETY
+      </div>
 
+      <div className="max-w-md w-full bg-black/80 backdrop-blur-md p-10 shadow-[0_0_30px_rgba(239,68,68,0.2)] border-l-8 border-b-8 border-red-600 ggst-clip-panel relative z-10">
         <h1 className="text-6xl text-center mb-1 text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
           HEAVEN OR HELL
         </h1>
@@ -68,9 +73,9 @@ export default function Home() {
           DUEL 1 - LET'S ROCK
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-6 transform skew-x-2 relative z-10">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="username" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+        <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+          <div className="ggst-input-container">
+            <label htmlFor="username" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
               账号 (Account ID)
             </label>
             <input
@@ -79,14 +84,15 @@ export default function Home() {
               placeholder="Enter Account ID"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center tracking-widest"
+              className="ggst-input"
               disabled={isLoading}
               autoComplete="username"
             />
+            <span className="ggst-input-indicator">&gt;</span>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+          <div className="ggst-input-container">
+            <label htmlFor="password" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
               密码 (Password)
             </label>
             <input
@@ -95,14 +101,15 @@ export default function Home() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center tracking-widest"
+              className="ggst-input"
               disabled={isLoading}
               autoComplete="current-password"
             />
+            <span className="ggst-input-indicator">&gt;</span>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor="inviteCode" className="text-xs font-bold text-neutral-400 uppercase tracking-widest ml-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+          <div className="ggst-input-container">
+            <label htmlFor="inviteCode" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
               邀请码 (Invite Code - 仅新注册需要)
             </label>
             <input
@@ -111,10 +118,11 @@ export default function Home() {
               placeholder="Enter Invite Code"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white focus:outline-none focus:border-red-500 transition-colors placeholder:text-neutral-600 font-mono text-center uppercase tracking-widest"
+              className="ggst-input uppercase"
               disabled={isLoading}
               autoComplete="off"
             />
+            <span className="ggst-input-indicator">&gt;</span>
           </div>
           
           {error && (
@@ -123,14 +131,16 @@ export default function Home() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-4 text-xl ${isLoading ? "opacity-50 cursor-not-allowed bg-neutral-800 border-neutral-600 text-neutral-500" : "ggst-button"}`}
-            aria-busy={isLoading}
-          >
-            {isLoading ? "LOADING..." : "ENTER THE BATTLEFIELD"}
-          </button>
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-4 text-2xl ${isLoading ? "opacity-50 cursor-not-allowed bg-neutral-800 border-neutral-600 text-neutral-500 transform skew-x-[-15deg]" : "btn-lets-rock"}`}
+              aria-busy={isLoading}
+            >
+              <span>{isLoading ? "LOADING..." : "ENTER THE BATTLEFIELD"}</span>
+            </button>
+          </div>
         </form>
       </div>
 

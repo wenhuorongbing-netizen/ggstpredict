@@ -65,3 +65,97 @@ body {
   border-color: #52525b; /* Tailwind zinc-600 */
   box-shadow: 4px 4px 0px 0px rgba(82, 82, 91, 1);
 }
+
+/* --- New GGST Login UI Utilities --- */
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.ggst-clip-panel {
+  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+}
+
+.ggst-input-container {
+  position: relative;
+}
+
+.ggst-input {
+  width: 100%;
+  background-color: rgba(26, 26, 26, 0.8);
+  border: 1px solid #333;
+  border-bottom: 2px solid #555;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-family: monospace;
+  outline: none;
+  transition: all 0.2s ease-out;
+}
+
+.ggst-input:focus {
+  border-color: #333;
+  border-bottom: 4px solid #00e5ff; /* Ky Blue / Tension Gauge color */
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.ggst-input-indicator {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00e5ff;
+  font-weight: black;
+  opacity: 0;
+  transition: opacity 0.2s;
+  animation: blink 1s step-end infinite;
+}
+
+.ggst-input:focus + .ggst-input-indicator {
+  opacity: 1;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes roman-cancel-flash {
+  0% { background-color: #ffffff; color: #D91616; transform: scale(1); }
+  10% { background-color: #ffffff; color: #D91616; transform: scale(1.05); }
+  100% { background-color: #ffffff; color: #D91616; transform: scale(1); }
+}
+
+.btn-lets-rock {
+  position: relative;
+  background-color: #D91616;
+  color: #ffffff;
+  transform: skewX(-15deg);
+  transition: all 0.1s ease-out;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-lets-rock > span {
+  display: inline-block;
+  transform: skewX(15deg); /* Reverse skew for text */
+}
+
+.btn-lets-rock::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #D91616;
+  z-index: -1;
+  transition: all 0.1s ease-out;
+  opacity: 0;
+}
+
+.btn-lets-rock:hover:not(:disabled) {
+  animation: roman-cancel-flash 0.3s forwards;
+}
+
+.btn-lets-rock:hover:not(:disabled)::before {
+  opacity: 0.5;
+  transform: translate(6px, 6px); /* Displaced shadow effect */
+}
