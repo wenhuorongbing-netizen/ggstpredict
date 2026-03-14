@@ -36,15 +36,31 @@ export default function AdminPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [stageType, setStageType] = useState<"GROUP" | "BRACKET">("GROUP");
   const [groupId, setGroupId] = useState("A");
+  const [tournamentId, setTournamentId] = useState("");
+  const [tournaments, setTournaments] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
     fetchMatches();
     fetchInvites();
+    fetchTournaments();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
       if (stored) setRecentPlayers(JSON.parse(stored));
     }
   }, []);
+
+  const fetchTournaments = async () => {
+    try {
+      const res = await fetch("/api/tournaments");
+      if (res.ok) {
+        const data = await res.json();
+        setTournaments(data);
+        if (data.length > 0) {
+          setTournamentId(data[0].id);
+        }
+      }
+    } catch (err) {}
+  };
 
   const fetchMatches = async () => {
     try {
@@ -162,7 +178,7 @@ export default function AdminPage() {
       const res = await fetch("/api/matches/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matches: newMatches, stageType, groupId }),
+        body: JSON.stringify({ matches: newMatches, stageType, groupId, tournamentId }),
       });
 
       if (!res.ok) {
@@ -306,6 +322,17 @@ export default function AdminPage() {
 
           <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
             <div className="flex gap-4 mb-2">
+              <div className="flex-1">
+                <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">锦标赛 (TOURNAMENT)</label>
+                <select
+                  value={tournamentId}
+                  onChange={(e) => setTournamentId(e.target.value)}
+                  className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                >
+                  <option value="">-- 未关联赛事 --</option>
+                  {tournaments.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
               <div className="flex-1">
                 <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">赛制段 (STAGE TYPE)</label>
                 <select
