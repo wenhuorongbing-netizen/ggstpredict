@@ -79,6 +79,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (err: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = err as any;
     console.error("Settlement error:", error);
     if (error.message === "Match not found" || error.message === "Match is already settled") {

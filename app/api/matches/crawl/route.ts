@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const data = await res.json();
     return NextResponse.json(data, { status: 200 });
   } catch (err: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = err as any;
     console.error("Crawl Proxy Error:", error);
     return NextResponse.json(

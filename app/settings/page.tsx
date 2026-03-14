@@ -16,7 +16,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("ggst_username");
+      const storedName = localStorage.getItem("displayName");
       if (storedName) {
         setDisplayName(storedName);
         setOriginalName(storedName);
@@ -40,12 +40,12 @@ export default function SettingsPage() {
 
     setIsUpdating(true);
     try {
-      const userId = localStorage.getItem("ggst_userId");
+      const userId = localStorage.getItem("userId");
 
       const res = await fetch("/api/users/name", {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, newName: displayName }),
+        body: JSON.stringify({ userId, displayName }),
       });
 
       const data = await res.json();
@@ -53,7 +53,7 @@ export default function SettingsPage() {
       if (!res.ok) {
         setError(data.error || "FAILED TO UPDATE PROFILE");
       } else {
-        localStorage.setItem("ggst_username", data.displayName);
+        localStorage.setItem("displayName", data.displayName);
         setOriginalName(data.displayName);
         setSuccess("PROFILE UPDATED SUCCESSFULLY");
         setTimeout(() => setSuccess(null), 3000);
@@ -67,10 +67,11 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("ggst_userId");
-      localStorage.removeItem("ggst_username");
-      localStorage.removeItem("ggst_points");
-      localStorage.removeItem("ggst_role");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("username");
+      localStorage.removeItem("displayName");
+      localStorage.removeItem("points");
+      localStorage.removeItem("role");
       router.push("/");
     }
   };

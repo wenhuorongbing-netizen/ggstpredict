@@ -47,6 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ count: result.length }, { status: 201 });
   } catch (err: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = err as any;
     console.error("Failed to bulk create matches:", error);
     return NextResponse.json(

@@ -83,6 +83,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = err as any;
     console.error("Failed to delete match:", error);
     if (error.message === "Match not found" || error.message === "Cannot delete a settled match") {

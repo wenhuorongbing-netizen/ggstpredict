@@ -52,6 +52,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (err: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = err as any;
     if (
       error.message === "User not found" ||
