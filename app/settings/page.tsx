@@ -87,7 +87,7 @@ export default function SettingsPage() {
               <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(59,130,246,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
                 SYSTEM SETTINGS
               </h1>
-              <p className="text-blue-500 text-sm tracking-widest font-bold uppercase">Player Profile Configuration</p>
+              <p className="text-blue-500 text-sm tracking-widest font-bold uppercase">玩家档案配置</p>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export default function SettingsPage() {
                 exit={{ opacity: 0 }}
                 className="bg-red-950/80 border-2 border-red-500 text-red-200 p-4 mb-6 flex justify-between items-center shadow-[4px_4px_0px_rgba(239,68,68,1)] transform -skew-x-2 animate-ggst-shake"
               >
-                <span className="font-mono text-sm tracking-wide font-bold">SYSTEM ERROR: {error}</span>
+                <span className="font-mono text-sm tracking-wide font-bold">系统错误 (ERROR): {error}</span>
                 <button onClick={() => setError(null)} className="text-red-400 hover:text-white p-1">✕</button>
               </motion.div>
             )}
@@ -121,12 +121,12 @@ export default function SettingsPage() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 pointer-events-none z-20"></div>
 
             <h2 className="text-3xl font-bold mb-8 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               FIGHTER DOSSIER
+               玩家档案 (DOSSIER)
             </h2>
 
             <form onSubmit={handleUpdateName} className="flex flex-col gap-6 relative z-10 transform skew-x-2">
               <div className="w-full group">
-                <label htmlFor="displayName" className="block text-xl text-blue-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>R-CODE (DISPLAY NAME)</label>
+                <label htmlFor="displayName" className="block text-xl text-blue-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>玩家昵称 (R-CODE)</label>
                 <input
                   id="displayName"
                   type="text"
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                   className="ggst-button border-blue-500 hover:bg-blue-600 px-8 py-3 text-xl disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
                   style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
                 >
-                  {isUpdating ? "UPDATING..." : "SAVE R-CODE"}
+                  {isUpdating ? "正在更新..." : "保存昵称"}
                 </button>
               </div>
             </form>
@@ -154,12 +154,12 @@ export default function SettingsPage() {
           {/* Danger Zone */}
           <div className="bg-red-950/20 border-2 border-red-900/50 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] relative overflow-hidden transform -skew-x-2">
             <h2 className="text-3xl font-bold mb-8 text-red-500 flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               SYSTEM TERMINAL
+               系统终端 (TERMINAL)
             </h2>
 
             <div className="transform skew-x-2">
               <p className="text-neutral-400 mb-6 font-mono text-sm border-l-2 border-red-500 pl-4 py-2 bg-red-950/20">
-                WARNING: Terminating your connection will remove active session keys. You will need your R-Code and password to re-enter the network.
+                警告：终止连接将清除当前会话，您需要重新登录才能继续。
               </p>
 
               <button
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                 className="ggst-button w-full border-red-600 hover:bg-red-700 hover:text-white px-8 py-4 text-2xl font-black bg-black text-red-500 flex items-center justify-between"
                 style={{ boxShadow: "4px 4px 0px 0px rgba(220, 38, 38, 0.8)" }}
               >
-                <span>TERMINATE CONNECTION (LOGOUT)</span>
+                <span>退出登录 (LOGOUT)</span>
                 <span className="text-4xl leading-none">⚠️</span>
               </button>
             </div>

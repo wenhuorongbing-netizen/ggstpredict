@@ -45,9 +45,9 @@ export default function LeaderboardPage() {
           <div className="flex justify-between items-center mb-12 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
             <div className="transform skew-x-2">
               <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(234,179,8,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                BOUNTY BOARD
+                悬赏排行榜
               </h1>
-              <p className="text-yellow-500 text-sm tracking-widest font-bold uppercase">Global Rankings</p>
+              <p className="text-yellow-500 text-sm tracking-widest font-bold uppercase">全球排名</p>
             </div>
           </div>
 
@@ -56,17 +56,17 @@ export default function LeaderboardPage() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
 
             <h2 className="text-3xl font-bold mb-8 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               WANTED FIGHTERS
+               通缉名单 (WANTED)
             </h2>
 
             <div className="transform skew-x-2">
               {loading ? (
                 <div className="text-center py-10 font-mono text-yellow-500 animate-pulse">
-                  LOCATING TARGETS...
+                  正在定位目标 (LOCATING)...
                 </div>
               ) : leaders.length === 0 ? (
                 <div className="text-center py-10 text-neutral-500 font-bold" style={{ fontFamily: "var(--font-bebas)" }}>
-                  [ NO DATA FOUND ]
+                  [ 未找到数据 ]
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -103,7 +103,7 @@ export default function LeaderboardPage() {
                           }`} style={{ fontFamily: "var(--font-bebas)" }}>
                             {Math.floor(user.points).toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-neutral-500 font-mono font-bold">W$ BOUNTY</div>
+                          <div className="text-[10px] text-neutral-500 font-mono font-bold">W$ 悬赏金</div>
                         </div>
                       </motion.div>
                     ))}

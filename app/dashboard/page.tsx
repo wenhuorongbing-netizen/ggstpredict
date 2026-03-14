@@ -411,7 +411,7 @@ export default function DashboardPage() {
                   {/* Settled Badge */}
                   {match.status === "SETTLED" && (
                     <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold flex items-center shadow-[-4px_4px_0px_rgba(234,179,8,0.2)] z-20" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
-                      WINNER: {match.winner}
+                      胜者 (WINNER): {match.winner}
                     </div>
                   )}
 

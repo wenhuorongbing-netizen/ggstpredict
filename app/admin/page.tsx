@@ -280,11 +280,11 @@ export default function AdminPage() {
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-600 pointer-events-none z-20"></div>
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-             NEW BATTLE DEPLOYMENT
+             新建赛事 (DEPLOYMENT)
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-end mb-6 relative z-10 transform skew-x-2 p-4 bg-[#1a1a1a] border border-neutral-700">
             <div className="flex-1 w-full">
-              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (Tournament URL)</label>
+              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (赛事源地址)</label>
               <input
                 id="crawlUrl"
                 type="text"
