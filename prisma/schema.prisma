@@ -49,6 +49,8 @@ model Match {
   roundName         String?
   nextWinnerMatchId String?
   nextLoserMatchId  String?
+  poolInjectA       Int         @default(0) // Admin injected funds for A
+  poolInjectB       Int         @default(0) // Admin injected funds for B
   bets              Bet[] // 关联：一场比赛可以有多个下注
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -74,4 +76,13 @@ model InviteCode {
   used      Boolean  @default(false)
   usedBy    String? // 记录使用者（如记录 userId 或 username）
   createdAt DateTime @default(now())
+}
+
+// 6. 系统全局设置
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g., "GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT"
+  value     String   // "300", "50"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

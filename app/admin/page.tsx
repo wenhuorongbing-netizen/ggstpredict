@@ -39,24 +39,96 @@ export default function AdminPage() {
   const [tournamentId, setTournamentId] = useState("");
   const [tournaments, setTournaments] = useState<{id: string, name: string}[]>([]);
 
+  // GOD MODE STATES
+  const [users, setUsers] = useState<any[]>([]);
+  const [settings, setSettings] = useState<{ id: string, key: string, value: string }[]>([]);
+  const [showGodMode, setShowGodMode] = useState(false);
+  const [injectA, setInjectA] = useState("");
+  const [injectB, setInjectB] = useState("");
+  const [injectMatchId, setInjectMatchId] = useState<string | null>(null);
+
+
   useEffect(() => {
     fetchMatches();
     fetchInvites();
     fetchTournaments();
+    fetchUsers();
+    fetchSettings();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
       if (stored) setRecentPlayers(JSON.parse(stored));
     }
   }, []);
 
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users");
+      if (res.ok) setUsers(await res.json());
+    } catch (err) {}
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch("/api/admin/settings");
+      if (res.ok) setSettings(await res.json());
+    } catch (err) {}
+  };
+
+  const handleUpdateSetting = async (key: string, value: string) => {
+    try {
+      await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, value }),
+      });
+      fetchSettings();
+    } catch (err) {}
+  };
+
+  const handleUpdateUserPoints = async (id: string, points: number) => {
+    try {
+      await fetch(`/api/admin/users/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ points }),
+      });
+      fetchUsers();
+    } catch (err) {}
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("WARNING: This will HARD DELETE the user and ALL THEIR BETS. Proceed?")) return;
+    try {
+      await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      fetchUsers();
+    } catch (err) {}
+  };
+
+  const handleInjectFunds = async (matchId: string) => {
+    try {
+      await fetch(`/api/admin/matches/${matchId}/inject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ poolInjectA: Number(injectA) || 0, poolInjectB: Number(injectB) || 0 }),
+      });
+      setInjectMatchId(null);
+      setInjectA("");
+      setInjectB("");
+      fetchMatches();
+    } catch (err) {}
+  };
+
   const fetchTournaments = async () => {
     try {
       const res = await fetch("/api/tournaments");
       if (res.ok) {
         const data = await res.json();
-        setTournaments(data);
-        if (data.length > 0) {
-          setTournamentId(data[0].id);
+        if (data.tournament) {
+          setTournaments([data.tournament]);
+          setTournamentId(data.tournament.id);
+        } else {
+          setTournaments([]);
         }
       }
     } catch (err) {}
@@ -518,9 +590,38 @@ export default function AdminPage() {
                         >
                           {deletingMatchId === match.id ? "..." : `🗑️ 撤销赛事 (VOID)`}
                         </button>
+                        <button
+                          onClick={() => setInjectMatchId(match.id)}
+                          className="ggst-button px-4 py-2 border-purple-500 text-sm hover:bg-purple-600 bg-purple-900 text-purple-200"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(168, 85, 247, 0.8)" }}
+                        >
+                          💉 注入 (INJECT)
+                        </button>
                       </>
                     )}
                   </div>
+
+                  {injectMatchId === match.id && (
+                    <div className="w-full mt-4 p-4 border-2 border-purple-500 bg-purple-900/20 transform skew-x-2">
+                      <div className="flex flex-col md:flex-row gap-4 items-center">
+                        <div className="flex items-center gap-2">
+                          <label className="text-purple-300 font-bold">P1 Inject:</label>
+                          <input type="number" className="bg-black border border-purple-500 text-white px-2 py-1 w-24" value={injectA} onChange={(e) => setInjectA(e.target.value)} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-purple-300 font-bold">P2 Inject:</label>
+                          <input type="number" className="bg-black border border-purple-500 text-white px-2 py-1 w-24" value={injectB} onChange={(e) => setInjectB(e.target.value)} />
+                        </div>
+                        <button onClick={() => handleInjectFunds(match.id)} className="px-4 py-1 bg-purple-500 text-black font-bold border-2 border-purple-300 hover:bg-purple-400">
+                          CONFIRM INJECTION
+                        </button>
+                        <button onClick={() => setInjectMatchId(null)} className="px-4 py-1 bg-neutral-800 text-white border border-neutral-600 hover:bg-neutral-700">
+                          CANCEL
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -546,8 +647,17 @@ export default function AdminPage() {
                   <span className="text-neutral-700 px-4 font-black italic select-none">VS</span>
                   <span className={match.winner === "B" ? "text-yellow-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" : "text-neutral-600"}>{match.playerB}</span>
                 </div>
-                <div className="text-neutral-400 font-bold text-lg bg-[#1a1a1a] px-4 py-1 border border-neutral-800 transform skew-x-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                  WINNER: <span className="text-yellow-500 ml-2">{match.winner === "A" ? match.playerA : match.playerB}</span>
+                <div className="flex items-center gap-4 transform skew-x-2">
+                  <div className="text-neutral-400 font-bold text-lg bg-[#1a1a1a] px-4 py-1 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
+                    WINNER: <span className="text-yellow-500 ml-2">{match.winner === "A" ? match.playerA : match.playerB}</span>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteMatch(match.id)}
+                    disabled={deletingMatchId === match.id}
+                    className="text-red-500 hover:text-red-400 text-xs border border-red-900 bg-red-950/50 px-2 py-1 h-fit"
+                  >
+                    {deletingMatchId === match.id ? "..." : "HARD DELETE"}
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -555,6 +665,100 @@ export default function AdminPage() {
           </motion.div>
 
         </div>
+
+        {/* God Mode Section Toggle */}
+        <div className="mt-16 border-t-4 border-red-900 pt-8 relative z-10">
+          <button
+            onClick={() => setShowGodMode(!showGodMode)}
+            className="w-full py-4 bg-red-950 hover:bg-red-900 border-2 border-red-500 text-red-200 font-black text-2xl tracking-widest flex items-center justify-center gap-4 transition-colors shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+            style={{ fontFamily: "var(--font-bebas)" }}
+          >
+            ⚠️ {showGodMode ? "DISABLE" : "ENABLE"} GOD MODE (SYSTEM CONTROLS) ⚠️
+          </button>
+        </div>
+
+        {/* God Mode Content */}
+        <AnimatePresence>
+          {showGodMode && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mt-8 relative z-10"
+            >
+              <div className="bg-black/90 border-2 border-red-500 p-8 shadow-[8px_8px_0px_rgba(239,68,68,0.3)] transform -skew-x-2">
+                <h2 className="text-4xl font-black text-red-500 mb-6 transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className="animate-pulse">⚙️</span> SYSTEM CONTROLS
+                </h2>
+
+                <div className="transform skew-x-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Settings */}
+                  <div className="border border-red-900 p-6 bg-black/50">
+                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2" style={{ fontFamily: "var(--font-bebas)" }}>GLOBAL VARIABLES</h3>
+                    <div className="space-y-4">
+                      {settings.map(s => (
+                        <div key={s.id} className="flex justify-between items-center bg-neutral-900 p-3 border border-neutral-700">
+                          <span className="font-mono text-neutral-300">{s.key}</span>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              defaultValue={s.value}
+                              className="bg-black border border-neutral-600 px-2 py-1 text-white w-24 text-center font-mono"
+                              onBlur={(e) => handleUpdateSetting(s.key, e.target.value)}
+                            />
+                            <button className="px-3 bg-red-900 text-white font-bold text-xs hover:bg-red-800" onClick={(e) => {
+                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                              handleUpdateSetting(s.key, input.value);
+                            }}>SAVE</button>
+                          </div>
+                        </div>
+                      ))}
+                      {/* Quick Add Setting */}
+                      <form className="flex gap-2 mt-4 pt-4 border-t border-red-900/50" onSubmit={(e) => {
+                        e.preventDefault();
+                        const form = e.target as HTMLFormElement;
+                        handleUpdateSetting(form.keyInput.value, form.valInput.value);
+                        form.reset();
+                      }}>
+                        <input name="keyInput" placeholder="New Key" className="bg-black border border-neutral-600 px-2 py-1 text-white flex-1" required />
+                        <input name="valInput" placeholder="Value" className="bg-black border border-neutral-600 px-2 py-1 text-white w-24" required />
+                        <button type="submit" className="px-3 bg-green-900 text-white font-bold text-xs hover:bg-green-800">ADD</button>
+                      </form>
+                    </div>
+                  </div>
+
+                  {/* Users */}
+                  <div className="border border-red-900 p-6 bg-black/50 overflow-y-auto max-h-[500px]">
+                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2" style={{ fontFamily: "var(--font-bebas)" }}>DATABASE MANAGER (USERS)</h3>
+                    <div className="space-y-3">
+                      {users.map(u => (
+                        <div key={u.id} className="flex flex-col bg-[#0a0a0a] p-3 border border-red-900/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-bold text-white">{u.username} <span className="text-xs text-neutral-500 font-mono">({u.role})</span></span>
+                            <button onClick={() => handleDeleteUser(u.id)} className="text-red-500 hover:text-red-400 text-xs border border-red-500/50 px-2 py-1 bg-red-950">HARD DELETE</button>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-neutral-400 font-mono">{u.id}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-yellow-500 font-bold text-sm">PTS:</span>
+                              <input
+                                type="number"
+                                defaultValue={u.points}
+                                className="bg-black border border-neutral-600 px-2 py-1 text-white w-20 text-right font-mono text-sm"
+                                onBlur={(e) => handleUpdateUserPoints(u.id, Number(e.target.value))}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </AppLayout>
     </ProtectedRoute>
   );

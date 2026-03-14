@@ -58,16 +58,17 @@ export async function DELETE(
         throw new Error("Match not found");
       }
 
-      if (match.status === "SETTLED") {
-        throw new Error("Cannot delete a settled match");
-      }
-
-      // 2. Refund all users who placed bets on this match
-      for (const bet of match.bets) {
-        await tx.user.update({
-          where: { id: bet.userId },
-          data: { points: { increment: bet.amount } },
-        });
+      // If it's settled, the points were already distributed, so hard deleting means
+      // we just wipe the records. Refunding a settled match is too complex and would cause inflation.
+      // So if NOT settled, refund. If SETTLED, just delete bets without refund.
+      if (match.status !== "SETTLED") {
+        // 2. Refund all users who placed bets on this match
+        for (const bet of match.bets) {
+          await tx.user.update({
+            where: { id: bet.userId },
+            data: { points: { increment: bet.amount } },
+          });
+        }
       }
 
       // 3. Delete all associated bets
