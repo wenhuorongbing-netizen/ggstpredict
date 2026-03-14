@@ -5,19 +5,35 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
-    const take = limitParam ? parseInt(limitParam, 10) : 5;
+    const pageParam = searchParams.get('page');
+    const take = limitParam ? parseInt(limitParam, 10) : 10;
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
 
-    const topUsers = await prisma.user.findMany({
-      orderBy: { points: 'desc' },
-      take: isNaN(take) ? 5 : take,
-      select: {
-        id: true,
-        displayName: true,
-        points: true,
-      },
-    });
+    const validTake = isNaN(take) ? 10 : take;
+    const validPage = isNaN(page) ? 1 : page;
+    const skip = (validPage - 1) * validTake;
 
-    return NextResponse.json(topUsers, { status: 200 });
+    const [topUsers, totalCount] = await Promise.all([
+      prisma.user.findMany({
+        orderBy: { points: 'desc' },
+        take: validTake,
+        skip: skip,
+        select: {
+          id: true,
+          displayName: true,
+          points: true,
+        },
+      }),
+      prisma.user.count()
+    ]);
+
+    const totalPages = Math.ceil(totalCount / validTake);
+
+    return NextResponse.json({
+        users: topUsers,
+        totalPages: totalPages,
+        currentPage: validPage
+    }, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch leaderboard:", error);
     return NextResponse.json(

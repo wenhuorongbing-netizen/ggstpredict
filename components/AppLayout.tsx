@@ -39,6 +39,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     { name: "👑 排行榜", href: "/leaderboard" },
     { name: "⚙️ 账户设置", href: "/settings" },
     { name: "📖 用户手册", href: "/docs" },
+    { name: "ℹ️ 关于 (ABOUT)", href: "/about" },
   ];
 
   if (role === "ADMIN") {

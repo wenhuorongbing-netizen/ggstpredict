@@ -92,8 +92,11 @@ export default function DashboardPage() {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await fetch("/api/users/leaderboard");
-      if (res.ok) setLeaderboard(await res.json());
+      const res = await fetch("/api/users/leaderboard?limit=5");
+      if (res.ok) {
+        const data = await res.json();
+        setLeaderboard(data.users || data);
+      }
     } catch (err) {
       console.error("Failed to fetch leaderboard", err);
     }
@@ -276,17 +279,14 @@ export default function DashboardPage() {
                   </h2>
                   <div className="space-y-4 text-neutral-300 font-medium text-sm leading-relaxed">
                     <p>
-                      <strong className="text-red-400 text-lg">🎯 基础规则</strong><br/>
-                      选择你支持的选手投入积分。比赛状态为 LET&apos;S ROCK 时可自由下注，状态变为 SLASH! 后结算。
+                      <strong className="text-red-400 text-lg">🎯 比赛状态</strong><br/>
+                      🔴 LET&apos;S ROCK: 盘口已开，允许下注。<br/>
+                      ⚔️ SLASH!: 战斗进行中或已结束，等待统帅结算。
                     </p>
                     <p>
-                      <strong className="text-red-400 text-lg">💰 奖池瓜分</strong><br/>
-                      本平台采用动态赔率：【胜者阵营】将按投入比例，平分【败者阵营】的所有积分！
+                      <strong className="text-red-400 text-lg">💰 结算规则 (Pari-Mutuel)</strong><br/>
+                      玩家投入的积分形成奖池。【胜者】阵营的玩家将按自己投入的比例，平分【败者】阵营的奖池积分！
                     </p>
-                    <div className="bg-neutral-900 p-4 border-l-4 border-blue-500 font-mono text-xs">
-                      <strong>📊 举个栗子:</strong><br/>
-                      A池总共有 100 积分，B池总共有 200 积分。如果你给 A 投入了 10 积分。当 A 获胜时，你不仅拿回自己的 10 积分，还能分到 B池的 20 积分。
-                    </div>
                   </div>
                   <div className="mt-8 flex justify-end">
                     <button
@@ -332,8 +332,9 @@ export default function DashboardPage() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col xl:flex-row gap-8 mb-8 relative z-10">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
+          {/* Main Matches Area (Left) */}
+          <div className="lg:col-span-2">
             {/* Filters */}
             <div className="flex gap-2 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2 mb-8">
               {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
@@ -352,51 +353,18 @@ export default function DashboardPage() {
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Leaderboard (Bounty Board) */}
-          <div className="w-full xl:w-80 flex-shrink-0">
-            <div className="bg-black/80 border-2 border-neutral-700 p-4 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-500 pointer-events-none z-20"></div>
-              <h3 className="text-xl font-bold text-white mb-4 tracking-widest transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                <span className="text-yellow-500">🏆</span> WANTED FIGHTERS
-              </h3>
-              <div className="space-y-2 transform skew-x-2">
-                {leaderboard.length === 0 ? (
-                  <p className="text-neutral-500 text-xs font-mono">NO DATA YET...</p>
-                ) : (
-                  leaderboard.map((user, index) => {
-                    const isTop3 = index < 3;
-                    const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
-                    return (
-                      <div key={user.id} className={`flex justify-between items-center text-sm font-mono p-2 border-l-2 ${isTop3 ? 'border-yellow-500 bg-yellow-900/10' : 'border-neutral-700 bg-neutral-900/30'}`}>
-                        <div className="flex items-center gap-2 truncate">
-                          <span className={`font-black w-8 ${isTop3 ? 'text-yellow-500' : 'text-neutral-500'}`}>{rankText}</span>
-                          <span className={`truncate ${isTop3 ? 'text-white font-bold' : 'text-neutral-400'}`}>{user.displayName}</span>
-                        </div>
-                        <span className={`font-bold ml-2 shrink-0 ${isTop3 ? 'text-yellow-400' : 'text-neutral-500'}`}>
-                          {user.points.toLocaleString()}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Match List */}
-        {filteredMatches.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2 w-full"
-          >
-            <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
-          </motion.div>
-        ) : (
-          <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 w-full" layout>
+            {/* Match List */}
+            {filteredMatches.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed backdrop-blur-sm relative z-10 transform -skew-x-2 w-full"
+              >
+                <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
+              </motion.div>
+            ) : (
+              <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
             <AnimatePresence>
               {filteredMatches.map((match) => (
                 <motion.div
@@ -519,7 +487,7 @@ export default function DashboardPage() {
                             className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
                             aria-label="全押"
                           >
-                            梭哈 (ALL IN)
+                            全部押注 (ALL IN)
                           </button>
                         </div>
                       </div>
@@ -621,6 +589,39 @@ export default function DashboardPage() {
             </AnimatePresence>
           </motion.div>
           )}
+          </div>
+
+          {/* Right Column: Leaderboard / Live Intel */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            <div className="bg-black/80 border-2 border-neutral-700 p-4 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-500 pointer-events-none z-20"></div>
+              <h3 className="text-xl font-bold text-white mb-4 tracking-widest transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                <span className="text-yellow-500">🏆</span> 通缉名单 (WANTED)
+              </h3>
+              <div className="space-y-2 transform skew-x-2">
+                {leaderboard.length === 0 ? (
+                  <p className="text-neutral-500 text-xs font-mono">NO DATA YET...</p>
+                ) : (
+                  leaderboard.map((user, index) => {
+                    const isTop3 = index < 3;
+                    const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
+                    return (
+                      <div key={user.id} className={`flex justify-between items-center text-sm font-mono p-2 border-l-2 ${isTop3 ? 'border-yellow-500 bg-yellow-900/10' : 'border-neutral-700 bg-neutral-900/30'}`}>
+                        <div className="flex items-center gap-2 truncate">
+                          <span className={`font-black w-8 ${isTop3 ? 'text-yellow-500' : 'text-neutral-500'}`}>{rankText}</span>
+                          <span className={`truncate ${isTop3 ? 'text-white font-bold' : 'text-neutral-400'}`}>{user.displayName}</span>
+                        </div>
+                        <span className={`font-bold ml-2 shrink-0 ${isTop3 ? 'text-yellow-400' : 'text-neutral-500'}`}>
+                          {user.points.toLocaleString()}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </AppLayout>
     </ProtectedRoute>

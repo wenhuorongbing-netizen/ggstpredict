@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -20,6 +20,13 @@ export default function DocsClient({
 }: DocsClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"user" | "admin" | "deploy">("user");
+  const [role, setRole] = useState("USER");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setRole(localStorage.getItem("role") || "USER");
+    }
+  }, []);
 
   const getActiveContent = () => {
     if (activeTab === "user") return userManual;
@@ -51,28 +58,32 @@ export default function DocsClient({
             >
               📖 新兵手册 (USER)
             </button>
-            <button
-              onClick={() => setActiveTab("admin")}
-              className={`p-4 text-xl tracking-widest font-bold border-2 transition-all text-left ${
-                activeTab === "admin"
-                  ? "bg-red-600 text-white border-red-500 shadow-[4px_4px_0px_rgba(239,68,68,0.8)] translate-x-2"
-                  : "bg-black/80 text-neutral-400 border-neutral-700 hover:border-red-500/50 hover:text-red-400"
-              }`}
-              style={{ fontFamily: "var(--font-bebas)" }}
-            >
-              ⚙️ 统帅指南 (ADMIN)
-            </button>
-            <button
-              onClick={() => setActiveTab("deploy")}
-              className={`p-4 text-xl tracking-widest font-bold border-2 transition-all text-left ${
-                activeTab === "deploy"
-                  ? "bg-red-600 text-white border-red-500 shadow-[4px_4px_0px_rgba(239,68,68,0.8)] translate-x-2"
-                  : "bg-black/80 text-neutral-400 border-neutral-700 hover:border-red-500/50 hover:text-red-400"
-              }`}
-              style={{ fontFamily: "var(--font-bebas)" }}
-            >
-              🚀 系统部署 (DEPLOY)
-            </button>
+            {role === "ADMIN" && (
+              <>
+                <button
+                  onClick={() => setActiveTab("admin")}
+                  className={`p-4 text-xl tracking-widest font-bold border-2 transition-all text-left ${
+                    activeTab === "admin"
+                      ? "bg-red-600 text-white border-red-500 shadow-[4px_4px_0px_rgba(239,68,68,0.8)] translate-x-2"
+                      : "bg-black/80 text-neutral-400 border-neutral-700 hover:border-red-500/50 hover:text-red-400"
+                  }`}
+                  style={{ fontFamily: "var(--font-bebas)" }}
+                >
+                  ⚙️ 统帅指南 (ADMIN)
+                </button>
+                <button
+                  onClick={() => setActiveTab("deploy")}
+                  className={`p-4 text-xl tracking-widest font-bold border-2 transition-all text-left ${
+                    activeTab === "deploy"
+                      ? "bg-red-600 text-white border-red-500 shadow-[4px_4px_0px_rgba(239,68,68,0.8)] translate-x-2"
+                      : "bg-black/80 text-neutral-400 border-neutral-700 hover:border-red-500/50 hover:text-red-400"
+                  }`}
+                  style={{ fontFamily: "var(--font-bebas)" }}
+                >
+                  🚀 系统部署 (DEPLOY)
+                </button>
+              </  >
+            )}
           </div>
 
           {/* Content Area */}

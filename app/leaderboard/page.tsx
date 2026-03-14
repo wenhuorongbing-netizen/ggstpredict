@@ -14,18 +14,18 @@ interface LeaderboardUser {
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setLoading(true);
       try {
-        // We might want to expand the API to fetch more than 5 users for this page.
-        // For now, let's use the existing one, or we can fetch a specific count.
-        // I will just use the standard one which takes 5. Let's hit the DB directly via a custom param if possible,
-        // or just use the current one.
-        const res = await fetch("/api/users/leaderboard?limit=20");
+        const res = await fetch(`/api/users/leaderboard?limit=10&page=${page}`);
         if (res.ok) {
           const data = await res.json();
-          setLeaders(data);
+          setLeaders(data.users || data); // fallback if old api
+          setTotalPages(data.totalPages || 1);
         }
       } catch (error) {
         console.error("Failed to load leaderboard", error);
@@ -34,7 +34,7 @@ export default function LeaderboardPage() {
       }
     };
     fetchLeaderboard();
-  }, []);
+  }, [page]);
 
   return (
     <ProtectedRoute>
@@ -78,20 +78,20 @@ export default function LeaderboardPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         className={`flex justify-between items-center p-4 border-2 ${
-                          index === 0 ? "border-yellow-500 bg-yellow-900/20 shadow-[4px_4px_0px_rgba(234,179,8,0.5)]" :
-                          index === 1 ? "border-neutral-400 bg-neutral-900/50" :
-                          index === 2 ? "border-amber-700 bg-amber-950/30" :
+                          index === 0 && page === 1 ? "border-yellow-500 bg-yellow-900/20 shadow-[4px_4px_0px_rgba(234,179,8,0.5)]" :
+                          index === 1 && page === 1 ? "border-neutral-400 bg-neutral-900/50" :
+                          index === 2 && page === 1 ? "border-amber-700 bg-amber-950/30" :
                           "border-neutral-800 bg-black/50 hover:border-neutral-600 transition-colors"
                         }`}
                       >
                         <div className="flex items-center gap-6">
-                          <div className={`text-4xl font-black w-10 text-center ${
-                            index === 0 ? "text-yellow-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
-                            index === 1 ? "text-neutral-400" :
-                            index === 2 ? "text-amber-700" :
+                          <div className={`text-4xl font-black w-16 text-center ${
+                            index === 0 && page === 1 ? "text-yellow-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
+                            index === 1 && page === 1 ? "text-neutral-400" :
+                            index === 2 && page === 1 ? "text-amber-700" :
                             "text-neutral-700"
                           }`} style={{ fontFamily: "var(--font-bebas)" }}>
-                            #{index + 1}
+                            #{(page - 1) * 10 + index + 1}
                           </div>
                           <div className="font-bold text-xl text-white tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
                             {user.displayName}
@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="flex flex-col items-end">
                           <div className={`text-2xl font-black tracking-widest ${
-                            index === 0 ? "text-yellow-500" : "text-white"
+                            index === 0 && page === 1 ? "text-yellow-500" : "text-white"
                           }`} style={{ fontFamily: "var(--font-bebas)" }}>
                             {Math.floor(user.points).toLocaleString()}
                           </div>
@@ -108,6 +108,27 @@ export default function LeaderboardPage() {
                       </motion.div>
                     ))}
                   </AnimatePresence>
+
+                  {/* Pagination Controls */}
+                  <div className="flex justify-between items-center mt-8 border-t-2 border-neutral-800 pt-4">
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="ggst-button px-6 py-2 border-neutral-500 text-neutral-400 hover:text-white hover:border-white disabled:opacity-30"
+                      style={{ fontFamily: "var(--font-bebas)" }}
+                    >
+                      [ &lt; ] PREV
+                    </button>
+                    <span className="font-mono text-yellow-500 font-bold">PAGE {page} / {totalPages}</span>
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages}
+                      className="ggst-button px-6 py-2 border-neutral-500 text-neutral-400 hover:text-white hover:border-white disabled:opacity-30"
+                      style={{ fontFamily: "var(--font-bebas)" }}
+                    >
+                      NEXT [ &gt; ]
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
