@@ -1,0 +1,217 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
+interface Match {
+  id: string;
+  playerA: string;
+  playerB: string;
+  charA?: string | null;
+  charB?: string | null;
+  status: string;
+  winner?: string | null;
+  stageType?: string | null;
+  groupId?: string | null;
+}
+
+interface Tournament {
+  id: string;
+  name: string;
+  status: string;
+  matches: Match[];
+}
+
+interface PlayerStanding {
+  name: string;
+  wins: number;
+  losses: number;
+}
+
+export default function BracketPage() {
+  const router = useRouter();
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTournament();
+  }, []);
+
+  const fetchTournament = async () => {
+    try {
+      const res = await fetch("/api/tournaments");
+      if (res.ok) {
+        const data = await res.json();
+        setTournament(data.tournament);
+      }
+    } catch (err) {
+      console.error("Failed to fetch tournament", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Calculate Group Standings
+  const getGroupStandings = () => {
+    if (!tournament) return {};
+
+    const standings: Record<string, Record<string, PlayerStanding>> = {};
+
+    tournament.matches.forEach((m) => {
+      if (m.stageType !== "GROUP" || !m.groupId) return;
+
+      const group = m.groupId;
+      if (!standings[group]) standings[group] = {};
+
+      // Initialize players if not exist
+      if (!standings[group][m.playerA]) standings[group][m.playerA] = { name: m.playerA, wins: 0, losses: 0 };
+      if (!standings[group][m.playerB]) standings[group][m.playerB] = { name: m.playerB, wins: 0, losses: 0 };
+
+      if (m.status === "SETTLED" && m.winner) {
+        if (m.winner === "A") {
+          standings[group][m.playerA].wins += 1;
+          standings[group][m.playerB].losses += 1;
+        } else if (m.winner === "B") {
+          standings[group][m.playerB].wins += 1;
+          standings[group][m.playerA].losses += 1;
+        }
+      }
+    });
+
+    // Convert to sorted arrays
+    const sortedStandings: Record<string, PlayerStanding[]> = {};
+    for (const group in standings) {
+      sortedStandings[group] = Object.values(standings[group]).sort((a, b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        return a.losses - b.losses; // Fewer losses is better if wins are tied
+      });
+    }
+
+    return sortedStandings;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#111111] flex items-center justify-center">
+        <div className="text-red-500 animate-spin text-4xl">⚙</div>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-[#111111] bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] flex flex-col items-center justify-center text-white p-4 font-sans relative overflow-hidden">
+          <div className="absolute inset-0 bg-noise z-0"></div>
+          <div className="text-center z-10">
+            <h1 className="text-6xl text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)] mb-4" style={{ fontFamily: "var(--font-bebas)" }}>NO ACTIVE TOURNAMENT</h1>
+            <button onClick={() => router.push("/dashboard")} className="ggst-button px-6 py-2 text-xl">RETURN TO DASHBOARD</button>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  const groupStandings = getGroupStandings();
+  const groups = Object.keys(groupStandings).sort();
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#111111] bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] text-white p-4 sm:p-8 font-sans selection:bg-red-500/30 overflow-x-hidden relative">
+        <div className="absolute inset-0 bg-noise z-0 pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
+          <header className="flex flex-col md:flex-row justify-between items-center py-6 border-b-4 border-red-600 mb-12 bg-black/90 px-8 shadow-[8px_8px_0px_rgba(239,68,68,0.5)] transform -skew-x-2">
+            <div className="transform skew-x-2">
+              <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                {tournament.name.toUpperCase()}
+              </h1>
+              <p className="text-red-500 text-sm tracking-widest font-bold uppercase">{tournament.status.replace("_", " ")}</p>
+            </div>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="ggst-button px-6 py-2 transform skew-x-2 border-white hover:bg-white hover:text-black mt-4 md:mt-0"
+              style={{ boxShadow: "4px 4px 0px 0px rgba(255, 255, 255, 0.8)", fontSize: "1.2rem" }}
+            >
+              🔙 RETURN
+            </button>
+          </header>
+
+          {/* Group Stage Dashboard */}
+          {tournament.status === "GROUP_STAGE" && groups.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {groups.map((group) => (
+                <motion.div
+                  key={group}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col gap-6"
+                >
+                  {/* Standings Table */}
+                  <div className="bg-black/80 border-2 border-neutral-700 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 relative">
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-red-600 pointer-events-none z-20"></div>
+                    <div className="bg-neutral-900 p-4 border-b-2 border-neutral-800 flex justify-between items-center">
+                      <h2 className="text-3xl font-black text-white tracking-widest transform skew-x-2 drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                        GROUP {group}
+                      </h2>
+                    </div>
+                    <div className="p-1 transform skew-x-2">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-red-950/30 text-red-500 border-b border-red-900 font-bold tracking-widest text-sm" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
+                            <th className="p-3">FIGHTER</th>
+                            <th className="p-3 text-center w-16">W</th>
+                            <th className="p-3 text-center w-16">L</th>
+                          </tr>
+                        </thead>
+                        <tbody className="font-mono text-sm">
+                          {groupStandings[group].map((player, idx) => (
+                            <tr key={player.name} className={`border-b border-neutral-800 ${idx === 0 ? 'bg-yellow-900/10 text-white' : 'text-neutral-300 hover:bg-neutral-900/50'}`}>
+                              <td className="p-3 font-bold flex items-center gap-2">
+                                {idx === 0 && <span className="text-yellow-500">👑</span>}
+                                {player.name}
+                              </td>
+                              <td className="p-3 text-center text-green-400 font-black">{player.wins}</td>
+                              <td className="p-3 text-center text-red-400 font-black">{player.losses}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Group Matches List */}
+                  <div className="bg-neutral-900/40 border border-neutral-800 p-4 transform -skew-x-2">
+                    <h3 className="text-neutral-500 font-bold text-sm tracking-widest mb-3 transform skew-x-2 uppercase" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>Group Matches</h3>
+                    <div className="space-y-2 transform skew-x-2 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-700">
+                      {tournament.matches.filter(m => m.groupId === group).map(m => (
+                        <div key={m.id} className="flex justify-between items-center bg-black/50 p-2 border-l-2 border-neutral-700 text-xs font-mono">
+                          <div className="flex gap-2 items-center flex-1">
+                            <span className={m.winner === 'A' ? 'text-yellow-500 font-bold' : 'text-neutral-300'}>{m.playerA}</span>
+                            <span className="text-neutral-600 text-[10px]">vs</span>
+                            <span className={m.winner === 'B' ? 'text-yellow-500 font-bold' : 'text-neutral-300'}>{m.playerB}</span>
+                          </div>
+                          <div className="text-[10px] px-2 py-1 bg-neutral-900 rounded">
+                            {m.status === 'SETTLED' ? 'SLASH!' : m.status === 'OPEN' ? 'LET\'S ROCK' : m.status}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 text-neutral-500 font-bold text-2xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+              STAY TUNED FOR TOURNAMENT DATA
+            </div>
+          )}
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}

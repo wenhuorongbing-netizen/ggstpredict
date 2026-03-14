@@ -33,6 +33,8 @@ export default function AdminPage() {
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [stageType, setStageType] = useState<"GROUP" | "BRACKET">("GROUP");
+  const [groupId, setGroupId] = useState("A");
 
   useEffect(() => {
     fetchMatches();
@@ -159,7 +161,7 @@ export default function AdminPage() {
       const res = await fetch("/api/matches/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newMatches),
+        body: JSON.stringify({ matches: newMatches, stageType, groupId }),
       });
 
       if (!res.ok) {
@@ -305,6 +307,32 @@ export default function AdminPage() {
           </div>
 
           <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
+            <div className="flex gap-4 mb-2">
+              <div className="flex-1">
+                <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">赛制段 (STAGE TYPE)</label>
+                <select
+                  value={stageType}
+                  onChange={(e) => setStageType(e.target.value as any)}
+                  className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                >
+                  <option value="GROUP">小组赛 (GROUP STAGE)</option>
+                  <option value="BRACKET">淘汰赛 (BRACKET)</option>
+                </select>
+              </div>
+              {stageType === "GROUP" && (
+                <div className="flex-1">
+                  <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">分组 (GROUP ID)</label>
+                  <select
+                    value={groupId}
+                    onChange={(e) => setGroupId(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                  >
+                    {["A", "B", "C", "D"].map(g => <option key={g} value={g}>Group {g}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
             <div className="w-full group">
               <label htmlFor="bulkInput" className="block text-xl text-red-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>🤖 批量智能部署 (SMART DEPLOY)</label>
               <p className="text-xs text-neutral-400 mb-2">每行输入一场对决，格式：选手A vs 选手B (例如：Sol vs Ky)</p>

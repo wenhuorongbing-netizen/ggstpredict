@@ -3,13 +3,25 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const matches = await request.json();
+    const body = await request.json();
+    const { matches, stageType, groupId } = body;
 
     if (!Array.isArray(matches) || matches.length === 0) {
       return NextResponse.json(
         { error: "无效的数据格式 (Invalid data format)" },
         { status: 400 }
       );
+    }
+
+    // Auto-create or fetch active tournament
+    let tournament = await prisma.tournament.findFirst({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!tournament) {
+      tournament = await prisma.tournament.create({
+        data: { name: "AWT Finals (Default)", status: "GROUP_STAGE" }
+      });
     }
 
     const formattedMatches = matches.map((m) => {
@@ -22,6 +34,9 @@ export async function POST(request: Request) {
         charA: m.charA ? m.charA.trim() : null,
         charB: m.charB ? m.charB.trim() : null,
         status: "OPEN",
+        tournamentId: tournament.id,
+        stageType: stageType || "GROUP",
+        groupId: groupId || "A",
       };
     });
 

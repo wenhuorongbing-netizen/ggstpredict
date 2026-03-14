@@ -325,6 +325,14 @@ export default function DashboardPage() {
               RULES [?]
             </button>
             <button
+              onClick={() => router.push("/bracket")}
+              className="px-4 py-2 bg-purple-950/30 hover:bg-purple-900/50 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none text-purple-400 rounded-lg transition-all text-sm border border-purple-900/50 font-bold tracking-widest"
+              style={{ fontFamily: "var(--font-bebas)" }}
+              aria-label="Bracket"
+            >
+              🏆 STANDINGS
+            </button>
+            <button
               onClick={() => router.push("/docs")}
               className="px-4 py-2 bg-neutral-900/50 hover:bg-neutral-800 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 rounded-lg transition-all text-sm border border-neutral-700 font-bold tracking-widest"
               style={{ fontFamily: "var(--font-bebas)" }}
