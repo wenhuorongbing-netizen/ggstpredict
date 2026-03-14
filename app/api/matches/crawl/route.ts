@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const { url } = await request.json();
+
+    if (!url) {
+      return NextResponse.json({ error: "Missing URL" }, { status: 400 });
+    }
+
     const res = await fetch("http://localhost:5000/crawl", {
-      method: "GET",
-      // Add standard headers just in case
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({ url }),
     });
 
     if (!res.ok) {

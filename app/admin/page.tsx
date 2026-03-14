@@ -27,6 +27,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCrawling, setIsCrawling] = useState(false);
+  const [crawlUrl, setCrawlUrl] = useState("");
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
@@ -82,10 +83,18 @@ export default function AdminPage() {
   };
 
   const handleCrawlAWT = async () => {
+    if (!crawlUrl.trim()) {
+      setError("请输入赛事源地址 URL");
+      return;
+    }
     setError(null);
     setIsCrawling(true);
     try {
-      const res = await fetch("/api/matches/crawl", { method: "POST" });
+      const res = await fetch("/api/matches/crawl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: crawlUrl })
+      });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "抓取失败");
@@ -113,10 +122,26 @@ export default function AdminPage() {
     for (const line of lines) {
       const parts = line.split(/vs/i);
       if (parts.length === 2) {
-        const pA = parts[0].trim();
-        const pB = parts[1].trim();
+        const rawA = parts[0].trim();
+        const rawB = parts[1].trim();
+
+        // Extract optional character in parentheses: Player (Char)
+        const extractChar = (rawStr: string) => {
+          const match = rawStr.match(/^(.*?)(?:\((.*?)\))?$/);
+          if (match) {
+            return {
+              player: match[1].trim(),
+              char: match[2] ? match[2].trim() : null
+            };
+          }
+          return { player: rawStr, char: null };
+        };
+
+        const { player: pA, char: charA } = extractChar(rawA);
+        const { player: pB, char: charB } = extractChar(rawB);
+
         if (pA && pB) {
-          newMatches.push({ playerA: pA, playerB: pB });
+          newMatches.push({ playerA: pA, playerB: pB, charA, charB });
           newPlayers.add(pA);
           newPlayers.add(pB);
         }
@@ -237,13 +262,25 @@ export default function AdminPage() {
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
              NEW BATTLE DEPLOYMENT
           </h2>
-          <div className="flex justify-between items-end mb-4 relative z-10 transform skew-x-2">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-end mb-6 relative z-10 transform skew-x-2 p-4 bg-[#1a1a1a] border border-neutral-700">
+            <div className="flex-1 w-full">
+              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (Tournament URL)</label>
+              <input
+                id="crawlUrl"
+                type="text"
+                value={crawlUrl}
+                onChange={(e) => setCrawlUrl(e.target.value)}
+                placeholder="https://start.gg/tournament/..."
+                className="w-full bg-[#0a0a0a] border border-neutral-700 p-2 text-white focus:outline-none focus:border-purple-500 transition-colors font-mono text-sm"
+                disabled={isCrawling}
+              />
+            </div>
             <button
               onClick={handleCrawlAWT}
               disabled={isCrawling}
-              className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)]"
+              className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)] w-full sm:w-auto h-[42px]"
             >
-              {isCrawling ? "CRAWLING..." : "🕷️ 自动抓取 AWT 赛事数据"}
+              {isCrawling ? "CRAWLING..." : "🕷️ 自动抓取"}
             </button>
           </div>
 

@@ -19,6 +19,8 @@ export async function POST(request: Request) {
       return {
         playerA: m.playerA.trim(),
         playerB: m.playerB.trim(),
+        charA: m.charA ? m.charA.trim() : null,
+        charB: m.charB ? m.charB.trim() : null,
         status: "OPEN",
       };
     });
