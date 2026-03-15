@@ -50,3 +50,4 @@ chrome_profile/
 .pytest_cache/
 venv/
 bot.log
+dev.db

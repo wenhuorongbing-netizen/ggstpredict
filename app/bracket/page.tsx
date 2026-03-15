@@ -15,6 +15,8 @@ interface Match {
   charB?: string | null;
   status: string;
   winner?: string | null;
+  scoreA?: number | null;
+  scoreB?: number | null;
   stageType?: string | null;
   groupId?: string | null;
 }
@@ -28,8 +30,7 @@ interface Tournament {
 
 interface PlayerStanding {
   name: string;
-  wins: number;
-  losses: number;
+  points: number;
 }
 
 export default function BracketPage() {
@@ -68,16 +69,15 @@ export default function BracketPage() {
       if (!standings[group]) standings[group] = {};
 
       // Initialize players if not exist
-      if (!standings[group][m.playerA]) standings[group][m.playerA] = { name: m.playerA, wins: 0, losses: 0 };
-      if (!standings[group][m.playerB]) standings[group][m.playerB] = { name: m.playerB, wins: 0, losses: 0 };
+      if (!standings[group][m.playerA]) standings[group][m.playerA] = { name: m.playerA, points: 0 };
+      if (!standings[group][m.playerB]) standings[group][m.playerB] = { name: m.playerB, points: 0 };
 
-      if (m.status === "SETTLED" && m.winner) {
-        if (m.winner === "A") {
-          standings[group][m.playerA].wins += 1;
-          standings[group][m.playerB].losses += 1;
-        } else if (m.winner === "B") {
-          standings[group][m.playerB].wins += 1;
-          standings[group][m.playerA].losses += 1;
+      if (m.status === "SETTLED") {
+        if (typeof m.scoreA === 'number') {
+          standings[group][m.playerA].points += m.scoreA;
+        }
+        if (typeof m.scoreB === 'number') {
+          standings[group][m.playerB].points += m.scoreB;
         }
       }
     });
@@ -85,10 +85,7 @@ export default function BracketPage() {
     // Convert to sorted arrays
     const sortedStandings: Record<string, PlayerStanding[]> = {};
     for (const group in standings) {
-      sortedStandings[group] = Object.values(standings[group]).sort((a, b) => {
-        if (b.wins !== a.wins) return b.wins - a.wins;
-        return a.losses - b.losses; // Fewer losses is better if wins are tied
-      });
+      sortedStandings[group] = Object.values(standings[group]).sort((a, b) => b.points - a.points);
     }
 
     return sortedStandings;
@@ -154,8 +151,7 @@ export default function BracketPage() {
                         <thead>
                           <tr className="bg-red-950/30 text-red-500 border-b border-red-900 font-bold tracking-widest text-sm" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
                             <th className="p-3">FIGHTER</th>
-                            <th className="p-3 text-center w-16">W</th>
-                            <th className="p-3 text-center w-16">L</th>
+                            <th className="p-3 text-center w-32">POINTS (小分)</th>
                           </tr>
                         </thead>
                         <tbody className="font-mono text-sm">
@@ -177,8 +173,7 @@ export default function BracketPage() {
                                   </div>
                                   <span className="truncate">{player.name}</span>
                                 </td>
-                                <td className="p-3 text-center text-green-400 font-black">{player.wins}</td>
-                                <td className="p-3 text-center text-red-400 font-black">{player.losses}</td>
+                                <td className="p-3 text-center text-yellow-500 font-black">{player.points}</td>
                               </tr>
                             );
                           })}

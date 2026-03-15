@@ -135,6 +135,14 @@ export async function POST(request: Request) {
         });
       }
 
+      // 6. Audit Log
+      await tx.adminLog.create({
+        data: {
+          action: "Settle Match",
+          details: `Match ${matchId} settled. Winner: ${winner}`
+        }
+      });
+
       return updatedMatch;
     });
 

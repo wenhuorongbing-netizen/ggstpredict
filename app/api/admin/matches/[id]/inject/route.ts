@@ -16,12 +16,21 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         return NextResponse.json({ error: "Match not found" }, { status: 404 });
     }
 
-    const updatedMatch = await prisma.match.update({
-      where: { id },
-      data: {
-        poolInjectA: { increment: poolInjectA },
-        poolInjectB: { increment: poolInjectB },
-      }
+    const updatedMatch = await prisma.$transaction(async (tx) => {
+      const m = await tx.match.update({
+        where: { id },
+        data: {
+          poolInjectA: { increment: poolInjectA },
+          poolInjectB: { increment: poolInjectB },
+        }
+      });
+      await tx.adminLog.create({
+        data: {
+          action: "Inject Pool",
+          details: `Injected into Match ${id} -> A: +${poolInjectA}, B: +${poolInjectB}`
+        }
+      });
+      return m;
     });
 
     return NextResponse.json(updatedMatch, { status: 200 });

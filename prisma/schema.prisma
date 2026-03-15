@@ -89,3 +89,11 @@ model SystemSetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// 7. 管理员操作日志
+model AdminLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+}

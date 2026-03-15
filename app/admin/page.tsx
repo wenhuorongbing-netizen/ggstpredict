@@ -24,6 +24,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [invites, setInvites] = useState<InviteCode[]>([]);
+  const [adminLogs, setAdminLogs] = useState<any[]>([]);
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -54,12 +55,20 @@ export default function AdminPage() {
   const [isCrawlingAvatars, setIsCrawlingAvatars] = useState(false);
 
 
+  const fetchAdminLogs = async () => {
+    try {
+      const res = await fetch("/api/admin/logs");
+      if (res.ok) setAdminLogs(await res.json());
+    } catch (err) {}
+  };
+
   useEffect(() => {
     fetchMatches();
     fetchInvites();
     fetchTournaments();
     fetchUsers();
     fetchSettings();
+    fetchAdminLogs();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
       if (stored) setRecentPlayers(JSON.parse(stored));
@@ -513,6 +522,29 @@ export default function AdminPage() {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Admin Logs Section */}
+        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+          <div className="flex justify-between items-center mb-6 transform skew-x-2">
+            <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+              📝 操作记录日志 (ACTION LOGS)
+            </h2>
+            <button onClick={fetchAdminLogs} className="ggst-button px-4 py-1 text-sm border-blue-500 hover:bg-blue-600">REFRESH</button>
+          </div>
+          <div className="bg-black border border-green-900/30 p-4 h-64 overflow-y-auto font-mono text-xs text-green-500 shadow-inner transform skew-x-2">
+            {adminLogs.length === 0 ? (
+              <span className="text-green-900 animate-pulse">Waiting for system logs...</span>
+            ) : (
+              adminLogs.map((log) => (
+                <div key={log.id} className="mb-2 border-b border-green-900/20 pb-1">
+                  <span className="text-green-700">[{new Date(log.createdAt).toLocaleString()}]</span>
+                  <span className="font-bold text-green-400 ml-2">[{log.action}]</span>
+                  <span className="ml-2 text-green-200">{log.details}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Invite Codes Section */}

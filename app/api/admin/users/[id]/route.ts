@@ -10,10 +10,19 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return NextResponse.json({ error: "Invalid points value" }, { status: 400 });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: { points: body.points },
-      select: { id: true, username: true, displayName: true, points: true }
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id },
+        data: { points: body.points },
+        select: { id: true, username: true, displayName: true, points: true }
+      });
+      await tx.adminLog.create({
+        data: {
+          action: "Update Balance",
+          details: `Updated user ${user.username} (${user.id}) balance to ${body.points}`
+        }
+      });
+      return user;
     });
 
     return NextResponse.json(updatedUser, { status: 200 });

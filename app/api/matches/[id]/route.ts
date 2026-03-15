@@ -80,6 +80,13 @@ export async function DELETE(
       await tx.match.delete({
         where: { id: matchId },
       });
+
+      await tx.adminLog.create({
+        data: {
+          action: "Delete Match",
+          details: `Match ${matchId} hard deleted`
+        }
+      });
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
