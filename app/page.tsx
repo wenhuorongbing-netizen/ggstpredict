@@ -6,81 +6,152 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // 极简状态管理：如果本地有登录记录，直接跳到预测大厅 (我们稍后做这个页面)
   useEffect(() => {
-    if (localStorage.getItem("userId")) {
-      router.push("/dashboard");
+    if (typeof window !== "undefined") {
+      if (localStorage.getItem("userId")) {
+        router.push("/dashboard");
+      }
     }
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const res = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, inviteCode }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error);
-    } else {
-      // 登录成功，把玩家信息存在浏览器本地
-      localStorage.setItem("userId", data.user.id);
-      localStorage.setItem("username", data.user.username);
-      localStorage.setItem("role", data.user.role);
-      localStorage.setItem("points", data.user.points.toString());
-      
-      // 跳转到预测大厅
-      router.push("/dashboard");
+      if (!res.ok) {
+        setError(data.error || "登录失败");
+      } else {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("userId", data.user.id);
+            localStorage.setItem("username", data.user.username);
+            localStorage.setItem("displayName", data.user.displayName);
+            localStorage.setItem("role", data.user.role);
+            localStorage.setItem("points", data.user.points.toString());
+        }
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("网络连接失败，请检查后端服务是否启动");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-white p-4">
-      <div className="max-w-md w-full bg-neutral-900 p-8 rounded-xl shadow-2xl border border-neutral-800">
-        <h1 className="text-3xl font-bold mb-2 text-center text-red-500">罪恶装备预测局</h1>
-        <p className="text-neutral-400 text-center mb-8 text-sm">
-          输入账号密码。若无账号将自动注册并获赠 1000 初始积分。
+    <div className="min-h-screen bg-[radial-gradient(circle_at_center,_#333333_0%,_#000000_100%)] flex flex-col items-center justify-center text-white p-4 font-sans selection:bg-red-500/30 overflow-hidden relative">
+      <div className="absolute inset-0 bg-noise z-0"></div>
+
+      {/* Huge Tilted Watermark */}
+      <div
+        className="absolute -bottom-20 -left-10 text-[8rem] sm:text-[12rem] font-black text-neutral-800/20 leading-none select-none pointer-events-none transform -skew-x-[20deg] rotate-[-5deg] whitespace-nowrap"
+        style={{ fontFamily: "var(--font-bebas)" }}
+      >
+        MANKIND KNEW THAT THEY CANNOT CHANGE SOCIETY
+      </div>
+
+      <div className="max-w-md w-full bg-black/80 backdrop-blur-md p-10 shadow-[0_0_30px_rgba(239,68,68,0.2)] border-l-8 border-b-8 border-red-600 ggst-clip-panel relative z-10">
+        <h1 className="text-6xl text-center mb-1 text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+          HEAVEN OR HELL
+        </h1>
+        <p className="text-red-500 text-center mb-8 text-xl tracking-widest font-bold" style={{ fontFamily: "var(--font-bebas)" }}>
+          DUEL 1 - LET&apos;S ROCK
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
+        <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+          <div className="ggst-input-container">
+            <label htmlFor="username" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+              账号 (Account ID)
+            </label>
             <input
+              id="username"
               type="text"
-              placeholder="你的代号 (Username)"
+              placeholder="Enter Account ID"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded p-3 text-white focus:outline-none focus:border-red-500 transition-colors"
-              required
+              className="ggst-input"
+              disabled={isLoading}
+              autoComplete="username"
             />
+            <span className="ggst-input-indicator">&gt;</span>
           </div>
-          <div>
+
+          <div className="ggst-input-container">
+            <label htmlFor="password" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+              密码 (Password)
+            </label>
             <input
+              id="password"
               type="password"
-              placeholder="通行密钥 (Password)"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-neutral-800 border border-neutral-700 rounded p-3 text-white focus:outline-none focus:border-red-500 transition-colors"
-              required
+              className="ggst-input"
+              disabled={isLoading}
+              autoComplete="current-password"
             />
+            <span className="ggst-input-indicator">&gt;</span>
+          </div>
+
+          <div className="ggst-input-container">
+            <label htmlFor="inviteCode" className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.1rem" }}>
+              邀请码 (Invite Code - 仅新注册需要)
+            </label>
+            <input
+              id="inviteCode"
+              type="text"
+              placeholder="Enter Invite Code"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              className="ggst-input uppercase"
+              disabled={isLoading}
+              autoComplete="off"
+            />
+            <span className="ggst-input-indicator">&gt;</span>
           </div>
           
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {error && (
+            <div className="bg-red-950/80 border-2 border-red-500 text-red-400 text-sm p-3 text-center animate-ggst-shake font-bold shadow-inner" role="alert">
+              {error}
+            </div>
+          )}
 
-          <button
-            type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded transition-colors"
-          >
-            进入战场
-          </button>
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-4 text-2xl ${isLoading ? "opacity-50 cursor-not-allowed bg-neutral-800 border-neutral-600 text-neutral-500 transform skew-x-[-15deg]" : "btn-lets-rock"}`}
+              aria-busy={isLoading}
+            >
+              <span>{isLoading ? "LOADING..." : "ENTER THE BATTLEFIELD"}</span>
+            </button>
+          </div>
         </form>
+      </div>
+
+      {/* Docs Link */}
+      <div className="absolute bottom-6 z-10">
+        <a
+          href="/docs"
+          className="text-neutral-500 hover:text-red-500 hover:bg-black font-mono text-xs tracking-widest transition-all border border-transparent hover:border-red-500 px-3 py-1"
+        >
+          [ 📖 查阅战地手册 / READ MANUALS ]
+        </a>
       </div>
     </div>
   );
