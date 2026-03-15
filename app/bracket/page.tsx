@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 interface Match {
   id: string;
@@ -158,16 +159,29 @@ export default function BracketPage() {
                           </tr>
                         </thead>
                         <tbody className="font-mono text-sm">
-                          {groupStandings[group].map((player, idx) => (
-                            <tr key={player.name} className={`border-b border-neutral-800 ${idx === 0 ? 'bg-yellow-900/10 text-white' : 'text-neutral-300 hover:bg-neutral-900/50'}`}>
-                              <td className="p-3 font-bold flex items-center gap-2">
-                                {idx === 0 && <span className="text-yellow-500">👑</span>}
-                                {player.name}
-                              </td>
-                              <td className="p-3 text-center text-green-400 font-black">{player.wins}</td>
-                              <td className="p-3 text-center text-red-400 font-black">{player.losses}</td>
-                            </tr>
-                          ))}
+                          {groupStandings[group].map((player, idx) => {
+                            // Find a match involving this player to get their character (optional)
+                            const playerMatch = tournament.matches.find(m => m.playerA === player.name || m.playerB === player.name);
+                            const charName = playerMatch ? (playerMatch.playerA === player.name ? playerMatch.charA : playerMatch.charB) : null;
+
+                            return (
+                              <tr key={player.name} className={`border-b border-neutral-800 ${idx === 0 ? 'bg-yellow-900/10 text-white' : 'text-neutral-300 hover:bg-neutral-900/50'}`}>
+                                <td className="p-3 font-bold flex items-center gap-3">
+                                  {idx === 0 && <span className="text-yellow-500 text-lg">👑</span>}
+                                  <div className="w-10 h-10 flex-shrink-0">
+                                    <PlayerAvatar
+                                      playerName={player.name}
+                                      charName={charName || ""}
+                                      playerType="A" // Just to give it a border
+                                    />
+                                  </div>
+                                  <span className="truncate">{player.name}</span>
+                                </td>
+                                <td className="p-3 text-center text-green-400 font-black">{player.wins}</td>
+                                <td className="p-3 text-center text-red-400 font-black">{player.losses}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>

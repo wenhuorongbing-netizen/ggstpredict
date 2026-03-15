@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import confetti from "canvas-confetti";
 import AppLayout from "@/components/AppLayout";
+import PlayerAvatar from "@/components/PlayerAvatar";
 
 interface Bet {
   id: string;
@@ -461,22 +462,8 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="w-16 h-16 rounded-full border-2 bg-gradient-to-br from-red-600 to-red-900 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] mb-3 flex items-center justify-center overflow-hidden">
-                        {match.charA ? (
-                          <img
-                            src={`/assets/characters/${match.charA.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`}
-                            alt={match.charA}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback if image fails to load
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <span className={`text-2xl font-bold text-white drop-shadow-md ${match.charA ? 'hidden' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>
-                          {match.playerA.charAt(0).toUpperCase()}
-                        </span>
+                      <div className="mb-3">
+                        <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
                       <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
@@ -485,22 +472,8 @@ export default function DashboardPage() {
                     <div className="w-16"></div> {/* Spacer for VS */}
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="w-16 h-16 rounded-full border-2 bg-gradient-to-bl from-blue-600 to-blue-900 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] mb-3 flex items-center justify-center overflow-hidden">
-                        {match.charB ? (
-                          <img
-                            src={`/assets/characters/${match.charB.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`}
-                            alt={match.charB}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback if image fails to load
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <span className={`text-2xl font-bold text-white drop-shadow-md ${match.charB ? 'hidden' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>
-                          {match.playerB.charAt(0).toUpperCase()}
-                        </span>
+                      <div className="mb-3">
+                        <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
                       <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>

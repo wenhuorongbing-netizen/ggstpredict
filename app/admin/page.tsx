@@ -51,6 +51,8 @@ export default function AdminPage() {
   const [scoreB, setScoreB] = useState("");
   const [injectMatchId, setInjectMatchId] = useState<string | null>(null);
 
+  const [isCrawlingAvatars, setIsCrawlingAvatars] = useState(false);
+
 
   useEffect(() => {
     fetchMatches();
@@ -99,6 +101,24 @@ export default function AdminPage() {
       });
       fetchUsers();
     } catch (err) {}
+  };
+
+  const handleCrawlAvatars = async () => {
+    setIsCrawlingAvatars(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/players/crawl", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "抓取选手真容失败");
+      } else {
+        alert("成功触发选手真容抓取任务！");
+      }
+    } catch (err) {
+      setError("网络错误，无法连接服务");
+    } finally {
+      setIsCrawlingAvatars(false);
+    }
   };
 
   const handleDeleteUser = async (id: string) => {
@@ -796,7 +816,16 @@ export default function AdminPage() {
 
                   {/* Users */}
                   <div className="border border-red-900 p-6 bg-black/50 overflow-y-auto max-h-[500px]">
-                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2" style={{ fontFamily: "var(--font-bebas)" }}>DATABASE MANAGER (USERS)</h3>
+                    <div className="flex justify-between items-center mb-4 border-b border-red-900 pb-2">
+                      <h3 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-bebas)" }}>DATABASE MANAGER (USERS)</h3>
+                      <button
+                        onClick={handleCrawlAvatars}
+                        disabled={isCrawlingAvatars}
+                        className="ggst-button px-4 py-2 border-purple-500 text-sm hover:bg-purple-600 bg-purple-900 text-purple-200 shadow-[2px_2px_0px_rgba(168,85,247,0.8)]"
+                      >
+                        {isCrawlingAvatars ? "CRAWLING..." : "📸 全自动抓取选手真容 (CRAWL AVATARS)"}
+                      </button>
+                    </div>
                     <div className="space-y-3">
                       {users.map(u => (
                         <div key={u.id} className="flex flex-col bg-[#0a0a0a] p-3 border border-red-900/50">

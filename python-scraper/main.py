@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from playwright.async_api import async_playwright
 import os
 import json
+import asyncio
+import re
 from google import genai
 
 app = FastAPI()
@@ -15,6 +17,12 @@ client = genai.Client() # Automatically uses GEMINI_API_KEY
 
 class CrawlRequest(BaseModel):
     url: str
+
+class CrawlPlayersRequest(BaseModel):
+    players: list[str]
+
+def sanitize_name(name: str) -> str:
+    return re.sub(r'[^a-z0-9]', '', name.lower())
 
 @app.post("/crawl")
 async def crawl(request: CrawlRequest):
@@ -66,6 +74,73 @@ Text to analyze:
     except Exception as e:
         print(f"Error during crawl: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/crawl-players")
+async def crawl_players(request: CrawlPlayersRequest):
+    try:
+        save_dir = os.path.join(os.path.dirname(__file__), "..", "public", "assets", "players")
+        os.makedirs(save_dir, exist_ok=True)
+
+        results = {"success": [], "failed": [], "skipped": []}
+
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+
+            for player_name in request.players:
+                sanitized_name = sanitize_name(player_name)
+                if not sanitized_name:
+                    continue
+
+                file_path = os.path.join(save_dir, f"{sanitized_name}.png")
+
+                if os.path.exists(file_path):
+                    results["skipped"].append(player_name)
+                    continue
+
+                # Navigate to liquipedia
+                url = f"https://liquipedia.net/fighters/{player_name}"
+                try:
+                    response = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                    if response and response.status == 404:
+                        results["failed"].append(player_name)
+                    else:
+                        # try to find infobox image
+                        image_element = await page.query_selector(".infobox-image img")
+                        if image_element:
+                            img_url = await image_element.get_attribute("src")
+                            if img_url:
+                                if img_url.startswith('/'):
+                                    img_url = f"https://liquipedia.net{img_url}"
+
+                                # Download image
+                                img_response = await page.request.get(img_url)
+                                if img_response.status == 200:
+                                    img_bytes = await img_response.body()
+                                    with open(file_path, "wb") as f:
+                                        f.write(img_bytes)
+                                    results["success"].append(player_name)
+                                else:
+                                    results["failed"].append(player_name)
+                            else:
+                                results["failed"].append(player_name)
+                        else:
+                            results["failed"].append(player_name)
+                except Exception as loop_e:
+                    print(f"Error crawling {player_name}: {loop_e}")
+                    results["failed"].append(player_name)
+
+                await asyncio.sleep(2)  # Avoid rate limiting
+
+            await browser.close()
+
+        return results
+
+    except Exception as e:
+        print(f"Error during crawl-players: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
