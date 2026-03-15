@@ -98,10 +98,13 @@ export async function POST(request: Request) {
         },
       });
 
-      // 6. Accumulate Global Tension
+      // 6. Accumulate Global Tension (Capped at 20000)
       const tensionSetting = await tx.systemSetting.findUnique({ where: { key: "GLOBAL_TENSION" } });
       const currentTension = tensionSetting ? parseInt(tensionSetting.value, 10) : 0;
-      const newTension = currentTension + amount;
+      let newTension = currentTension + amount;
+      if (newTension > 20000) {
+        newTension = 20000;
+      }
 
       await tx.systemSetting.upsert({
         where: { key: "GLOBAL_TENSION" },

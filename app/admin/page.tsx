@@ -30,6 +30,8 @@ export default function AdminPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [isCrawling, setIsCrawling] = useState(false);
   const [crawlUrl, setCrawlUrl] = useState("");
+  const [startggGroupId, setStartggGroupId] = useState("");
+  const [isStartggFetching, setIsStartggFetching] = useState(false);
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [settlingMatchId, setSettlingMatchId] = useState<string | null>(null);
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
@@ -236,7 +238,7 @@ export default function AdminPage() {
   const copyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    alert("密钥已复制 (Copied!)");
+    alert("密钥已复制！");
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
@@ -265,6 +267,34 @@ export default function AdminPage() {
       setError("网络错误，无法连接抓取服务");
     } finally {
       setIsCrawling(false);
+    }
+  };
+
+  const handleStartggFetch = async () => {
+    if (!startggGroupId.trim()) {
+      setError("请输入 Start.gg Phase Group ID");
+      return;
+    }
+    setError(null);
+    setIsStartggFetching(true);
+    try {
+      const res = await fetch("/api/admin/matches/startgg", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phaseGroupId: startggGroupId.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Start.gg 抓取失败");
+      } else if (data.matches && Array.isArray(data.matches)) {
+        const newMatchesStr = data.matches.join("\n");
+        setBulkInput(prev => prev + (prev.trim() === "" ? "" : "\n") + newMatchesStr);
+        alert(`成功抓取 ${data.matches.length} 场比赛！`);
+      }
+    } catch (err) {
+      setError("网络错误，无法连接抓取服务");
+    } finally {
+      setIsStartggFetching(false);
     }
   };
 
@@ -454,26 +484,54 @@ export default function AdminPage() {
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
              新建赛事 (DEPLOYMENT)
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-end mb-6 relative z-10 transform skew-x-2 p-4 bg-[#1a1a1a] border border-neutral-700">
-            <div className="flex-1 w-full">
-              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (URL)</label>
-              <input
-                id="crawlUrl"
-                type="url"
-                value={crawlUrl}
-                onChange={(e) => setCrawlUrl(e.target.value)}
-                placeholder="输入 Start.gg / Liquipedia 赛程链接..."
-                className="w-full bg-[#0a0a0a] border border-neutral-700 p-2 text-white focus:outline-none focus:border-purple-500 transition-colors font-mono text-sm"
-                disabled={isCrawling}
-              />
+          <div className="flex flex-col gap-4 mb-6 relative z-10 transform skew-x-2">
+            {/* Start.gg Native GraphQL Section */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border-2 border-blue-900/50 shadow-[4px_4px_0px_rgba(59,130,246,0.2)]">
+              <div className="flex-1 w-full">
+                <label htmlFor="startggGroupId" className="block text-sm text-blue-400 mb-1 font-bold tracking-widest flex items-center gap-2">
+                  <span className="text-yellow-500 text-lg">⚡</span> Start.gg 官方 API 直连 (Phase Group ID)
+                </label>
+                <input
+                  id="startggGroupId"
+                  type="text"
+                  value={startggGroupId}
+                  onChange={(e) => setStartggGroupId(e.target.value)}
+                  placeholder="输入 Start.gg Phase Group ID (如: 2541323)..."
+                  className="w-full bg-[#0a0a0a] border border-blue-900/50 p-2 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono text-sm"
+                  disabled={isStartggFetching}
+                />
+              </div>
+              <button
+                onClick={handleStartggFetch}
+                disabled={isStartggFetching}
+                className="ggst-button border-blue-500 hover:bg-blue-600 bg-blue-900/30 px-6 py-2 text-sm shadow-[2px_2px_0px_rgba(59,130,246,0.8)] w-full sm:w-auto h-[42px] font-bold tracking-widest text-blue-100"
+              >
+                {isStartggFetching ? "FETCHING..." : "[ ⚡ Start.gg 官方闪电抓取 ]"}
+              </button>
             </div>
-            <button
-              onClick={handleCrawlAWT}
-              disabled={isCrawling}
-              className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)] w-full sm:w-auto h-[42px]"
-            >
-              {isCrawling ? "CRAWLING..." : "🕷️ AI 神谕抓取"}
-            </button>
+
+            {/* Python Scraper Section */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border border-neutral-700">
+              <div className="flex-1 w-full">
+                <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 备用：AI 神谕抓取 (URL)</label>
+                <input
+                  id="crawlUrl"
+                  type="url"
+                  value={crawlUrl}
+                  onChange={(e) => setCrawlUrl(e.target.value)}
+                  placeholder="输入 Start.gg / Liquipedia 赛程链接..."
+                  className="w-full bg-[#0a0a0a] border border-neutral-700 p-2 text-white focus:outline-none focus:border-purple-500 transition-colors font-mono text-sm"
+                  disabled={isCrawling}
+                />
+              </div>
+              <button
+                onClick={handleCrawlAWT}
+                disabled={isCrawling}
+                className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)] w-full sm:w-auto h-[42px]"
+              >
+                {isCrawling ? "CRAWLING..." : "🕷️ 备用抓取"}
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
@@ -594,7 +652,7 @@ export default function AdminPage() {
                   const unused = invites.filter((i: any) => !i.used).map((i: any) => i.code).join('\n');
                   if (unused) {
                     navigator.clipboard.writeText(unused);
-                    alert("已复制所有未使用密钥!");
+                    alert("密钥已复制！");
                   } else {
                     alert("无可用密钥!");
                   }
@@ -636,18 +694,16 @@ export default function AdminPage() {
                             : 'bg-[#1a1a1a] border-neutral-700 text-white hover:border-yellow-500 hover:text-yellow-400'
                           }`}
                       >
-                        {invite.code}
-                        {!(invite as any).used && (
-                          <span
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 opacity-50 hover:opacity-100 transition-opacity p-1 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(invite.code);
-                            }}
-                          >
-                            📋
-                          </span>
-                        )}
+                        <span className="flex-1">{invite.code}</span>
+                        <span
+                          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-600 px-2 py-1 text-xs rounded transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(invite.code);
+                          }}
+                        >
+                          [复制]
+                        </span>
                       </button>
                       {copiedCode === invite.code && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
@@ -936,12 +992,12 @@ export default function AdminPage() {
                       {/* Explicit Defined Settings */}
                       <div className="bg-red-950/20 p-4 border border-red-900/50 rounded shadow-inner mb-6">
                         <h4 className="text-lg font-bold text-red-400 mb-4 border-b border-red-900/50 pb-2">动态限额参数 (Betting Limits)</h4>
-                        {["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].map(key => {
-                          const setting = settings.find(s => s.key === key) || { key, value: key === "GROUP_STAGE_LIMIT" ? "300" : key === "KNOCKOUT_PERCENT" ? "50" : "200" };
+                        {["GROUP_MAX", "KO_PERCENT", "KO_MIN"].map(key => {
+                          const setting = settings.find(s => s.key === key) || { key, value: key === "GROUP_MAX" ? "300" : key === "KO_PERCENT" ? "50" : "200" };
                           return (
                             <div key={key} className="flex justify-between items-center bg-black/50 p-2 border border-red-900/30 mb-2">
                               <span className="font-mono text-red-200">
-                                {key === "GROUP_STAGE_LIMIT" ? "小组赛限额 (Group Max)" : key === "KNOCKOUT_PERCENT" ? "淘汰赛比例 (KO %)" : "淘汰赛保底 (KO Min)"}
+                                {key === "GROUP_MAX" ? "小组赛限额 (GROUP_MAX)" : key === "KO_PERCENT" ? "淘汰赛比例 (KO_PERCENT)" : "淘汰赛保底 (KO_MIN)"}
                               </span>
                               <input
                                 type="number"
@@ -955,12 +1011,12 @@ export default function AdminPage() {
                         <button
                           className="mt-2 w-full py-2 bg-red-800 text-white font-bold text-sm hover:bg-red-700 rounded transition-all"
                           onClick={async () => {
-                            const groupLimit = (document.getElementById('input-GROUP_STAGE_LIMIT') as HTMLInputElement).value;
-                            const koPercent = (document.getElementById('input-KNOCKOUT_PERCENT') as HTMLInputElement).value;
-                            const koMin = (document.getElementById('input-KNOCKOUT_MIN') as HTMLInputElement).value;
-                            await handleUpdateSetting("GROUP_STAGE_LIMIT", groupLimit);
-                            await handleUpdateSetting("KNOCKOUT_PERCENT", koPercent);
-                            await handleUpdateSetting("KNOCKOUT_MIN", koMin);
+                            const groupLimit = (document.getElementById('input-GROUP_MAX') as HTMLInputElement).value;
+                            const koPercent = (document.getElementById('input-KO_PERCENT') as HTMLInputElement).value;
+                            const koMin = (document.getElementById('input-KO_MIN') as HTMLInputElement).value;
+                            await handleUpdateSetting("GROUP_MAX", groupLimit);
+                            await handleUpdateSetting("KO_PERCENT", koPercent);
+                            await handleUpdateSetting("KO_MIN", koMin);
                             alert("限额参数已保存！");
                           }}
                         >
@@ -968,7 +1024,7 @@ export default function AdminPage() {
                         </button>
                       </div>
 
-                      {settings.filter(s => !["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].includes(s.key)).map(s => (
+                      {settings.filter(s => !["GROUP_MAX", "KO_PERCENT", "KO_MIN", "GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].includes(s.key)).map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-900 p-3 border border-neutral-700">
                           <span className="font-mono text-neutral-300">{s.key}</span>
                           <div className="flex gap-2">

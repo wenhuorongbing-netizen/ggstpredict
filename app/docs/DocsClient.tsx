@@ -21,15 +21,45 @@ export default function DocsClient({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"user" | "admin" | "deploy">("user");
   const [role, setRole] = useState("USER");
+  const [dynamicManual, setDynamicManual] = useState(userManual);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setRole(localStorage.getItem("role") || "USER");
     }
-  }, []);
+
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const data = await res.json();
+          let groupMax = "300";
+          let koPercent = "50";
+          let koMin = "200";
+
+          data.forEach((s: any) => {
+            if (s.key === "GROUP_MAX") groupMax = s.value;
+            if (s.key === "KO_PERCENT") koPercent = s.value;
+            if (s.key === "KO_MIN") koMin = s.value;
+          });
+
+          const updatedManual = userManual
+            .replace("{{GROUP_MAX}}", groupMax)
+            .replace("{{KO_PERCENT}}", koPercent)
+            .replace("{{KO_MIN}}", koMin);
+
+          setDynamicManual(updatedManual);
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings for manual", err);
+      }
+    };
+
+    fetchSettings();
+  }, [userManual]);
 
   const getActiveContent = () => {
-    if (activeTab === "user") return userManual;
+    if (activeTab === "user") return dynamicManual;
     if (activeTab === "admin") return adminManual;
     return deploymentGuide;
   };
@@ -69,7 +99,7 @@ export default function DocsClient({
                   }`}
                   style={{ fontFamily: "var(--font-bebas)" }}
                 >
-                  ⚙️ 统帅指南 (ADMIN)
+                  ⚙️ 管理员指南 (ADMIN)
                 </button>
                 <button
                   onClick={() => setActiveTab("deploy")}

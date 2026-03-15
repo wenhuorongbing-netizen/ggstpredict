@@ -45,10 +45,7 @@ export async function POST(request: Request) {
       const loserChoice = winner === "A" ? "B" : "A";
 
       // 2.5 Tension and Tax logic
-      const tensionSetting = await tx.systemSetting.findUnique({ where: { key: "GLOBAL_TENSION" } });
-      const currentTension = tensionSetting ? parseInt(tensionSetting.value, 10) : 0;
-      const isTensionMaxed = currentTension >= 50000;
-      const taxRate = isTensionMaxed ? 0 : 0.05;
+      const taxRate = 0.05; // Tax is always 5%. Tension is purely manual by Admin.
 
       // Process losers: Reset winStreak
       const losingBets = match.bets.filter((bet) => bet.choice === loserChoice);
@@ -159,14 +156,6 @@ export async function POST(request: Request) {
             }
           });
         }
-      }
-
-      // 5. Tension Release
-      if (isTensionMaxed) {
-        await tx.systemSetting.update({
-          where: { key: "GLOBAL_TENSION" },
-          data: { value: "0" },
-        });
       }
 
       // 6. Audit Log

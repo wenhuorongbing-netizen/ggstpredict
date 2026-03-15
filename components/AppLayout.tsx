@@ -67,7 +67,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     navLinks.push({ name: "🚨 管理员面板", href: "/admin" });
   }
 
-  const maxTension = 50000;
+  const maxTension = 20000;
   const isTensionMaxed = globalTension >= maxTension;
   const tensionPercentage = Math.min((globalTension / maxTension) * 100, 100);
 
@@ -84,7 +84,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         {isTensionMaxed && (
           <div className="absolute top-2 w-full text-center pointer-events-none">
             <span className="bg-yellow-400 text-black text-xs font-black px-4 py-1 rounded-b shadow-[0_4px_10px_rgba(250,204,21,0.5)] transform -skew-x-6 inline-block" style={{ fontFamily: "var(--font-bebas)" }}>
-              ⚡ MAX TENSION: 下局全服免税!
+              ⚡ MAX TENSION: 气槽已满，管理员即将触发特殊效果!
             </span>
           </div>
         )}

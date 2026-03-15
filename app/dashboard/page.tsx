@@ -117,8 +117,8 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
 
   const setQuickAmount = (amt: number | "ALL") => {
     let limit = 500;
-    if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
-    else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+    if (match.stageType === "GROUP") limit = sysSettings.GROUP_MAX;
+    else if (match.stageType === "BRACKET") limit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
     const finalAmt = amt === "ALL" ? Math.min(points, limit) : Math.min(amt, limit);
     setBetAmount(finalAmt);
   };
@@ -273,22 +273,22 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                         type="number"
                         min="0"
                         max={(() => {
-                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_STAGE_LIMIT);
-                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100))));
+                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_MAX);
+                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100))));
                           return Math.min(points, 500);
                         })()}
                         value={betAmount}
                         onChange={(e) => {
                           let val = parseInt(e.target.value) || 0;
                           let limit = 500;
-                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
-                          else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_MAX;
+                          else if (match.stageType === "BRACKET") limit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
                           if (val > limit) val = limit;
                           setBetAmount(val === 0 ? "" : val);
                         }}
                         placeholder={(() => {
-                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_STAGE_LIMIT})`;
-                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)))})`;
+                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_MAX})`;
+                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
                           return "输入注额... (最大 500)";
                         })()}
                         className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
@@ -403,9 +403,10 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const [sysSettings, setSysSettings] = useState<{ GROUP_STAGE_LIMIT: number, KNOCKOUT_PERCENT: number }>({
-    GROUP_STAGE_LIMIT: 300,
-    KNOCKOUT_PERCENT: 50
+  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number }>({
+    GROUP_MAX: 300,
+    KO_PERCENT: 50,
+    KO_MIN: 200
   });
 
   const fetchSettings = async () => {
@@ -413,10 +414,11 @@ export default function DashboardPage() {
       const res = await fetch("/api/admin/settings");
       if (res.ok) {
         const data = await res.json();
-        const newSettings = { GROUP_STAGE_LIMIT: 300, KNOCKOUT_PERCENT: 50 };
+        const newSettings = { GROUP_MAX: 300, KO_PERCENT: 50, KO_MIN: 200 };
         data.forEach((s: any) => {
-          if (s.key === "GROUP_STAGE_LIMIT") newSettings.GROUP_STAGE_LIMIT = parseInt(s.value, 10);
-          if (s.key === "KNOCKOUT_PERCENT") newSettings.KNOCKOUT_PERCENT = parseInt(s.value, 10);
+          if (s.key === "GROUP_MAX") newSettings.GROUP_MAX = parseInt(s.value, 10);
+          if (s.key === "KO_PERCENT") newSettings.KO_PERCENT = parseInt(s.value, 10);
+          if (s.key === "KO_MIN") newSettings.KO_MIN = parseInt(s.value, 10);
         });
         setSysSettings(newSettings);
       }
@@ -612,8 +614,8 @@ export default function DashboardPage() {
   const setQuickAmount = (matchId: string, amt: number | "ALL", match?: Match) => {
     let limit = 500;
     if (match) {
-        if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
-        else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+        if (match.stageType === "GROUP") limit = sysSettings.GROUP_MAX;
+        else if (match.stageType === "BRACKET") limit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
     }
     const finalAmt = amt === "ALL" ? Math.min(points, limit) : Math.min(amt, limit);
     setBetAmount((prev) => ({ ...prev, [matchId]: finalAmt }));
@@ -690,7 +692,7 @@ export default function DashboardPage() {
                     <p>
                       <strong className="text-red-400 text-lg">🎯 比赛状态</strong><br/>
                       🔴 LET&apos;S ROCK: 盘口已开，允许下注。<br/>
-                      ⚔️ SLASH!: 战斗进行中或已结束，等待统帅结算。
+                      ⚔️ SLASH!: 战斗进行中或已结束，等待管理员结算。
                     </p>
                     <p>
                       <strong className="text-red-400 text-lg">💰 结算规则 (Pari-Mutuel)</strong><br/>

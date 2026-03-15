@@ -24,24 +24,10 @@ const ITEMS: ShopItem[] = [
   },
   {
     id: "discord_role",
-    name: "Discord 专属称号 (Custom Role)",
+    name: "群内专属称号 (Custom Role)",
     cost: 5000,
-    description: "在官方 Discord 频道获得自定义颜色的专属头衔。",
+    description: "在官方群组频道获得自定义颜色的专属头衔。",
     icon: "🎭",
-  },
-  {
-    id: "sponsor_match",
-    name: "下一场奖池注资 (Sponsor a Match)",
-    cost: 2000,
-    description: "Admin 将你的 2000 W$ 注入下一场对决的随机奖池。",
-    icon: "💉",
-  },
-  {
-    id: "request_match",
-    name: "指定赛事开盘 (Request a Match)",
-    cost: 1000,
-    description: "向统帅 (Admin) 申请开盘一场你指定的特定比赛。",
-    icon: "🎟️",
   },
 ];
 
@@ -80,7 +66,7 @@ export default function ShopPage() {
       if (!res.ok) {
         setError(data.error || "购买失败");
       } else {
-        setSuccessMsg(`✅ 交易成功！[ ${item.name} ] 订单已提交给统帅。`);
+        setSuccessMsg(`✅ 交易成功！[ ${item.name} ] 订单已提交给管理员。`);
         // We do not fetch user points here; the AppLayout interval will catch it.
       }
     } catch (err) {
@@ -176,7 +162,7 @@ export default function ShopPage() {
           </div>
 
           <div className="mt-12 p-6 bg-[#0a0a0a] border border-neutral-800 border-dashed text-neutral-500 text-sm font-mono relative z-10 transform skew-x-2">
-            * 所有的黑市交易均为人工 (Admin) 处理。购买后，订单状态将变更为 PENDING，统帅会在处理完成后标记为 FULFILLED。
+            * 所有的黑市交易均为人工 (Admin) 处理。购买后，订单状态将变更为 PENDING，管理员会在处理完成后标记为 FULFILLED。
           </div>
 
         </div>
