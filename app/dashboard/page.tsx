@@ -437,12 +437,13 @@ export default function DashboardPage() {
               {filteredMatches.map((match) => (
                 <motion.div
                   key={match.id}
+                  id={`match-${match.id}`}
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2 }}
-                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] ${
+                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] scroll-mt-24 ${
                     match.status === "OPEN" ? "border-neutral-600 hover:border-red-500/50" : "border-neutral-800 opacity-80"
                   }`}
                 >
@@ -517,7 +518,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3">
+                      <div className="mb-3 w-16 h-16">
                         <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
@@ -527,7 +528,7 @@ export default function DashboardPage() {
                     <div className="w-16"></div> {/* Spacer for VS */}
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3">
+                      <div className="mb-3 w-16 h-16">
                         <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
                       <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>

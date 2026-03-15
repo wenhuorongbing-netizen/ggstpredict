@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import PlayerAvatar from "@/components/PlayerAvatar";
+import BracketMatchNode from "@/components/BracketMatchNode";
 
 interface Match {
   id: string;
@@ -19,6 +20,9 @@ interface Match {
   scoreB?: number | null;
   stageType?: string | null;
   groupId?: string | null;
+  roundName?: string | null;
+  nextWinnerMatchId?: string | null;
+  nextLoserMatchId?: string | null;
 }
 
 interface Tournament {
@@ -114,12 +118,37 @@ export default function BracketPage() {
   const groupStandings = getGroupStandings();
   const groups = Object.keys(groupStandings).sort();
 
+  // Filter and group BRACKET matches
+  const bracketMatches = tournament.matches.filter(m => m.stageType === "BRACKET");
+
+  // Winners bracket rounds: basically any round that is NOT "Losers" and NOT "LF"
+  const isWinnersRound = (rn: string) => !rn.toLowerCase().includes("loser") && !rn.toLowerCase().includes("lf");
+  const isLosersRound = (rn: string) => rn.toLowerCase().includes("loser") || rn.toLowerCase().includes("lf");
+  const isGrandFinals = (rn: string) => rn.toLowerCase().includes("grand") || rn.toLowerCase().includes("gf");
+
+  const winnersMatches = bracketMatches.filter(m => m.roundName && isWinnersRound(m.roundName) && !isGrandFinals(m.roundName));
+  const losersMatches = bracketMatches.filter(m => m.roundName && isLosersRound(m.roundName));
+  const grandFinals = bracketMatches.filter(m => m.roundName && isGrandFinals(m.roundName));
+
+  const groupByRound = (matches: Match[]) => {
+    const grouped: Record<string, Match[]> = {};
+    matches.forEach(m => {
+      const rn = m.roundName || "Unassigned";
+      if (!grouped[rn]) grouped[rn] = [];
+      grouped[rn].push(m);
+    });
+    return grouped;
+  };
+
+  const winnersGrouped = groupByRound(winnersMatches);
+  const losersGrouped = groupByRound(losersMatches);
+
   return (
     <ProtectedRoute>
       <AppLayout>
-        <div className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8">
+        <div className="relative z-10 p-4 sm:p-8 w-full h-full">
           {/* Header */}
-          <div className="flex justify-between items-center mb-12 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
+          <div className="flex justify-between items-center mb-8 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4 max-w-7xl mx-auto">
             <div className="transform skew-x-2">
               <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
                 {tournament.name.toUpperCase()}
@@ -130,6 +159,7 @@ export default function BracketPage() {
 
           {/* Group Stage Dashboard */}
           {tournament.status === "GROUP_STAGE" && groups.length > 0 ? (
+            <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {groups.map((group) => (
                 <motion.div
@@ -203,6 +233,101 @@ export default function BracketPage() {
 
                 </motion.div>
               ))}
+            </div>
+            </div>
+          ) : tournament.status === "BRACKET" && bracketMatches.length > 0 ? (
+            <div className="w-full overflow-x-auto whitespace-nowrap bg-neutral-950 p-8 border-4 border-neutral-900 rounded-lg custom-scrollbar">
+
+              {/* WINNERS BRACKET */}
+              <div className="mb-12">
+                <h2 className="text-2xl font-black text-yellow-500 tracking-widest drop-shadow-[2px_2px_0px_rgba(234,179,8,0.5)] mb-6 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className="animate-pulse">●</span> WINNERS BRACKET
+                </h2>
+                <div className="flex items-stretch gap-12">
+                  {Object.entries(winnersGrouped).map(([roundName, matches], colIndex, arr) => (
+                    <div key={roundName} className="flex flex-col gap-8 relative">
+                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4">{roundName}</div>
+                      <div className="flex flex-col justify-around flex-1 gap-12">
+                        {matches.map(m => (
+                          <BracketMatchNode key={m.id} match={m} />
+                        ))}
+                      </div>
+                      {/* CSS Connector line to next round */}
+                      {colIndex < arr.length - 1 && matches.map((_, i) => {
+                        if (i % 2 === 0 && i + 1 < matches.length) {
+                          return (
+                            <div
+                              key={i}
+                              className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 rounded-r-lg pointer-events-none"
+                              style={{
+                                top: `calc(${((i + 0.5) / matches.length) * 100}% + 1rem)`,
+                                bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}% + 1rem)`
+                              }}
+                            >
+                              <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ))}
+
+                  {/* GRAND FINALS */}
+                  {grandFinals.length > 0 && (
+                    <div className="flex flex-col gap-8 relative ml-12 border-l-4 border-yellow-500/50 pl-12">
+                      <div className="absolute -left-12 top-1/2 w-12 border-t-4 border-yellow-500/50"></div>
+                      <div className="text-yellow-500 font-bold tracking-widest text-sm text-center mb-4">GRAND FINALS</div>
+                      <div className="flex flex-col justify-center flex-1 gap-12">
+                        {grandFinals.map(m => (
+                          <div key={m.id} className="relative">
+                            <div className="absolute -left-12 top-1/2 w-12 border-t-2 border-neutral-700/50"></div>
+                            <BracketMatchNode match={m} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* LOSERS BRACKET */}
+              <div className="border-t-2 border-neutral-800 pt-12 mt-12">
+                <h2 className="text-2xl font-black text-red-500 tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,0.5)] mb-6 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className="animate-pulse">●</span> LOSERS BRACKET
+                </h2>
+                <div className="flex items-stretch gap-12">
+                  {Object.entries(losersGrouped).map(([roundName, matches], colIndex, arr) => (
+                    <div key={roundName} className="flex flex-col gap-8 relative">
+                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4">{roundName}</div>
+                      <div className="flex flex-col justify-around flex-1 gap-12">
+                        {matches.map(m => (
+                          <BracketMatchNode key={m.id} match={m} />
+                        ))}
+                      </div>
+                      {/* CSS Connector */}
+                      {colIndex < arr.length - 1 && matches.map((_, i) => {
+                        if (i % 2 === 0 && i + 1 < matches.length) {
+                          return (
+                            <div
+                              key={i}
+                              className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 rounded-r-lg pointer-events-none"
+                              style={{
+                                top: `calc(${((i + 0.5) / matches.length) * 100}% + 1rem)`,
+                                bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}% + 1rem)`
+                              }}
+                            >
+                              <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           ) : (
             <div className="text-center py-20 text-neutral-500 font-bold text-2xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
