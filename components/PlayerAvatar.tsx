@@ -33,7 +33,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
   };
 
   return (
-    <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center overflow-hidden ${getStyles()}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square w-16 h-16 rounded-full border-2 ${getStyles()}`}>
       {tier === 1 && (
         <img
           src={`/assets/players/${sanitize(playerName)}.png`}
@@ -51,7 +51,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
         />
       )}
       {tier === 3 && (
-        <span className="text-2xl font-bold text-white drop-shadow-md" style={{ fontFamily: "var(--font-bebas)" }}>
+        <span className="flex items-center justify-center text-2xl font-bold text-white drop-shadow-md w-full h-full text-center align-middle m-0 p-0 leading-none" style={{ fontFamily: "var(--font-bebas)", display: "flex", justifyContent: "center", alignItems: "center" }}>
           {playerName.charAt(0).toUpperCase()}
         </span>
       )}

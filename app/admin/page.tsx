@@ -563,13 +563,14 @@ export default function AdminPage() {
                     >
                       <button
                         onClick={() => copyToClipboard(invite.code)}
-                        className={`w-full text-center p-3 border-2 transition-all font-mono tracking-widest text-sm
+                        className={`w-full text-center p-3 border-2 transition-all font-mono tracking-widest text-sm relative flex items-center justify-center gap-2
                           ${copiedCode === invite.code
                             ? 'bg-green-900/50 border-green-500 text-green-400'
                             : 'bg-[#1a1a1a] border-neutral-700 text-white hover:border-yellow-500 hover:text-yellow-400'
                           }`}
                       >
                         {invite.code}
+                        {!(invite as any).used && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">[复制]</span>}
                       </button>
                       {copiedCode === invite.code && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
@@ -807,9 +808,11 @@ export default function AdminPage() {
                           const setting = settings.find(s => s.key === key) || { key, value: key === "GROUP_STAGE_LIMIT" ? "300" : key === "KNOCKOUT_PERCENT" ? "50" : "200" };
                           return (
                             <div key={key} className="flex justify-between items-center bg-black/50 p-2 border border-red-900/30 mb-2">
-                              <span className="font-mono text-red-200">{key}</span>
+                              <span className="font-mono text-red-200">
+                                {key === "GROUP_STAGE_LIMIT" ? "小组赛限额 (Group Max)" : key === "KNOCKOUT_PERCENT" ? "淘汰赛比例 (KO %)" : "淘汰赛保底 (KO Min)"}
+                              </span>
                               <input
-                                type="text"
+                                type="number"
                                 id={`input-${key}`}
                                 defaultValue={setting.value}
                                 className="bg-black border border-red-900/50 px-2 py-1 text-red-100 w-24 text-center font-mono focus:outline-none focus:border-red-500"

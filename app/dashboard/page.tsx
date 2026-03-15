@@ -550,7 +550,7 @@ export default function DashboardPage() {
                             className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
                             style={{ fontFamily: "var(--font-bebas)" }}
                           >
-                            [ 🔄 罗马取消 (撤回扣除 5%) ]
+                            [ 🔄 RC取消 (扣5%) ]
                           </button>
                         </div>
                       )}
