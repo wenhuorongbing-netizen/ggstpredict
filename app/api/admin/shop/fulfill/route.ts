@@ -5,6 +5,16 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
+    const userId = req.headers.get("x-user-id");
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!adminUser || adminUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden: Admin only" }, { status: 403 });
+    }
+
     const { purchaseId } = await req.json();
 
     if (!purchaseId) {

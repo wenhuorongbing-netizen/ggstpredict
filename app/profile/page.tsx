@@ -28,6 +28,7 @@ interface Bet {
 interface UserProfile {
   id: string;
   displayName: string;
+  nameColor: string;
   points: number;
   winStreak: number;
   bets: Bet[];
@@ -109,7 +110,16 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-5xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)] mb-2 uppercase" style={{ fontFamily: "var(--font-bebas)" }}>
+                <h1
+                  className="text-5xl font-black text-white tracking-widest mb-2 uppercase"
+                  style={{
+                    fontFamily: "var(--font-bebas)",
+                    color: profile.nameColor,
+                    textShadow: profile.nameColor !== "#ffffff"
+                      ? `0 0 10px ${profile.nameColor}80, 0 0 20px ${profile.nameColor}40`
+                      : "2px 2px 0px rgba(239,68,68,1)"
+                  }}
+                >
                   {profile.displayName}
                 </h1>
                 <div className="text-neutral-400 font-bold tracking-widest text-sm uppercase mb-4" style={{ fontFamily: "var(--font-bebas)" }}>

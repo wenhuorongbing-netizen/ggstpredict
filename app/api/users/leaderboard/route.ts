@@ -21,6 +21,7 @@ export async function GET(request: Request) {
         select: {
           id: true,
           displayName: true,
+          nameColor: true,
           points: true,
         },
       }),

@@ -132,11 +132,13 @@ export default function BracketPage() {
   // Winners bracket rounds: basically any round that is NOT "Losers" and NOT "LF"
   const isWinnersRound = (rn: string) => !rn.toLowerCase().includes("loser") && !rn.toLowerCase().includes("lf");
   const isLosersRound = (rn: string) => rn.toLowerCase().includes("loser") || rn.toLowerCase().includes("lf");
-  const isGrandFinals = (rn: string) => rn.toLowerCase().includes("grand") || rn.toLowerCase().includes("gf");
+  const isGrandFinals = (rn: string) => (rn.toLowerCase().includes("grand") || rn.toLowerCase().includes("gf")) && !rn.toLowerCase().includes("reset");
+  const isGrandFinalReset = (rn: string) => rn.toLowerCase().includes("grand final reset") || rn.toLowerCase().includes("gf reset");
 
-  const winnersMatches = bracketMatches.filter(m => m.roundName && isWinnersRound(m.roundName) && !isGrandFinals(m.roundName));
+  const winnersMatches = bracketMatches.filter(m => m.roundName && isWinnersRound(m.roundName) && !isGrandFinals(m.roundName) && !isGrandFinalReset(m.roundName));
   const losersMatches = bracketMatches.filter(m => m.roundName && isLosersRound(m.roundName));
   const grandFinals = bracketMatches.filter(m => m.roundName && isGrandFinals(m.roundName));
+  const grandFinalsReset = bracketMatches.filter(m => m.roundName && isGrandFinalReset(m.roundName));
 
   const groupByRound = (matches: Match[]) => {
     const grouped: Record<string, Match[]> = {};
@@ -287,10 +289,28 @@ export default function BracketPage() {
                   {grandFinals.length > 0 && (
                     <div className="flex flex-col relative ml-12 pl-12 border-l-4 border-yellow-500/50">
                       <div className="text-yellow-500 font-bold tracking-widest text-sm text-center mb-4 h-6">GRAND FINALS</div>
-                      <div className="flex flex-col justify-around flex-1">
+                      <div className="flex flex-col justify-around flex-1 relative">
                         {grandFinals.map(m => (
-                          <div key={m.id} className="relative py-2">
+                          <div key={m.id} className="relative py-2 z-10">
                             <div className="absolute -left-12 top-1/2 w-12 border-t-2 border-yellow-500/50"></div>
+                            <BracketMatchNode match={m} />
+                          </div>
+                        ))}
+                        {/* Connector if reset exists */}
+                        {grandFinalsReset.length > 0 && (
+                           <div className="absolute top-1/2 -right-12 w-12 border-t-2 border-red-500/50 pointer-events-none z-0"></div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* GRAND FINALS RESET */}
+                  {grandFinalsReset.length > 0 && (
+                    <div className="flex flex-col relative ml-12">
+                      <div className="text-red-500 font-bold tracking-widest text-sm text-center mb-4 h-6 animate-pulse">BRACKET RESET!</div>
+                      <div className="flex flex-col justify-around flex-1 relative">
+                        {grandFinalsReset.map(m => (
+                          <div key={m.id} className="relative py-2 z-10">
                             <BracketMatchNode match={m} />
                           </div>
                         ))}

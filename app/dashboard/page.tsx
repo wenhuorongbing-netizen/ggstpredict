@@ -39,7 +39,348 @@ interface Match {
 interface LeaderboardEntry {
   id: string;
   displayName: string;
+  nameColor?: string;
   points: number;
+}
+
+
+function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchMatches, setError, setPoints, setWelfareMsg }: any) {
+  const [betAmount, setBetAmount] = useState<number | "">("");
+  const [betComment, setBetComment] = useState("");
+  const [isBetting, setIsBetting] = useState(false);
+
+  const handleBet = async (choice: "A" | "B") => {
+    setError(null);
+    const amount = Number(betAmount) || 0;
+    const comment = betComment || "";
+
+    if (amount <= 0) return setError("下注金额必须大于0");
+    if (amount > points) return setError("积分不足，请重新输入");
+
+    const previousPoints = points;
+    setPoints((prev: number) => prev - amount);
+    setIsBetting(true);
+
+    try {
+      const res = await fetch("/api/bets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, matchId: match.id, choice, amount, comment }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPoints(previousPoints);
+        setError(data.error || "下注失败");
+      } else {
+        fetchUserPoints(userId);
+        fetchMatches();
+        setBetAmount("");
+        setBetComment("");
+      }
+    } catch (err) {
+      console.error("Bet error:", err);
+      setPoints(previousPoints);
+      setError("网络链接中断，请检查信号");
+    } finally {
+      setIsBetting(false);
+    }
+  };
+
+  const handleCancelBet = async (originalAmount: number) => {
+    setError(null);
+    if (!confirm(`⚠️ 确定要撤回下注吗？\n将扣除 5% 的手续费 (预计退还 ${Math.floor(originalAmount * 0.95)} 积分)。`)) return;
+
+    try {
+      const res = await fetch("/api/bets/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, matchId: match.id }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "撤回失败");
+      } else {
+        fetchUserPoints(userId);
+        fetchMatches();
+        if (setWelfareMsg) {
+           setWelfareMsg(`已撤回下注，退还 ${data.refund} 积分 (已扣除 5%)`);
+           setTimeout(() => setWelfareMsg(null), 4000);
+        }
+      }
+    } catch (err) {
+      console.error("Cancel bet error:", err);
+      setError("网络错误，无法撤回");
+    }
+  };
+
+  const setQuickAmount = (amt: number | "ALL") => {
+    let limit = 500;
+    if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
+    else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+    const finalAmt = amt === "ALL" ? Math.min(points, limit) : Math.min(amt, limit);
+    setBetAmount(finalAmt);
+  };
+
+  return (
+<motion.div
+
+                  id={`match-${match.id}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] scroll-mt-24 ${
+                    match.status === "OPEN" ? "border-neutral-600 hover:border-red-500/50" : "border-neutral-800 opacity-80"
+                  }`}
+                >
+                  {/* Settled Badge */}
+                  {match.status === "SETTLED" && (
+                    <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold flex items-center shadow-[-4px_4px_0px_rgba(234,179,8,0.2)] z-20" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
+                      胜者 (WINNER): {match.winner}
+                    </div>
+                  )}
+
+                  {/* Decorative Corner */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white pointer-events-none z-20"></div>
+
+                  {/* Counter Hit Badge */}
+                  {match.status === "OPEN" && (() => {
+                    const pA = match.poolA || 0;
+                    const pB = match.poolB || 0;
+                    const totalPool = pA + pB;
+                    if (totalPool > 1000 && pA > 0 && pB > 0) {
+                      const ratio = pA / pB;
+                      if (ratio >= 9 || ratio <= (1/9)) {
+                        return (
+                          <div className="absolute -top-3 -right-3 rotate-12 z-50">
+                            <div className="bg-red-600 text-white text-xs font-black px-3 py-1 border-2 border-yellow-400 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse whitespace-nowrap">
+                              ⚠️ 破招预警 (POTENTIAL COUNTER HIT!)
+                            </div>
+                          </div>
+                        );
+                      }
+                    }
+                    return null;
+                  })()}
+
+                  {/* Players Info */}
+                  {/* Tug of War UI */}
+                  <div className="px-6 mt-4 relative z-10 transform skew-x-2">
+                     <div className="flex justify-between text-[10px] font-mono font-bold tracking-widest text-neutral-400 mb-1">
+                        <div>POOL A: {(match.poolA || 0).toLocaleString()}</div>
+                        <div>POOL B: {(match.poolB || 0).toLocaleString()}</div>
+                     </div>
+                     <div className="w-full h-3 bg-neutral-900 border border-neutral-700/50 flex overflow-hidden transform -skew-x-[10deg]">
+                        <div
+                          className="h-full bg-red-600 transition-all duration-500"
+                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolA || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                        ></div>
+                        <div
+                          className="h-full bg-blue-600 transition-all duration-500"
+                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolB || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                        ></div>
+                     </div>
+                  </div>
+
+                  {/* Players Info */}
+                  <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
+                    {/* VS Divider */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
+                      {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
+                        <span
+                          className="text-yellow-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3.5rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
+                        >
+                          {match.scoreA} - {match.scoreB}
+                        </span>
+                      ) : (
+                        <span
+                          className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
+                        >
+                          VS
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                      <div className="mb-3 w-16 h-16">
+                        <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
+                      </div>
+                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                      <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
+                    </div>
+
+                    <div className="w-16"></div> {/* Spacer for VS */}
+
+                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                      <div className="mb-3 w-16 h-16">
+                        <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
+                      </div>
+                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                      <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
+                    </div>
+                  </div>
+
+                  {/* Betting Area */}
+                  {match.status === "OPEN" && (
+                    <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
+
+                      {/* Roman Cancel (Cancel Bet) */}
+                      {match.bets?.some((b: any) => b.userId === userId) && (
+                        <div className="mb-4">
+                          <button
+                            onClick={() => {
+                              const userBet = match.bets?.find((b: any) => b.userId === userId);
+                              if (userBet) handleCancelBet(userBet.amount);
+                            }}
+                            className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
+                            style={{ fontFamily: "var(--font-bebas)" }}
+                          >
+                            [ 🔄 RC取消 (扣5%) ]
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center mb-3">
+                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score)</label>
+                        <div className="flex gap-2">
+                          {[100, 500].map(amt => (
+                            <button
+                              key={amt}
+                              onClick={() => setQuickAmount(amt)}
+                              className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
+                              aria-label={`快捷下注 ${amt} 积分`}
+                            >
+                              +{amt}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setQuickAmount("ALL")}
+                            className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
+                            aria-label="全押"
+                          >
+                            最大押注 (MAX)
+                          </button>
+                        </div>
+                      </div>
+
+                      <input
+                        id={`bet-amount-${match.id}`}
+                        type="number"
+                        min="0"
+                        max={(() => {
+                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_STAGE_LIMIT);
+                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100))));
+                          return Math.min(points, 500);
+                        })()}
+                        value={betAmount}
+                        onChange={(e) => {
+                          let val = parseInt(e.target.value) || 0;
+                          let limit = 500;
+                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
+                          else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+                          if (val > limit) val = limit;
+                          setBetAmount(val === 0 ? "" : val);
+                        }}
+                        placeholder={(() => {
+                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_STAGE_LIMIT})`;
+                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)))})`;
+                          return "输入注额... (最大 500)";
+                        })()}
+                        className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
+                      />
+
+                      <input
+                        type="text"
+                        value={betComment}
+                        onChange={(e) => setBetComment(e.target.value)}
+                        placeholder="赛事分析 / 留言 (Optional Comment)..."
+                        maxLength={50}
+                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
+                      />
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleBet("A")}
+                          disabled={isBetting || !betAmount}
+                          className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
+                          aria-label={`押注选手 A: ${match.playerA}`}
+                        >
+                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 A")}
+                        </button>
+
+                        <button
+                          onClick={() => handleBet("B")}
+                          disabled={isBetting || !betAmount}
+                          className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
+                          aria-label={`押注选手 B: ${match.playerB}`}
+                        >
+                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 B")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comments & Bets Feed */}
+                  <div className="mt-6 pt-4 border-t border-neutral-800/50">
+                    <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
+                      <span>📡 弹幕 / 战况情报 (Intel Feed)</span>
+                    </h4>
+
+                    {(!match.bets || match.bets.length === 0) ? (
+                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded-xl bg-neutral-900/20">
+                        No intel yet. Be the first to analyze this matchup.
+                      </div>
+                    ) : (
+                      <div
+                        className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+                        style={{ maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)" }}
+                      >
+                        {match.bets.map((bet: any) => {
+                          const isRed = bet.choice === 'A';
+                          const accentColor = isRed ? 'border-l-red-500 bg-gradient-to-r from-red-950/30 to-transparent' : 'border-l-blue-500 bg-gradient-to-r from-blue-950/30 to-transparent';
+                          const textColor = isRed ? 'text-red-400' : 'text-blue-400';
+                          const playerName = isRed ? match.playerA : match.playerB;
+
+                          return (
+                            <div key={bet.id} className={`rounded-r-lg p-3 text-sm border-l-2 ${accentColor} border-y border-r border-neutral-800/30`}>
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
+                    <span
+                      className="font-black text-white"
+                      style={{
+                        color: bet.user?.nameColor || "#ffffff",
+                        textShadow: (bet.user?.nameColor && bet.user.nameColor !== "#ffffff") ? `0 0 5px ${bet.user.nameColor}80` : undefined
+                      }}
+                    >
+                      {bet.user.displayName || bet.user.username}
+                    </span>
+                                <span className="text-neutral-500">投入了</span>
+                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} 积分</span>
+                                <span className="text-neutral-500">支持</span>
+                                <span className={`font-bold ${textColor}`}>{playerName}</span>
+                              </div>
+
+                              {bet.comment && (
+                                <div className="mt-2 text-neutral-400 text-xs italic break-words relative">
+                                  <div className={`absolute -left-2 top-0 bottom-0 w-0.5 rounded ${isRed ? 'bg-red-900/50' : 'bg-blue-900/50'}`}></div>
+                                  <p className="pl-2">&quot;{bet.comment}&quot;</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                </motion.div>
+  );
 }
 
 export default function DashboardPage() {
@@ -435,254 +776,18 @@ export default function DashboardPage() {
               <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
             <AnimatePresence>
               {filteredMatches.map((match) => (
-                <motion.div
+                <MatchCard
                   key={match.id}
-                  id={`match-${match.id}`}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] scroll-mt-24 ${
-                    match.status === "OPEN" ? "border-neutral-600 hover:border-red-500/50" : "border-neutral-800 opacity-80"
-                  }`}
-                >
-                  {/* Settled Badge */}
-                  {match.status === "SETTLED" && (
-                    <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold flex items-center shadow-[-4px_4px_0px_rgba(234,179,8,0.2)] z-20" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
-                      胜者 (WINNER): {match.winner}
-                    </div>
-                  )}
-
-                  {/* Decorative Corner */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white pointer-events-none z-20"></div>
-
-                  {/* Counter Hit Badge */}
-                  {match.status === "OPEN" && (() => {
-                    const pA = match.poolA || 0;
-                    const pB = match.poolB || 0;
-                    const totalPool = pA + pB;
-                    if (totalPool > 1000 && pA > 0 && pB > 0) {
-                      const ratio = pA / pB;
-                      if (ratio >= 9 || ratio <= (1/9)) {
-                        return (
-                          <div className="absolute -top-3 -right-3 rotate-12 z-50">
-                            <div className="bg-red-600 text-white text-xs font-black px-3 py-1 border-2 border-yellow-400 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse whitespace-nowrap">
-                              ⚠️ 破招预警 (POTENTIAL COUNTER HIT!)
-                            </div>
-                          </div>
-                        );
-                      }
-                    }
-                    return null;
-                  })()}
-
-                  {/* Players Info */}
-                  {/* Tug of War UI */}
-                  <div className="px-6 mt-4 relative z-10 transform skew-x-2">
-                     <div className="flex justify-between text-[10px] font-mono font-bold tracking-widest text-neutral-400 mb-1">
-                        <div>POOL A: {(match.poolA || 0).toLocaleString()}</div>
-                        <div>POOL B: {(match.poolB || 0).toLocaleString()}</div>
-                     </div>
-                     <div className="w-full h-3 bg-neutral-900 border border-neutral-700/50 flex overflow-hidden transform -skew-x-[10deg]">
-                        <div
-                          className="h-full bg-red-600 transition-all duration-500"
-                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolA || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
-                        ></div>
-                        <div
-                          className="h-full bg-blue-600 transition-all duration-500"
-                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolB || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
-                        ></div>
-                     </div>
-                  </div>
-
-                  {/* Players Info */}
-                  <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
-                    {/* VS Divider */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
-                      {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
-                        <span
-                          className="text-yellow-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3.5rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
-                        >
-                          {match.scoreA} - {match.scoreB}
-                        </span>
-                      ) : (
-                        <span
-                          className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
-                        >
-                          VS
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-16 h-16">
-                        <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
-                      </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
-                      <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
-                    </div>
-
-                    <div className="w-16"></div> {/* Spacer for VS */}
-
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-16 h-16">
-                        <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
-                      </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
-                      <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
-                    </div>
-                  </div>
-
-                  {/* Betting Area */}
-                  {match.status === "OPEN" && (
-                    <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
-
-                      {/* Roman Cancel (Cancel Bet) */}
-                      {match.bets?.some(b => b.userId === userId) && (
-                        <div className="mb-4">
-                          <button
-                            onClick={() => {
-                              const userBet = match.bets?.find(b => b.userId === userId);
-                              if (userBet) handleCancelBet(match.id, userBet.amount);
-                            }}
-                            className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
-                            style={{ fontFamily: "var(--font-bebas)" }}
-                          >
-                            [ 🔄 RC取消 (扣5%) ]
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center mb-3">
-                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score)</label>
-                        <div className="flex gap-2">
-                          {[100, 500].map(amt => (
-                            <button
-                              key={amt}
-                              onClick={() => setQuickAmount(match.id, amt, match)}
-                              className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
-                              aria-label={`快捷下注 ${amt} 积分`}
-                            >
-                              +{amt}
-                            </button>
-                          ))}
-                          <button
-                            onClick={() => setQuickAmount(match.id, "ALL", match)}
-                            className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
-                            aria-label="全押"
-                          >
-                            最大押注 (MAX)
-                          </button>
-                        </div>
-                      </div>
-
-                      <input
-                        id={`bet-amount-${match.id}`}
-                        type="number"
-                        min="0"
-                        max={(() => {
-                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_STAGE_LIMIT);
-                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100))));
-                          return Math.min(points, 500);
-                        })()}
-                        value={betAmount[match.id] || ""}
-                        onChange={(e) => {
-                          let val = parseInt(e.target.value) || 0;
-                          let limit = 500;
-                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
-                          else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
-                          if (val > limit) val = limit;
-                          setBetAmount((prev) => ({ ...prev, [match.id]: val }));
-                        }}
-                        placeholder={(() => {
-                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_STAGE_LIMIT})`;
-                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)))})`;
-                          return "输入注额... (最大 500)";
-                        })()}
-                        className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
-                      />
-
-                      <input
-                        type="text"
-                        value={betComment[match.id] || ""}
-                        onChange={(e) => setBetComment((prev) => ({ ...prev, [match.id]: e.target.value }))}
-                        placeholder="赛事分析 / 留言 (Optional Comment)..."
-                        maxLength={50}
-                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
-                      />
-
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => handleBet(match.id, "A")}
-                          disabled={isBetting[match.id] || !betAmount[match.id]}
-                          className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
-                          aria-label={`押注选手 A: ${match.playerA}`}
-                        >
-                          {isBetting[match.id] ? "..." : (!betAmount[match.id] ? "请输入分数 (Enter Score)" : "押注 A")}
-                        </button>
-
-                        <button
-                          onClick={() => handleBet(match.id, "B")}
-                          disabled={isBetting[match.id] || !betAmount[match.id]}
-                          className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
-                          aria-label={`押注选手 B: ${match.playerB}`}
-                        >
-                          {isBetting[match.id] ? "..." : (!betAmount[match.id] ? "请输入分数 (Enter Score)" : "押注 B")}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Comments & Bets Feed */}
-                  <div className="mt-6 pt-4 border-t border-neutral-800/50">
-                    <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
-                      <span>📡 弹幕 / 战况情报 (Intel Feed)</span>
-                    </h4>
-
-                    {(!match.bets || match.bets.length === 0) ? (
-                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded-xl bg-neutral-900/20">
-                        No intel yet. Be the first to analyze this matchup.
-                      </div>
-                    ) : (
-                      <div
-                        className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
-                        style={{ maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)" }}
-                      >
-                        {match.bets.map(bet => {
-                          const isRed = bet.choice === 'A';
-                          const accentColor = isRed ? 'border-l-red-500 bg-gradient-to-r from-red-950/30 to-transparent' : 'border-l-blue-500 bg-gradient-to-r from-blue-950/30 to-transparent';
-                          const textColor = isRed ? 'text-red-400' : 'text-blue-400';
-                          const playerName = isRed ? match.playerA : match.playerB;
-
-                          return (
-                            <div key={bet.id} className={`rounded-r-lg p-3 text-sm border-l-2 ${accentColor} border-y border-r border-neutral-800/30`}>
-                              <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
-                                <span className="font-black text-white">{bet.user.username}</span>
-                                <span className="text-neutral-500">投入了</span>
-                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} 积分</span>
-                                <span className="text-neutral-500">支持</span>
-                                <span className={`font-bold ${textColor}`}>{playerName}</span>
-                              </div>
-
-                              {bet.comment && (
-                                <div className="mt-2 text-neutral-400 text-xs italic break-words relative">
-                                  <div className={`absolute -left-2 top-0 bottom-0 w-0.5 rounded ${isRed ? 'bg-red-900/50' : 'bg-blue-900/50'}`}></div>
-                                  <p className="pl-2">&quot;{bet.comment}&quot;</p>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                </motion.div>
+                  match={match}
+                  userId={userId}
+                  points={points}
+                  sysSettings={sysSettings}
+                  fetchUserPoints={fetchUserPoints}
+                  fetchMatches={fetchMatches}
+                  setError={setError}
+                  setPoints={setPoints}
+                  setWelfareMsg={setWelfareMsg}
+                />
               ))}
             </AnimatePresence>
           </motion.div>
@@ -726,7 +831,9 @@ export default function DashboardPage() {
                               isFirst ? 'text-white text-xl' :
                               isTop3 ? 'text-gray-100 text-lg' :
                               'text-neutral-400'
-                            }`}>{user.displayName}</span>
+                            }`} style={user.nameColor && user.nameColor !== "#ffffff" ? { color: user.nameColor, textShadow: "0 0 5px currentColor" } : {}}>
+                              {user.displayName}
+                            </span>
                           </div>
 
                           <span className={`font-black ml-2 shrink-0 tracking-widest ${

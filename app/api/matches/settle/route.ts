@@ -127,6 +127,40 @@ export async function POST(request: Request) {
         data: updateData,
       });
 
+      // 4.5 Grand Final Reset Logic
+      // In a Double Elimination bracket, if the Losers Bracket winner (typically Player B)
+      // wins the first set of Grand Finals, a "Grand Final Reset" match is generated.
+      if (
+        (match.roundName === "Grand Final" || match.roundName === "Grand Finals" || match.roundName === "GF") &&
+        winner === "B"
+      ) {
+        // Check if a reset hasn't already been created manually or somehow duplicated
+        const existingReset = await tx.match.findFirst({
+          where: {
+            tournamentId: match.tournamentId,
+            roundName: "Grand Final Reset",
+            playerA: match.playerA,
+            playerB: match.playerB,
+          }
+        });
+
+        if (!existingReset) {
+          await tx.match.create({
+            data: {
+              playerA: match.playerA,
+              playerB: match.playerB,
+              charA: match.charA,
+              charB: match.charB,
+              status: "LOCKED",
+              tournamentId: match.tournamentId,
+              stageType: match.stageType,
+              groupId: match.groupId,
+              roundName: "Grand Final Reset",
+            }
+          });
+        }
+      }
+
       // 5. Tension Release
       if (isTensionMaxed) {
         await tx.systemSetting.update({

@@ -8,6 +8,7 @@ import AppLayout from "@/components/AppLayout";
 interface LeaderboardUser {
   id: string;
   displayName: string;
+  nameColor?: string;
   points: number;
 }
 
@@ -98,7 +99,7 @@ export default function LeaderboardPage() {
                             index === 0 && page === 1 ? "text-3xl text-white" :
                             index < 3 && page === 1 ? "text-2xl text-gray-100" :
                             "text-xl text-neutral-300"
-                          }`} style={{ fontFamily: "var(--font-bebas)" }}>
+                          }`} style={{ fontFamily: "var(--font-bebas)", color: user.nameColor && user.nameColor !== "#ffffff" ? user.nameColor : undefined, textShadow: user.nameColor && user.nameColor !== "#ffffff" ? "0 0 8px currentColor" : undefined }}>
                             {user.displayName}
                           </div>
                         </div>

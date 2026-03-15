@@ -33,6 +33,7 @@ export async function GET(request: Request) {
     const safeUser = {
       id: user.id,
       displayName: user.displayName,
+      nameColor: user.nameColor,
       points: user.points,
       winStreak: user.winStreak,
       bets: user.bets,

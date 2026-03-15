@@ -16,6 +16,13 @@ interface ShopItem {
 
 const ITEMS: ShopItem[] = [
   {
+    id: "gold_name",
+    name: "金色传说ID (Gold Name)",
+    cost: 10000,
+    description: "将你在排行榜和匹配卡片上的名字变为全服闪耀的金色！",
+    icon: "🌟",
+  },
+  {
     id: "discord_role",
     name: "Discord 专属称号 (Custom Role)",
     cost: 5000,
