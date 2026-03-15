@@ -27,6 +27,9 @@ interface Match {
   charB?: string | null;
   status: string;
   winner?: string | null;
+  scoreA?: number | null;
+  scoreB?: number | null;
+  stageType?: string | null;
   bets?: Bet[];
   poolA: number;
   poolB: number;
@@ -57,6 +60,28 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [sysSettings, setSysSettings] = useState<{ GROUP_STAGE_LIMIT: number, KNOCKOUT_PERCENT: number }>({
+    GROUP_STAGE_LIMIT: 300,
+    KNOCKOUT_PERCENT: 50
+  });
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch("/api/admin/settings");
+      if (res.ok) {
+        const data = await res.json();
+        const newSettings = { GROUP_STAGE_LIMIT: 300, KNOCKOUT_PERCENT: 50 };
+        data.forEach((s: any) => {
+          if (s.key === "GROUP_STAGE_LIMIT") newSettings.GROUP_STAGE_LIMIT = parseInt(s.value, 10);
+          if (s.key === "KNOCKOUT_PERCENT") newSettings.KNOCKOUT_PERCENT = parseInt(s.value, 10);
+        });
+        setSysSettings(newSettings);
+      }
+    } catch (e) {
+      console.error("Failed to fetch settings");
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("userId");
@@ -73,11 +98,13 @@ export default function DashboardPage() {
       setDisplayName(storedDisplayName || storedUsername || "Unknown");
       setNewName(storedDisplayName || storedUsername || "Unknown");
       fetchData(storedUserId);
+      fetchSettings();
 
       const intervalId = setInterval(() => {
         fetchMatches();
         fetchUserPoints(storedUserId);
         fetchLeaderboard();
+        fetchSettings();
       }, 10000);
 
       return () => clearInterval(intervalId);
@@ -205,8 +232,13 @@ export default function DashboardPage() {
     }
   };
 
-  const setQuickAmount = (matchId: string, amt: number | "ALL") => {
-    const finalAmt = amt === "ALL" ? points : amt;
+  const setQuickAmount = (matchId: string, amt: number | "ALL", match?: Match) => {
+    let limit = 500;
+    if (match) {
+        if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
+        else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+    }
+    const finalAmt = amt === "ALL" ? Math.min(points, limit) : Math.min(amt, limit);
     setBetAmount((prev) => ({ ...prev, [matchId]: finalAmt }));
   };
 
@@ -392,17 +424,17 @@ export default function DashboardPage() {
                   {/* Tug of War UI */}
                   <div className="px-6 mt-4 relative z-10 transform skew-x-2">
                      <div className="flex justify-between text-[10px] font-mono font-bold tracking-widest text-neutral-400 mb-1">
-                        <div>POOL A: {match.poolA.toLocaleString()}</div>
-                        <div>POOL B: {match.poolB.toLocaleString()}</div>
+                        <div>POOL A: {(match.poolA || 0).toLocaleString()}</div>
+                        <div>POOL B: {(match.poolB || 0).toLocaleString()}</div>
                      </div>
                      <div className="w-full h-3 bg-neutral-900 border border-neutral-700/50 flex overflow-hidden transform -skew-x-[10deg]">
                         <div
                           className="h-full bg-red-600 transition-all duration-500"
-                          style={{ width: `${match.poolA + match.poolB === 0 ? 50 : (match.poolA / (match.poolA + match.poolB)) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolA || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
                         ></div>
                         <div
                           className="h-full bg-blue-600 transition-all duration-500"
-                          style={{ width: `${match.poolA + match.poolB === 0 ? 50 : (match.poolB / (match.poolA + match.poolB)) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
+                          style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolB || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
                         ></div>
                      </div>
                   </div>
@@ -411,12 +443,21 @@ export default function DashboardPage() {
                   <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
                     {/* VS Divider */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
-                      <span
-                        className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                        style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
-                      >
-                        VS
-                      </span>
+                      {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
+                        <span
+                          className="text-yellow-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3.5rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
+                        >
+                          {match.scoreA} - {match.scoreB}
+                        </span>
+                      ) : (
+                        <span
+                          className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
+                        >
+                          VS
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
@@ -475,7 +516,7 @@ export default function DashboardPage() {
                           {[100, 500].map(amt => (
                             <button
                               key={amt}
-                              onClick={() => setQuickAmount(match.id, amt)}
+                              onClick={() => setQuickAmount(match.id, amt, match)}
                               className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
                               aria-label={`快捷下注 ${amt} 积分`}
                             >
@@ -483,11 +524,11 @@ export default function DashboardPage() {
                             </button>
                           ))}
                           <button
-                            onClick={() => setQuickAmount(match.id, "ALL")}
+                            onClick={() => setQuickAmount(match.id, "ALL", match)}
                             className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
                             aria-label="全押"
                           >
-                            全部押注 (ALL IN)
+                            最大押注 (MAX)
                           </button>
                         </div>
                       </div>
@@ -496,14 +537,25 @@ export default function DashboardPage() {
                         id={`bet-amount-${match.id}`}
                         type="number"
                         min="0"
-                        max="500"
+                        max={(() => {
+                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_STAGE_LIMIT);
+                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100))));
+                          return Math.min(points, 500);
+                        })()}
                         value={betAmount[match.id] || ""}
                         onChange={(e) => {
                           let val = parseInt(e.target.value) || 0;
-                          if (val > 500) val = 500;
+                          let limit = 500;
+                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_STAGE_LIMIT;
+                          else if (match.stageType === "BRACKET") limit = Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)));
+                          if (val > limit) val = limit;
                           setBetAmount((prev) => ({ ...prev, [match.id]: val }));
                         }}
-                        placeholder="输入注额..."
+                        placeholder={(() => {
+                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_STAGE_LIMIT})`;
+                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(200, Math.floor(points * (sysSettings.KNOCKOUT_PERCENT / 100)))})`;
+                          return "输入注额... (最大 500)";
+                        })()}
                         className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
                       />
 

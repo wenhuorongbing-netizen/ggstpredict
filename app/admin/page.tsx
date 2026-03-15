@@ -45,6 +45,10 @@ export default function AdminPage() {
   const [showGodMode, setShowGodMode] = useState(false);
   const [injectA, setInjectA] = useState("");
   const [injectB, setInjectB] = useState("");
+
+  const [settleMatchInfo, setSettleMatchInfo] = useState<{ id: string; winner: "A" | "B"; pName: string } | null>(null);
+  const [scoreA, setScoreA] = useState("");
+  const [scoreB, setScoreB] = useState("");
   const [injectMatchId, setInjectMatchId] = useState<string | null>(null);
 
 
@@ -277,16 +281,34 @@ export default function AdminPage() {
     setBulkInput(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + player);
   };
 
-  const handleSettleMatch = async (matchId: string, winner: "A" | "B", pName: string) => {
-    setError(null);
-    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？此操作不可逆，积分将立刻分发！`)) return;
+  const handleSettleMatchPrompt = (matchId: string, winner: "A" | "B", pName: string) => {
+    setSettleMatchInfo({ id: matchId, winner, pName });
+    setScoreA("");
+    setScoreB("");
+  };
 
-    setSettlingMatchId(matchId);
+  const executeSettleMatch = async () => {
+    if (!settleMatchInfo) return;
+    const { id, winner, pName } = settleMatchInfo;
+
+    const parsedScoreA = parseInt(scoreA, 10);
+    const parsedScoreB = parseInt(scoreB, 10);
+
+    if (isNaN(parsedScoreA) || isNaN(parsedScoreB)) {
+        alert("请输入有效的比分数字！");
+        return;
+    }
+
+    setError(null);
+    if (!confirm(`⚠️ 危险操作：确认结算比赛并判定 [ ${pName} ] 获胜吗？\n比分：${parsedScoreA} - ${parsedScoreB}\n此操作不可逆，积分将立刻分发！`)) return;
+
+    setSettlingMatchId(id);
+    setSettleMatchInfo(null);
     try {
       const res = await fetch("/api/matches/settle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId, winner }),
+        body: JSON.stringify({ matchId: id, winner, scoreA: parsedScoreA, scoreB: parsedScoreB }),
       });
 
       if (!res.ok) setError((await res.json()).error || "结算失败");
@@ -564,7 +586,7 @@ export default function AdminPage() {
                     ) : (
                       <>
                         <button
-                          onClick={() => handleSettleMatch(match.id, "A", match.playerA)}
+                          onClick={() => handleSettleMatchPrompt(match.id, "A", match.playerA)}
                           disabled={settlingMatchId === match.id || deletingMatchId === match.id}
                           className="ggst-button px-6 py-2 border-red-500 text-lg hover:bg-red-600"
                           style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)" }}
@@ -573,7 +595,7 @@ export default function AdminPage() {
                           {settlingMatchId === match.id ? "..." : `P1 WIN`}
                         </button>
                         <button
-                          onClick={() => handleSettleMatch(match.id, "B", match.playerB)}
+                          onClick={() => handleSettleMatchPrompt(match.id, "B", match.playerB)}
                           disabled={settlingMatchId === match.id || deletingMatchId === match.id}
                           className="ggst-button px-6 py-2 border-blue-500 text-lg hover:bg-blue-600"
                           style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
@@ -600,6 +622,51 @@ export default function AdminPage() {
                       </>
                     )}
                   </div>
+
+                  {settleMatchInfo?.id === match.id && (
+                    <div className="mt-4 pt-4 border-t border-neutral-700/50">
+                      <h4 className="text-white font-bold mb-2">SETTLE MATCH - FINAL SCORE</h4>
+                      <p className="text-neutral-400 text-sm mb-4">Winner: <span className={settleMatchInfo.winner === "A" ? "text-red-500 font-bold" : "text-blue-500 font-bold"}>{settleMatchInfo.pName}</span></p>
+                      <div className="flex gap-4 mb-4">
+                        <div className="flex-1">
+                          <label className="block text-neutral-400 text-xs mb-1 font-bold">P1 Score (Score A)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={scoreA}
+                            onChange={(e) => setScoreA(e.target.value)}
+                            className="w-full bg-neutral-950 border-2 border-red-900/50 p-2 text-white font-mono"
+                            placeholder="e.g. 3"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-neutral-400 text-xs mb-1 font-bold">P2 Score (Score B)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={scoreB}
+                            onChange={(e) => setScoreB(e.target.value)}
+                            className="w-full bg-neutral-950 border-2 border-blue-900/50 p-2 text-white font-mono"
+                            placeholder="e.g. 1"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={executeSettleMatch}
+                          className="ggst-button flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2"
+                        >
+                          CONFIRM SETTLEMENT
+                        </button>
+                        <button
+                          onClick={() => setSettleMatchInfo(null)}
+                          className="ggst-button px-4 border-neutral-600 text-neutral-400 hover:bg-neutral-800"
+                        >
+                          CANCEL
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {injectMatchId === match.id && (
                     <div className="w-full mt-4 p-4 border-2 border-purple-500 bg-purple-900/20 transform skew-x-2">

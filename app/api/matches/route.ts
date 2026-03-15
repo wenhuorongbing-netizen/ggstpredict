@@ -21,7 +21,17 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(matches);
+    const enrichedMatches = matches.map((match) => {
+      const userPoolA = match.bets.filter(b => b.choice === 'A').reduce((acc, b) => acc + b.amount, 0);
+      const userPoolB = match.bets.filter(b => b.choice === 'B').reduce((acc, b) => acc + b.amount, 0);
+      return {
+        ...match,
+        poolA: userPoolA + (match.poolInjectA || 0),
+        poolB: userPoolB + (match.poolInjectB || 0),
+      };
+    });
+
+    return NextResponse.json(enrichedMatches);
   } catch (error) {
     console.error("Failed to fetch matches:", error);
     return NextResponse.json(

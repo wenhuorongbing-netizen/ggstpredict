@@ -5,9 +5,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   try {
     const { id } = await context.params;
     const body = await request.json();
-    const { choice, amount } = body;
+    const { poolInjectA, poolInjectB } = body;
 
-    if (!choice || (choice !== 'A' && choice !== 'B') || typeof amount !== 'number' || amount <= 0) {
+    if (typeof poolInjectA !== 'number' || typeof poolInjectB !== 'number') {
         return NextResponse.json({ error: "Invalid injection parameters" }, { status: 400 });
     }
 
@@ -19,8 +19,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const updatedMatch = await prisma.match.update({
       where: { id },
       data: {
-        poolInjectA: choice === 'A' ? { increment: amount } : undefined,
-        poolInjectB: choice === 'B' ? { increment: amount } : undefined,
+        poolInjectA: { increment: poolInjectA },
+        poolInjectB: { increment: poolInjectB },
       }
     });
 

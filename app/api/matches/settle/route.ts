@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const { matchId, winner } = await request.json();
+    const { matchId, winner, scoreA, scoreB } = await request.json();
 
     if (!matchId || !winner || (winner !== "A" && winner !== "B")) {
       return NextResponse.json(
@@ -28,23 +28,28 @@ export async function POST(request: Request) {
       }
 
       // 2. Calculate pools
-      let poolA = 0;
-      let poolB = 0;
+      let userPoolA = 0;
+      let userPoolB = 0;
       match.bets.forEach((bet) => {
-        if (bet.choice === "A") poolA += bet.amount;
-        if (bet.choice === "B") poolB += bet.amount;
+        if (bet.choice === "A") userPoolA += bet.amount;
+        if (bet.choice === "B") userPoolB += bet.amount;
       });
+
+      // Total pools include injections
+      const poolA = userPoolA + (match.poolInjectA || 0);
+      const poolB = userPoolB + (match.poolInjectB || 0);
 
       const winningPool = winner === "A" ? poolA : poolB;
       const losingPool = winner === "A" ? poolB : poolA;
+      const userWinningPool = winner === "A" ? userPoolA : userPoolB;
 
       // 3. Distribute rewards to winners
-      if (winningPool > 0 && losingPool > 0) {
+      if (userWinningPool > 0 && losingPool > 0) {
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         // Apply 5% tax to the losing pool before distributing
         const finalPool = Math.floor(losingPool * 0.95);
         for (const bet of winningBets) {
-          const ratio = bet.amount / winningPool;
+          const ratio = bet.amount / userWinningPool;
           const reward = Math.floor(finalPool * ratio);
           const totalReturn = bet.amount + reward;
 
@@ -53,7 +58,7 @@ export async function POST(request: Request) {
             data: { points: { increment: totalReturn } },
           });
         }
-      } else if (winningPool > 0 && losingPool === 0) {
+      } else if (userWinningPool > 0 && losingPool === 0) {
         // If there is no losing pool, just return the original bet amount
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         for (const bet of winningBets) {
@@ -62,18 +67,24 @@ export async function POST(request: Request) {
                 data: { points: { increment: bet.amount } }
             });
         }
-      } else if (winningPool === 0 && losingPool > 0) {
+      } else if (userWinningPool === 0 && losingPool > 0) {
         // If there is no winning pool, the house keeps the losing pool (or you can refund, but pari-mutuel usually keeps it if no winners)
         // We do nothing for user points here.
       }
 
       // 4. Update match status
+      const updateData: any = {
+        status: "SETTLED",
+        winner: winner,
+      };
+      if (typeof scoreA === 'number' && typeof scoreB === 'number') {
+        updateData.scoreA = scoreA;
+        updateData.scoreB = scoreB;
+      }
+
       const updatedMatch = await tx.match.update({
         where: { id: matchId },
-        data: {
-          status: "SETTLED",
-          winner: winner,
-        },
+        data: updateData,
       });
 
       return updatedMatch;
