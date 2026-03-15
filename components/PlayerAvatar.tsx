@@ -51,7 +51,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
         />
       )}
       {tier === 3 && (
-        <span className="text-2xl font-bold text-white drop-shadow-md leading-none absolute" style={{ fontFamily: "var(--font-bebas)" }}>
+        <span className="text-2xl font-bold text-white drop-shadow-md leading-none absolute flex items-center justify-center" style={{ fontFamily: "var(--font-bebas)" }}>
           {playerName.charAt(0).toUpperCase()}
         </span>
       )}

@@ -53,6 +53,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   const navLinks = [
+    { name: "👤 猎人档案", href: "/profile" },
     { name: "⚔️ 赛事战局", href: "/dashboard" },
     { name: "🏆 比赛赛程", href: "/bracket" },
     { name: "👑 排行榜", href: "/leaderboard" },

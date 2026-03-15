@@ -38,7 +38,7 @@ export default function BracketMatchNode({ match }: BracketMatchNodeProps) {
     <Link href={`/dashboard#match-${match.id}`} className="block hover:scale-105 transition-transform">
       <div className={`w-48 sm:w-56 p-1 border-2 shadow-lg overflow-hidden flex flex-col font-mono text-sm relative z-10 ${getContainerStyles()}`}>
         {/* Player A Row */}
-        <div className={`flex items-center justify-between p-1 border-b-2 ${getRowStyles(aWins, bWins)}`}>
+        <div className={`flex items-center justify-between p-1 border-l-2 border-b border-b-neutral-800 ${getRowStyles(aWins, bWins)}`}>
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-5 h-5 flex-shrink-0">
               <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
@@ -49,7 +49,7 @@ export default function BracketMatchNode({ match }: BracketMatchNodeProps) {
         </div>
 
         {/* Player B Row */}
-        <div className={`flex items-center justify-between p-1 border-b-2 ${getRowStyles(bWins, aWins)}`}>
+        <div className={`flex items-center justify-between p-1 border-l-2 ${getRowStyles(bWins, aWins)}`}>
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-5 h-5 flex-shrink-0">
               <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />

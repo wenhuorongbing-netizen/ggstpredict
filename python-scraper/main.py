@@ -21,6 +21,9 @@ class CrawlRequest(BaseModel):
 class CrawlPlayersRequest(BaseModel):
     players: list[str]
 
+class ScrapeBracketRequest(BaseModel):
+    url: str
+
 def sanitize_name(name: str) -> str:
     return re.sub(r'[^a-z0-9]', '', name.lower())
 
@@ -139,6 +142,61 @@ async def crawl_players(request: CrawlPlayersRequest):
 
     except Exception as e:
         print(f"Error during crawl-players: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/scrape-bracket")
+async def scrape_bracket(request: ScrapeBracketRequest):
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(request.url, wait_until="domcontentloaded", timeout=30000)
+
+            # Additional wait to let dynamic bracket trees render (like start.gg)
+            await page.wait_for_timeout(3000)
+
+            text_content = await page.evaluate("() => document.body.innerText")
+            await browser.close()
+
+        if not text_content:
+            raise HTTPException(status_code=400, detail="Could not extract text from the provided URL.")
+
+        prompt = f"""Extract FGC match-ups from the following raw tournament bracket text.
+Look for typical VS formatting or adjacent player names.
+Return ONLY a JSON array of strings formatted exactly as 'PlayerA vs PlayerB'.
+No extra text, no markdown block outside of the JSON array.
+
+Text to analyze:
+{text_content[:30000]}
+"""
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+
+        response_text = response.text.strip()
+
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+
+        response_text = response_text.strip()
+
+        try:
+            matches = json.loads(response_text)
+            if not isinstance(matches, list):
+                raise ValueError("Response is not a JSON array")
+        except json.JSONDecodeError:
+            print(f"Failed to parse JSON from Gemini response: {response_text}")
+            return {"error": "Failed to parse matches from AI response", "raw_response": response_text}
+
+        return {"matches": matches}
+
+    except Exception as e:
+        print(f"Error during scrape-bracket: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

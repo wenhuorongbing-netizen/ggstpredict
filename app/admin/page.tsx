@@ -216,7 +216,7 @@ export default function AdminPage() {
     setError(null);
     setIsCrawling(true);
     try {
-      const res = await fetch("/api/matches/crawl", {
+      const res = await fetch("/api/admin/matches/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: crawlUrl })
@@ -424,13 +424,13 @@ export default function AdminPage() {
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-end mb-6 relative z-10 transform skew-x-2 p-4 bg-[#1a1a1a] border border-neutral-700">
             <div className="flex-1 w-full">
-              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (赛事源地址)</label>
+              <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 赛事源地址 (URL)</label>
               <input
                 id="crawlUrl"
-                type="text"
+                type="url"
                 value={crawlUrl}
                 onChange={(e) => setCrawlUrl(e.target.value)}
-                placeholder="https://start.gg/tournament/..."
+                placeholder="输入 Start.gg / Liquipedia 赛程链接..."
                 className="w-full bg-[#0a0a0a] border border-neutral-700 p-2 text-white focus:outline-none focus:border-purple-500 transition-colors font-mono text-sm"
                 disabled={isCrawling}
               />
@@ -440,7 +440,7 @@ export default function AdminPage() {
               disabled={isCrawling}
               className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)] w-full sm:w-auto h-[42px]"
             >
-              {isCrawling ? "CRAWLING..." : "🕷️ 自动抓取"}
+              {isCrawling ? "CRAWLING..." : "🕷️ AI 神谕抓取"}
             </button>
           </div>
 
@@ -605,7 +605,17 @@ export default function AdminPage() {
                           }`}
                       >
                         {invite.code}
-                        {!(invite as any).used && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 opacity-50 group-hover:opacity-100 transition-opacity">📋</span>}
+                        {!(invite as any).used && (
+                          <span
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 opacity-50 hover:opacity-100 transition-opacity p-1 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(invite.code);
+                            }}
+                          >
+                            📋
+                          </span>
+                        )}
                       </button>
                       {copiedCode === invite.code && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
