@@ -195,6 +195,7 @@ export default function AdminPage() {
   const copyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
+    alert("密钥已复制 (Copied!)");
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
@@ -781,7 +782,7 @@ export default function AdminPage() {
                 <div className="transform skew-x-2 grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Settings */}
                   <div className="border border-red-900 p-6 bg-black/50">
-                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2" style={{ fontFamily: "var(--font-bebas)" }}>GLOBAL VARIABLES</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>⚙️ 全局机制控制 (SYSTEM CONTROLS)</h3>
                     <div className="space-y-4">
                       {settings.map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-900 p-3 border border-neutral-700">
@@ -817,7 +818,7 @@ export default function AdminPage() {
                   {/* Users */}
                   <div className="border border-red-900 p-6 bg-black/50 overflow-y-auto max-h-[500px]">
                     <div className="flex justify-between items-center mb-4 border-b border-red-900 pb-2">
-                      <h3 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-bebas)" }}>DATABASE MANAGER (USERS)</h3>
+                      <h3 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>👥 人事与数据库管理 (DATABASE MANAGER)</h3>
                       <button
                         onClick={handleCrawlAvatars}
                         disabled={isCrawlingAvatars}

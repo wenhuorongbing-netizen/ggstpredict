@@ -52,11 +52,12 @@ export default function LeaderboardPage() {
           </div>
 
           {/* Wanted List */}
-          <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2 min-h-[50vh]">
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
+          <div className="bg-black/80 border-4 border-red-600 p-8 shadow-[0_0_20px_rgba(239,68,68,0.6)] mb-10 relative overflow-hidden transform -skew-x-2 min-h-[50vh]">
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white pointer-events-none z-20"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white pointer-events-none z-20"></div>
 
-            <h2 className="text-3xl font-bold mb-8 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               通缉名单 (WANTED)
+            <h2 className="text-5xl font-black mb-10 text-white flex items-center gap-4 transform skew-x-2 tracking-widest drop-shadow-[4px_4px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+               <span className="text-red-500 animate-pulse">🔥</span> 悬赏榜单 (HIGH SCORES) <span className="text-red-500 animate-pulse">🔥</span>
             </h2>
 
             <div className="transform skew-x-2">
@@ -77,33 +78,40 @@ export default function LeaderboardPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`flex justify-between items-center p-4 border-2 ${
-                          index === 0 && page === 1 ? "border-yellow-500 bg-yellow-900/20 shadow-[4px_4px_0px_rgba(234,179,8,0.5)]" :
-                          index === 1 && page === 1 ? "border-neutral-400 bg-neutral-900/50" :
-                          index === 2 && page === 1 ? "border-amber-700 bg-amber-950/30" :
-                          "border-neutral-800 bg-black/50 hover:border-neutral-600 transition-colors"
+                        className={`flex justify-between items-center p-6 border-l-8 transform transition-all hover:translate-x-2 ${
+                          index === 0 && page === 1 ? "border-yellow-400 bg-yellow-900/20 shadow-[0_0_15px_rgba(250,204,21,0.4)]" :
+                          index === 1 && page === 1 ? "border-neutral-400 bg-neutral-800/40 shadow-[0_0_10px_rgba(163,163,163,0.3)]" :
+                          index === 2 && page === 1 ? "border-amber-700 bg-amber-900/30 shadow-[0_0_10px_rgba(180,83,9,0.3)]" :
+                          "border-neutral-800 bg-black/50 hover:border-neutral-600"
                         }`}
                       >
                         <div className="flex items-center gap-6">
-                          <div className={`text-4xl font-black w-16 text-center ${
-                            index === 0 && page === 1 ? "text-yellow-500 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
-                            index === 1 && page === 1 ? "text-neutral-400" :
-                            index === 2 && page === 1 ? "text-amber-700" :
-                            "text-neutral-700"
+                          <div className={`text-5xl font-black w-20 text-center tracking-widest ${
+                            index === 0 && page === 1 ? "text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
+                            index === 1 && page === 1 ? "text-neutral-300 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
+                            index === 2 && page === 1 ? "text-amber-600 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
+                            "text-neutral-600"
                           }`} style={{ fontFamily: "var(--font-bebas)" }}>
                             #{(page - 1) * 10 + index + 1}
                           </div>
-                          <div className="font-bold text-xl text-white tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+                          <div className={`font-black tracking-widest ${
+                            index === 0 && page === 1 ? "text-3xl text-white" :
+                            index < 3 && page === 1 ? "text-2xl text-gray-100" :
+                            "text-xl text-neutral-300"
+                          }`} style={{ fontFamily: "var(--font-bebas)" }}>
                             {user.displayName}
                           </div>
                         </div>
                         <div className="flex flex-col items-end">
-                          <div className={`text-2xl font-black tracking-widest ${
-                            index === 0 && page === 1 ? "text-yellow-500" : "text-white"
+                          <div className={`font-black tracking-widest ${
+                            index === 0 && page === 1 ? "text-4xl text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
+                            index === 1 && page === 1 ? "text-3xl text-neutral-300" :
+                            index === 2 && page === 1 ? "text-3xl text-amber-600" :
+                            "text-2xl text-neutral-400"
                           }`} style={{ fontFamily: "var(--font-bebas)" }}>
                             {Math.floor(user.points).toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-neutral-500 font-mono font-bold">W$ 悬赏金</div>
+                          <div className="text-[12px] text-neutral-500 font-mono font-bold uppercase tracking-widest">W$ Bounty</div>
                         </div>
                       </motion.div>
                     ))}

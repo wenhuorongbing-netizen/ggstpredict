@@ -60,6 +60,7 @@ export default function DashboardPage() {
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [sysSettings, setSysSettings] = useState<{ GROUP_STAGE_LIMIT: number, KNOCKOUT_PERCENT: number }>({
     GROUP_STAGE_LIMIT: 300,
@@ -98,8 +99,14 @@ export default function DashboardPage() {
       setUsername(storedUsername || "Unknown");
       setDisplayName(storedDisplayName || storedUsername || "Unknown");
       setNewName(storedDisplayName || storedUsername || "Unknown");
-      fetchData(storedUserId);
-      fetchSettings();
+
+      const initFetch = async () => {
+        await fetchData(storedUserId);
+        await fetchSettings();
+        setIsInitialLoad(false);
+      };
+
+      initFetch();
 
       const intervalId = setInterval(() => {
         fetchMatches();
@@ -233,6 +240,33 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCancelBet = async (matchId: string, originalAmount: number) => {
+    setError(null);
+    if (!confirm(`⚠️ 确定要撤回下注吗？\n将扣除 5% 的手续费 (预计退还 ${Math.floor(originalAmount * 0.95)} 积分)。`)) return;
+
+    try {
+      const res = await fetch("/api/bets/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, matchId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "撤回失败");
+      } else {
+        // Sync with server on success
+        fetchUserPoints(userId);
+        fetchMatches(); // refresh match list
+        setWelfareMsg(`已撤回下注，退还 ${data.refund} 积分 (已扣除 5%)`);
+        setTimeout(() => setWelfareMsg(null), 4000);
+      }
+    } catch (err) {
+      console.error("Cancel bet error:", err);
+      setError("网络错误，无法撤回");
+    }
+  };
+
   const setQuickAmount = (matchId: string, amt: number | "ALL", match?: Match) => {
     let limit = 500;
     if (match) {
@@ -253,9 +287,9 @@ export default function DashboardPage() {
       <AppLayout>
         <div className="max-w-5xl mx-auto p-4 sm:p-8 relative">
 
-        <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2">
+        <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2 min-h-[40px]">
           <div className="flex gap-4 items-center">
-            {points < 10 && (
+            {!isInitialLoad && points < 10 && (
               <button
                 onClick={handleWelfare}
                 className="ggst-button border-red-500 hover:bg-red-600 text-xs px-4 py-2 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse transform -skew-x-2"
@@ -483,6 +517,23 @@ export default function DashboardPage() {
                   {/* Betting Area */}
                   {match.status === "OPEN" && (
                     <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
+
+                      {/* Roman Cancel (Cancel Bet) */}
+                      {match.bets?.some(b => b.userId === userId) && (
+                        <div className="mb-4">
+                          <button
+                            onClick={() => {
+                              const userBet = match.bets?.find(b => b.userId === userId);
+                              if (userBet) handleCancelBet(match.id, userBet.amount);
+                            }}
+                            className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
+                            style={{ fontFamily: "var(--font-bebas)" }}
+                          >
+                            [ 🔄 罗马取消 (撤回扣除 5%) ]
+                          </button>
+                        </div>
+                      )}
+
                       <div className="flex justify-between items-center mb-3">
                         <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score)</label>
                         <div className="flex gap-2">
@@ -618,33 +669,58 @@ export default function DashboardPage() {
 
           {/* Right Column: Leaderboard / Live Intel */}
           <div className="lg:col-span-1 flex flex-col gap-6">
-            <div className="bg-black/80 border-2 border-neutral-700 p-4 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-500 pointer-events-none z-20"></div>
-              <h3 className="text-xl font-bold text-white mb-4 tracking-widest transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                <span className="text-yellow-500">🏆</span> 通缉名单 (WANTED)
-              </h3>
-              <div className="space-y-2 transform skew-x-2">
-                {leaderboard.length === 0 ? (
-                  <p className="text-neutral-500 text-xs font-mono">NO DATA YET...</p>
-                ) : (
-                  leaderboard.map((user, index) => {
-                    const isTop3 = index < 3;
-                    const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
-                    return (
-                      <div key={user.id} className={`flex justify-between items-center text-sm font-mono p-2 border-l-2 ${isTop3 ? 'border-yellow-500 bg-yellow-900/10' : 'border-neutral-700 bg-neutral-900/30'}`}>
-                        <div className="flex items-center gap-2 truncate">
-                          <span className={`font-black w-8 ${isTop3 ? 'text-yellow-500' : 'text-neutral-500'}`}>{rankText}</span>
-                          <span className={`truncate ${isTop3 ? 'text-white font-bold' : 'text-neutral-400'}`}>{user.displayName}</span>
+            {!isInitialLoad && (
+              <div className="bg-black/80 border-4 border-red-600 p-6 shadow-[0_0_15px_rgba(239,68,68,0.6)] transform -skew-x-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white pointer-events-none z-20"></div>
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white pointer-events-none z-20"></div>
+
+                <h3 className="text-3xl font-black text-white mb-6 tracking-widest transform skew-x-2 flex items-center gap-3 drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className="text-red-500 animate-pulse">🔥</span> 悬赏榜单 (HIGH SCORES)
+                </h3>
+
+                <div className="space-y-3 transform skew-x-2">
+                  {leaderboard.length === 0 ? (
+                    <p className="text-neutral-500 text-lg font-mono font-bold animate-pulse">INSERT COIN...</p>
+                  ) : (
+                    leaderboard.map((user, index) => {
+                      const isTop3 = index < 3;
+                      const isFirst = index === 0;
+                      const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
+
+                      return (
+                        <div key={user.id} className={`flex justify-between items-center font-mono p-3 border-l-4 transition-all hover:translate-x-1 ${
+                          isFirst ? 'border-yellow-400 bg-yellow-900/20 shadow-[0_0_10px_rgba(250,204,21,0.3)]' :
+                          isTop3 ? 'border-red-500 bg-red-900/20' :
+                          'border-neutral-700 bg-neutral-900/40'
+                        }`}>
+                          <div className="flex items-center gap-3 truncate">
+                            <span className={`font-black tracking-widest ${
+                              isFirst ? 'text-yellow-400 text-2xl drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' :
+                              isTop3 ? 'text-red-400 text-xl' :
+                              'text-neutral-500 text-lg'
+                            }`} style={{ fontFamily: "var(--font-bebas)" }}>{rankText}</span>
+
+                            <span className={`truncate font-bold ${
+                              isFirst ? 'text-white text-xl' :
+                              isTop3 ? 'text-gray-100 text-lg' :
+                              'text-neutral-400'
+                            }`}>{user.displayName}</span>
+                          </div>
+
+                          <span className={`font-black ml-2 shrink-0 tracking-widest ${
+                            isFirst ? 'text-yellow-400 text-2xl drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' :
+                            isTop3 ? 'text-red-400 text-xl' :
+                            'text-neutral-500 text-lg'
+                          }`} style={{ fontFamily: "var(--font-bebas)" }}>
+                            {user.points.toLocaleString()}
+                          </span>
                         </div>
-                        <span className={`font-bold ml-2 shrink-0 ${isTop3 ? 'text-yellow-400' : 'text-neutral-500'}`}>
-                          {user.points.toLocaleString()}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
         </div>

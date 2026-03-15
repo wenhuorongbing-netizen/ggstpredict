@@ -47,7 +47,7 @@ export default function AboutPage() {
 
               <div className="pt-8 flex justify-center mt-8 border-t-2 border-neutral-800/50">
                 <a
-                  href="https://github.com"
+                  href="https://github.com/wenhuorongbing-netizen/ggstpredict"
                   target="_blank"
                   rel="noreferrer"
                   className="ggst-button bg-black border-white hover:bg-white hover:text-black text-white px-8 py-4 text-xl font-black tracking-widest transition-all shadow-[6px_6px_0px_rgba(255,255,255,0.2)] hover:shadow-[2px_2px_0px_rgba(255,255,255,1)] translate-x-[-2px] translate-y-[-2px] hover:translate-x-0 hover:translate-y-0"
