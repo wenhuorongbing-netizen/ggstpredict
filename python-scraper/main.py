@@ -15,6 +15,10 @@ if not api_key:
     print("WARNING: GEMINI_API_KEY environment variable is not set. Gemini API calls will fail.")
 client = genai.Client() # Automatically uses GEMINI_API_KEY
 
+startgg_token = os.environ.get("STARTGG_TOKEN")
+if not startgg_token:
+    print("WARNING: STARTGG_TOKEN is not set. Start.gg API integrations may fail if added.")
+
 class CrawlRequest(BaseModel):
     url: str
 
