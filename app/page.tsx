@@ -42,6 +42,7 @@ export default function Home() {
             localStorage.setItem("displayName", data.user.displayName);
             localStorage.setItem("role", data.user.role);
             localStorage.setItem("points", data.user.points.toString());
+            localStorage.setItem("winStreak", data.user.winStreak.toString());
         }
         router.push("/dashboard");
       }

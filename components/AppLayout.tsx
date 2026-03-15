@@ -15,6 +15,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const [displayName, setDisplayName] = useState("FIGHTER");
   const [points, setPoints] = useState("0");
+  const [winStreak, setWinStreak] = useState("0");
   const [role, setRole] = useState("USER");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -22,11 +23,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     if (typeof window !== "undefined") {
       setDisplayName(localStorage.getItem("displayName") || "FIGHTER");
       setPoints(localStorage.getItem("points") || "0");
+      setWinStreak(localStorage.getItem("winStreak") || "0");
       setRole(localStorage.getItem("role") || "USER");
 
       // Set up a tiny interval to keep points in sync if they update elsewhere
       const interval = setInterval(() => {
         setPoints(localStorage.getItem("points") || "0");
+      setWinStreak(localStorage.getItem("winStreak") || "0");
         setDisplayName(localStorage.getItem("displayName") || "FIGHTER");
       }, 2000);
       return () => clearInterval(interval);
@@ -103,6 +106,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <div className="text-xl text-white font-black truncate">{displayName}</div>
           <div className="text-sm font-mono font-bold text-yellow-500 flex items-center gap-2">
             <span>₩ {Number(points).toLocaleString()}</span>
+            {Number(winStreak) > 0 && <span className="ml-2 bg-red-600/20 px-2 py-0.5 rounded text-red-400">🔥 x{winStreak} 连胜</span>}
           </div>
         </div>
       </motion.aside>

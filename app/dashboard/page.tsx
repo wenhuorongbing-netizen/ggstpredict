@@ -144,6 +144,7 @@ export default function DashboardPage() {
         const data = await res.json();
         setPoints(data.points);
         if (typeof window !== "undefined") localStorage.setItem("points", data.points.toString());
+        if (typeof window !== "undefined" && data.winStreak !== undefined) localStorage.setItem("winStreak", data.winStreak.toString());
       }
     } catch (err) {
       console.error("Failed to fetch user points", err);
@@ -454,6 +455,26 @@ export default function DashboardPage() {
 
                   {/* Decorative Corner */}
                   <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white pointer-events-none z-20"></div>
+
+                  {/* Counter Hit Badge */}
+                  {match.status === "OPEN" && (() => {
+                    const pA = match.poolA || 0;
+                    const pB = match.poolB || 0;
+                    const totalPool = pA + pB;
+                    if (totalPool > 1000 && pA > 0 && pB > 0) {
+                      const ratio = pA / pB;
+                      if (ratio >= 9 || ratio <= (1/9)) {
+                        return (
+                          <div className="absolute -top-3 -right-3 rotate-12 z-50">
+                            <div className="bg-red-600 text-white text-xs font-black px-3 py-1 border-2 border-yellow-400 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse whitespace-nowrap">
+                              ⚠️ 破招预警 (POTENTIAL COUNTER HIT!)
+                            </div>
+                          </div>
+                        );
+                      }
+                    }
+                    return null;
+                  })()}
 
                   {/* Players Info */}
                   {/* Tug of War UI */}

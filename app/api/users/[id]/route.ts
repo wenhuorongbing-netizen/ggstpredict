@@ -18,6 +18,7 @@ export async function GET(
         username: true,
         points: true,
         role: true,
+        winStreak: true,
       },
     });
 

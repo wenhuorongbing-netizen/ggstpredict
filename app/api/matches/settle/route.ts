@@ -40,18 +40,50 @@ export async function POST(request: Request) {
       const poolB = userPoolB + (match.poolInjectB || 0);
 
       const winningPool = winner === "A" ? poolA : poolB;
-      const losingPool = winner === "A" ? poolB : poolA;
+      let losingPool = winner === "A" ? poolB : poolA;
       const userWinningPool = winner === "A" ? userPoolA : userPoolB;
+      const loserChoice = winner === "A" ? "B" : "A";
+
+      // Process losers: Reset winStreak
+      const losingBets = match.bets.filter((bet) => bet.choice === loserChoice);
+      for (const bet of losingBets) {
+        await tx.user.update({
+          where: { id: bet.userId },
+          data: { winStreak: 0 },
+        });
+      }
+
+      // Check Counter Hit condition
+      if (losingPool > 0 && winningPool > 0) {
+        if (losingPool >= winningPool * 9) {
+          losingPool += 2000;
+        }
+      }
 
       // 3. Distribute rewards to winners
       if (userWinningPool > 0 && losingPool > 0) {
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
-        // Update logic so profit is taxed instead of losing pool
         for (const bet of winningBets) {
           const their_share = bet.amount / userWinningPool;
           const profit = their_share * losingPool;
+
+          // Increment streak and get new streak length
+          const user = await tx.user.update({
+            where: { id: bet.userId },
+            data: { winStreak: { increment: 1 } },
+            select: { winStreak: true }
+          });
+
+          // Combo bonus based on NEW win streak
+          let combo_bonus = 0;
+          if (user.winStreak >= 5) {
+            combo_bonus = profit * 0.15;
+          } else if (user.winStreak >= 2) {
+            combo_bonus = profit * 0.05;
+          }
+
           const tax = Math.floor(profit * 0.05);
-          const final_payout = bet.amount + (profit - tax);
+          const final_payout = Math.floor(bet.amount + profit + combo_bonus - tax);
 
           await tx.user.update({
             where: { id: bet.userId },
@@ -59,17 +91,19 @@ export async function POST(request: Request) {
           });
         }
       } else if (userWinningPool > 0 && losingPool === 0) {
-        // If there is no losing pool, just return the original bet amount
+        // If there is no losing pool, just return the original bet amount and increment win streak
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         for (const bet of winningBets) {
             await tx.user.update({
                 where: { id: bet.userId },
-                data: { points: { increment: bet.amount } }
+                data: {
+                  points: { increment: bet.amount },
+                  winStreak: { increment: 1 }
+                }
             });
         }
       } else if (userWinningPool === 0 && losingPool > 0) {
-        // If there is no winning pool, the house keeps the losing pool (or you can refund, but pari-mutuel usually keeps it if no winners)
-        // We do nothing for user points here.
+        // House keeps the losing pool. We do nothing for user points here.
       }
 
       // 4. Update match status
