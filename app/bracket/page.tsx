@@ -82,9 +82,14 @@ export default function BracketPage() {
       if (m.status === "SETTLED") {
         if (typeof m.scoreA === 'number') {
           standings[group][m.playerA].points += m.scoreA;
+        } else if (m.winner === 'A') {
+          standings[group][m.playerA].points += 1;
         }
+
         if (typeof m.scoreB === 'number') {
           standings[group][m.playerB].points += m.scoreB;
+        } else if (m.winner === 'B') {
+          standings[group][m.playerB].points += 1;
         }
       }
     });

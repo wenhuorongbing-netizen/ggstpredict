@@ -113,7 +113,7 @@ export default function DashboardPage() {
         fetchUserPoints(storedUserId);
         fetchLeaderboard();
         fetchSettings();
-      }, 10000);
+      }, 15000);
 
       return () => clearInterval(intervalId);
     }

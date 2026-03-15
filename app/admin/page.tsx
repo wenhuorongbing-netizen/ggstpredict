@@ -53,7 +53,38 @@ export default function AdminPage() {
   const [injectMatchId, setInjectMatchId] = useState<string | null>(null);
 
   const [isCrawlingAvatars, setIsCrawlingAvatars] = useState(false);
+  const [pendingPurchases, setPendingPurchases] = useState<any[]>([]);
+  const [fulfillingId, setFulfillingId] = useState<string | null>(null);
 
+
+  const fetchPendingPurchases = async () => {
+    try {
+      const res = await fetch("/api/admin/shop/pending");
+      if (res.ok) {
+        setPendingPurchases(await res.json());
+      }
+    } catch (err) {}
+  };
+
+  const handleFulfillPurchase = async (purchaseId: string) => {
+    setFulfillingId(purchaseId);
+    try {
+      const res = await fetch("/api/admin/shop/fulfill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purchaseId })
+      });
+      if (res.ok) {
+        fetchPendingPurchases();
+      } else {
+        setError("标记完成失败");
+      }
+    } catch (err) {
+      setError("网络错误");
+    } finally {
+      setFulfillingId(null);
+    }
+  };
 
   const fetchAdminLogs = async () => {
     try {
@@ -69,6 +100,7 @@ export default function AdminPage() {
     fetchUsers();
     fetchSettings();
     fetchAdminLogs();
+    fetchPendingPurchases();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
       if (stored) setRecentPlayers(JSON.parse(stored));
@@ -626,6 +658,61 @@ export default function AdminPage() {
                   ))}
                 </AnimatePresence>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Black Market Orders Section */}
+        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 pointer-events-none z-20"></div>
+          <div className="flex justify-between items-center mb-6 transform skew-x-2">
+            <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+              🛒 黑市订单处理 (BLACK MARKET ORDERS)
+            </h2>
+            <button onClick={fetchPendingPurchases} className="ggst-button px-4 py-1 text-sm border-blue-500 hover:bg-blue-600">REFRESH</button>
+          </div>
+          <div className="transform skew-x-2 overflow-x-auto">
+            {pendingPurchases.length === 0 ? (
+              <p className="text-neutral-500 font-mono text-sm">No pending orders.</p>
+            ) : (
+              <table className="w-full text-left font-mono text-sm border-collapse">
+                <thead>
+                  <tr className="bg-neutral-900 border-b-2 border-green-900 text-green-500 uppercase tracking-widest">
+                    <th className="p-3">User</th>
+                    <th className="p-3">Item</th>
+                    <th className="p-3">Cost</th>
+                    <th className="p-3">Order Time</th>
+                    <th className="p-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AnimatePresence>
+                    {pendingPurchases.map((p) => (
+                      <motion.tr
+                        key={p.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="border-b border-neutral-800 hover:bg-neutral-900/50 transition-colors"
+                      >
+                        <td className="p-3 text-white font-bold">{p.user?.displayName || p.user?.username || "Unknown"}</td>
+                        <td className="p-3 text-yellow-500">{p.item}</td>
+                        <td className="p-3 text-neutral-400">W$ {p.cost}</td>
+                        <td className="p-3 text-neutral-500">{new Date(p.createdAt).toLocaleString()}</td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleFulfillPurchase(p.id)}
+                            disabled={fulfillingId === p.id}
+                            className="bg-green-900 hover:bg-green-700 border border-green-500 text-white px-4 py-1 rounded-sm text-xs tracking-widest transition-colors font-bold shadow-[2px_2px_0px_rgba(34,197,94,0.5)]"
+                          >
+                            {fulfillingId === p.id ? "PROCESSING..." : "[ ✅ 履行完毕 (MARK FULFILLED) ]"}
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
             )}
           </div>
         </div>

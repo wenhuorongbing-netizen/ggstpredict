@@ -47,7 +47,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         setWinStreak(localStorage.getItem("winStreak") || "0");
         setDisplayName(localStorage.getItem("displayName") || "FIGHTER");
         fetchTension();
-      }, 2000);
+      }, 15000);
       return () => clearInterval(interval);
     }
   }, []);
@@ -57,6 +57,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     { name: "⚔️ 赛事战局", href: "/dashboard" },
     { name: "🏆 比赛赛程", href: "/bracket" },
     { name: "👑 排行榜", href: "/leaderboard" },
+    { name: "🛒 黑市交易", href: "/shop" },
     { name: "⚙️ 账户设置", href: "/settings" },
     { name: "📖 用户手册", href: "/docs" },
     { name: "ℹ️ 关于 (ABOUT)", href: "/about" },

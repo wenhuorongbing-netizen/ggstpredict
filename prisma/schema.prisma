@@ -11,20 +11,32 @@ datasource db {
 
 // 1. 用户表
 model User {
-  id            String    @id @default(cuid())
-  username      String    @unique
-  displayName   String    @default("Challenger")
+  id            String     @id @default(cuid())
+  username      String     @unique
+  displayName   String     @default("Challenger")
   password      String? // 极简校验，实际生产环境应加密，这里为了快速部署保持简单
-  points        Int       @default(1000) // 初始赠送 1000 积分
-  role          String    @default("USER") // 角色区分："USER" 或 "ADMIN"
-  winStreak     Int       @default(0)
+  points        Int        @default(1000) // 初始赠送 1000 积分
+  role          String     @default("USER") // 角色区分："USER" 或 "ADMIN"
+  winStreak     Int        @default(0)
   bets          Bet[] // 关联：一个用户可以有多次下注
+  purchases     Purchase[]
   lastWelfareAt DateTime? // 记录上次领取救济金的时间
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
-// 2. 锦标赛表
+// 2. 黑市交易记录
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  item      String
+  cost      Int
+  status    String   @default("PENDING") // "PENDING", "FULFILLED"
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// 3. 锦标赛表
 model Tournament {
   id        String   @id @default(cuid())
   name      String
