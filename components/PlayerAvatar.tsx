@@ -33,12 +33,12 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
   };
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square w-full h-full rounded-full border-2 ${getStyles()}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square rounded-full border-2 ${getStyles()}`}>
       {tier === 1 && (
         <img
           src={`/assets/players/${sanitize(playerName)}.png`}
           alt={playerName}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute inset-0"
           onError={handleErrorTier1}
         />
       )}
@@ -46,12 +46,12 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
         <img
           src={`/assets/characters/${sanitize(charName)}.png`}
           alt={charName}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute inset-0"
           onError={handleErrorTier2}
         />
       )}
       {tier === 3 && (
-        <span className="flex items-center justify-center text-2xl font-bold text-white drop-shadow-md w-full h-full text-center align-middle m-0 p-0 leading-none" style={{ fontFamily: "var(--font-bebas)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <span className="text-2xl font-bold text-white drop-shadow-md leading-none absolute" style={{ fontFamily: "var(--font-bebas)" }}>
           {playerName.charAt(0).toUpperCase()}
         </span>
       )}

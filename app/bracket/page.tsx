@@ -61,6 +61,9 @@ export default function BracketPage() {
   };
 
   // Calculate Group Standings
+  // In GGST Round Robins, advancement isn't just Match W/L; it's based on Round Points.
+  // Add match.scoreA to Player A's total points, and match.scoreB to Player B's total points.
+  // Sort leaderboard strictly descending by Total Points.
   const getGroupStandings = () => {
     if (!tournament) return {};
 
@@ -86,7 +89,7 @@ export default function BracketPage() {
       }
     });
 
-    // Convert to sorted arrays
+    // Convert to sorted arrays: sort leaderboard strictly descending by these Total Points
     const sortedStandings: Record<string, PlayerStanding[]> = {};
     for (const group in standings) {
       sortedStandings[group] = Object.values(standings[group]).sort((a, b) => b.points - a.points);
@@ -236,52 +239,53 @@ export default function BracketPage() {
             </div>
             </div>
           ) : tournament.status === "BRACKET" && bracketMatches.length > 0 ? (
-            <div className="w-full overflow-x-auto whitespace-nowrap bg-neutral-950 p-8 border-4 border-neutral-900 rounded-lg custom-scrollbar">
+            <div className="w-full overflow-x-auto whitespace-nowrap bg-neutral-950 p-10 custom-scrollbar relative">
 
               {/* WINNERS BRACKET */}
-              <div className="mb-12">
+              <div className="mb-16">
                 <h2 className="text-2xl font-black text-yellow-500 tracking-widest drop-shadow-[2px_2px_0px_rgba(234,179,8,0.5)] mb-6 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
                   <span className="animate-pulse">●</span> WINNERS BRACKET
                 </h2>
                 <div className="flex items-stretch gap-12">
                   {Object.entries(winnersGrouped).map(([roundName, matches], colIndex, arr) => (
-                    <div key={roundName} className="flex flex-col gap-8 relative">
-                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4">{roundName}</div>
-                      <div className="flex flex-col justify-around flex-1 gap-12">
+                    <div key={roundName} className="flex flex-col relative">
+                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4 h-6">{roundName}</div>
+                      <div className="flex flex-col justify-around flex-1 relative">
                         {matches.map(m => (
-                          <BracketMatchNode key={m.id} match={m} />
+                          <div key={m.id} className="relative py-2 z-10">
+                            <BracketMatchNode match={m} />
+                          </div>
                         ))}
+                        {/* CSS Connector line to next round */}
+                        {colIndex < arr.length - 1 && matches.map((_, i) => {
+                          if (i % 2 === 0 && i + 1 < matches.length) {
+                            return (
+                              <div
+                                key={i}
+                                className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 pointer-events-none z-0"
+                                style={{
+                                  top: `calc(${((i + 0.5) / matches.length) * 100}%)`,
+                                  bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}%)`
+                                }}
+                              >
+                                <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
-                      {/* CSS Connector line to next round */}
-                      {colIndex < arr.length - 1 && matches.map((_, i) => {
-                        if (i % 2 === 0 && i + 1 < matches.length) {
-                          return (
-                            <div
-                              key={i}
-                              className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 rounded-r-lg pointer-events-none"
-                              style={{
-                                top: `calc(${((i + 0.5) / matches.length) * 100}% + 1rem)`,
-                                bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}% + 1rem)`
-                              }}
-                            >
-                              <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
                     </div>
                   ))}
 
                   {/* GRAND FINALS */}
                   {grandFinals.length > 0 && (
-                    <div className="flex flex-col gap-8 relative ml-12 border-l-4 border-yellow-500/50 pl-12">
-                      <div className="absolute -left-12 top-1/2 w-12 border-t-4 border-yellow-500/50"></div>
-                      <div className="text-yellow-500 font-bold tracking-widest text-sm text-center mb-4">GRAND FINALS</div>
-                      <div className="flex flex-col justify-center flex-1 gap-12">
+                    <div className="flex flex-col relative ml-12 pl-12 border-l-4 border-yellow-500/50">
+                      <div className="text-yellow-500 font-bold tracking-widest text-sm text-center mb-4 h-6">GRAND FINALS</div>
+                      <div className="flex flex-col justify-around flex-1">
                         {grandFinals.map(m => (
-                          <div key={m.id} className="relative">
-                            <div className="absolute -left-12 top-1/2 w-12 border-t-2 border-neutral-700/50"></div>
+                          <div key={m.id} className="relative py-2">
+                            <div className="absolute -left-12 top-1/2 w-12 border-t-2 border-yellow-500/50"></div>
                             <BracketMatchNode match={m} />
                           </div>
                         ))}
@@ -291,38 +295,43 @@ export default function BracketPage() {
                 </div>
               </div>
 
+              {/* DIVIDER */}
+              <div className="w-full h-1 bg-gradient-to-r from-red-900/50 via-red-500/50 to-red-900/50 my-16 shadow-[0_0_15px_rgba(239,68,68,0.5)]"></div>
+
               {/* LOSERS BRACKET */}
-              <div className="border-t-2 border-neutral-800 pt-12 mt-12">
+              <div>
                 <h2 className="text-2xl font-black text-red-500 tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,0.5)] mb-6 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
                   <span className="animate-pulse">●</span> LOSERS BRACKET
                 </h2>
                 <div className="flex items-stretch gap-12">
                   {Object.entries(losersGrouped).map(([roundName, matches], colIndex, arr) => (
-                    <div key={roundName} className="flex flex-col gap-8 relative">
-                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4">{roundName}</div>
-                      <div className="flex flex-col justify-around flex-1 gap-12">
+                    <div key={roundName} className="flex flex-col relative">
+                      <div className="text-neutral-500 font-bold tracking-widest text-sm text-center mb-4 h-6">{roundName}</div>
+                      <div className="flex flex-col justify-around flex-1 relative">
                         {matches.map(m => (
-                          <BracketMatchNode key={m.id} match={m} />
+                          <div key={m.id} className="relative py-2 z-10">
+                            <BracketMatchNode match={m} />
+                          </div>
                         ))}
+                        {/* CSS Connector */}
+                        {colIndex < arr.length - 1 && matches.map((_, i) => {
+                          if (i % 2 === 0 && i + 1 < matches.length) {
+                            return (
+                              <div
+                                key={i}
+                                className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 pointer-events-none z-0"
+                                style={{
+                                  top: `calc(${((i + 0.5) / matches.length) * 100}%)`,
+                                  bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}%)`
+                                }}
+                              >
+                                <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
-                      {/* CSS Connector */}
-                      {colIndex < arr.length - 1 && matches.map((_, i) => {
-                        if (i % 2 === 0 && i + 1 < matches.length) {
-                          return (
-                            <div
-                              key={i}
-                              className="absolute -right-6 w-6 border-r-2 border-y-2 border-neutral-700/50 rounded-r-lg pointer-events-none"
-                              style={{
-                                top: `calc(${((i + 0.5) / matches.length) * 100}% + 1rem)`,
-                                bottom: `calc(${100 - (((i + 1.5) / matches.length) * 100)}% + 1rem)`
-                              }}
-                            >
-                              <div className="absolute top-1/2 -right-6 w-6 border-t-2 border-neutral-700/50"></div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
                     </div>
                   ))}
                 </div>

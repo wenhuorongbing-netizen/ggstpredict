@@ -555,6 +555,8 @@ export default function AdminPage() {
               <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
                 🔑 通行密钥管理 (ACCESS CODES)
               </h2>
+            </div>
+            <div className="flex gap-4">
               <button
                 onClick={() => {
                   const unused = invites.filter((i: any) => !i.used).map((i: any) => i.code).join('\n');
@@ -565,19 +567,20 @@ export default function AdminPage() {
                     alert("无可用密钥!");
                   }
                 }}
-                className="w-fit text-sm font-bold bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded border border-neutral-600 transition-all flex items-center gap-2"
+                className="ggst-button px-6 py-2 border-green-500 hover:bg-green-600 text-lg text-green-100"
+                style={{ boxShadow: "4px 4px 0px 0px rgba(34, 197, 94, 0.8)" }}
               >
-                📋 一键复制所有未使用密钥 (Copy All Unused)
+                [ 📋 一键复制所有未使用密钥 ]
+              </button>
+              <button
+                onClick={handleGenerateInvite}
+                disabled={isGeneratingInvite}
+                className="ggst-button px-6 py-2 border-yellow-500 hover:bg-yellow-600 text-lg"
+                style={{ boxShadow: "4px 4px 0px 0px rgba(234, 179, 8, 0.8)" }}
+              >
+                {isGeneratingInvite ? "..." : "生成新密钥 (GENERATE)"}
               </button>
             </div>
-            <button
-              onClick={handleGenerateInvite}
-              disabled={isGeneratingInvite}
-              className="ggst-button px-6 py-2 border-yellow-500 hover:bg-yellow-600 text-lg"
-              style={{ boxShadow: "4px 4px 0px 0px rgba(234, 179, 8, 0.8)" }}
-            >
-              {isGeneratingInvite ? "..." : "生成新密钥 (GENERATE)"}
-            </button>
           </div>
 
           <div className="transform skew-x-2">
@@ -602,7 +605,7 @@ export default function AdminPage() {
                           }`}
                       >
                         {invite.code}
-                        {!(invite as any).used && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">[复制]</span>}
+                        {!(invite as any).used && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 opacity-50 group-hover:opacity-100 transition-opacity">📋</span>}
                       </button>
                       {copiedCode === invite.code && (
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
