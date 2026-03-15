@@ -18,6 +18,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [winStreak, setWinStreak] = useState("0");
   const [role, setRole] = useState("USER");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [globalTension, setGlobalTension] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -26,11 +27,26 @@ export default function AppLayout({ children }: AppLayoutProps) {
       setWinStreak(localStorage.getItem("winStreak") || "0");
       setRole(localStorage.getItem("role") || "USER");
 
+      const fetchTension = async () => {
+        try {
+          const res = await fetch("/api/settings/tension");
+          if (res.ok) {
+            const data = await res.json();
+            setGlobalTension(data.tension || 0);
+          }
+        } catch (e) {
+          // silent
+        }
+      };
+
+      fetchTension();
+
       // Set up a tiny interval to keep points in sync if they update elsewhere
       const interval = setInterval(() => {
         setPoints(localStorage.getItem("points") || "0");
-      setWinStreak(localStorage.getItem("winStreak") || "0");
+        setWinStreak(localStorage.getItem("winStreak") || "0");
         setDisplayName(localStorage.getItem("displayName") || "FIGHTER");
+        fetchTension();
       }, 2000);
       return () => clearInterval(interval);
     }
@@ -49,9 +65,28 @@ export default function AppLayout({ children }: AppLayoutProps) {
     navLinks.push({ name: "🚨 管理员面板", href: "/admin" });
   }
 
+  const maxTension = 50000;
+  const isTensionMaxed = globalTension >= maxTension;
+  const tensionPercentage = Math.min((globalTension / maxTension) * 100, 100);
+
   return (
     <div className="min-h-screen bg-[#111111] bg-[linear-gradient(to_right,#333333_1px,transparent_1px),linear-gradient(to_bottom,#333333_1px,transparent_1px)] bg-[size:40px_40px] text-white font-sans selection:bg-red-500/30 overflow-hidden relative flex flex-col md:flex-row">
       <div className="absolute inset-0 bg-noise z-0 pointer-events-none"></div>
+
+      {/* Global Tension Gauge */}
+      <div className="absolute top-0 left-0 right-0 h-2 bg-neutral-900 z-50">
+        <div
+          className={`h-full transition-all duration-1000 ${isTensionMaxed ? 'bg-yellow-400 animate-pulse' : 'bg-yellow-500'}`}
+          style={{ width: `${tensionPercentage}%`, boxShadow: isTensionMaxed ? '0 0 10px rgba(250, 204, 21, 0.8)' : '0 0 5px rgba(234, 179, 8, 0.8)' }}
+        ></div>
+        {isTensionMaxed && (
+          <div className="absolute top-2 w-full text-center pointer-events-none">
+            <span className="bg-yellow-400 text-black text-xs font-black px-4 py-1 rounded-b shadow-[0_4px_10px_rgba(250,204,21,0.5)] transform -skew-x-6 inline-block" style={{ fontFamily: "var(--font-bebas)" }}>
+              ⚡ MAX TENSION: 下局全服免税!
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Mobile Top Bar */}
       <div className="md:hidden bg-[#0a0a0a] border-b-2 border-red-600 p-4 flex justify-between items-center relative z-20 shadow-[0_4px_15px_rgba(239,68,68,0.2)]">

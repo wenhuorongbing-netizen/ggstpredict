@@ -519,9 +519,25 @@ export default function AdminPage() {
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
-            <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-              🔑 通行密钥管理 (ACCESS CODES)
-            </h2>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+                🔑 通行密钥管理 (ACCESS CODES)
+              </h2>
+              <button
+                onClick={() => {
+                  const unused = invites.filter((i: any) => !i.used).map((i: any) => i.code).join('\n');
+                  if (unused) {
+                    navigator.clipboard.writeText(unused);
+                    alert("已复制所有未使用密钥!");
+                  } else {
+                    alert("无可用密钥!");
+                  }
+                }}
+                className="w-fit text-sm font-bold bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded border border-neutral-600 transition-all flex items-center gap-2"
+              >
+                📋 一键复制所有未使用密钥 (Copy All Unused)
+              </button>
+            </div>
             <button
               onClick={handleGenerateInvite}
               disabled={isGeneratingInvite}
@@ -784,7 +800,40 @@ export default function AdminPage() {
                   <div className="border border-red-900 p-6 bg-black/50">
                     <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>⚙️ 全局机制控制 (SYSTEM CONTROLS)</h3>
                     <div className="space-y-4">
-                      {settings.map(s => (
+                      {/* Explicit Defined Settings */}
+                      <div className="bg-red-950/20 p-4 border border-red-900/50 rounded shadow-inner mb-6">
+                        <h4 className="text-lg font-bold text-red-400 mb-4 border-b border-red-900/50 pb-2">动态限额参数 (Betting Limits)</h4>
+                        {["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].map(key => {
+                          const setting = settings.find(s => s.key === key) || { key, value: key === "GROUP_STAGE_LIMIT" ? "300" : key === "KNOCKOUT_PERCENT" ? "50" : "200" };
+                          return (
+                            <div key={key} className="flex justify-between items-center bg-black/50 p-2 border border-red-900/30 mb-2">
+                              <span className="font-mono text-red-200">{key}</span>
+                              <input
+                                type="text"
+                                id={`input-${key}`}
+                                defaultValue={setting.value}
+                                className="bg-black border border-red-900/50 px-2 py-1 text-red-100 w-24 text-center font-mono focus:outline-none focus:border-red-500"
+                              />
+                            </div>
+                          );
+                        })}
+                        <button
+                          className="mt-2 w-full py-2 bg-red-800 text-white font-bold text-sm hover:bg-red-700 rounded transition-all"
+                          onClick={async () => {
+                            const groupLimit = (document.getElementById('input-GROUP_STAGE_LIMIT') as HTMLInputElement).value;
+                            const koPercent = (document.getElementById('input-KNOCKOUT_PERCENT') as HTMLInputElement).value;
+                            const koMin = (document.getElementById('input-KNOCKOUT_MIN') as HTMLInputElement).value;
+                            await handleUpdateSetting("GROUP_STAGE_LIMIT", groupLimit);
+                            await handleUpdateSetting("KNOCKOUT_PERCENT", koPercent);
+                            await handleUpdateSetting("KNOCKOUT_MIN", koMin);
+                            alert("限额参数已保存！");
+                          }}
+                        >
+                          💾 保存限额参数
+                        </button>
+                      </div>
+
+                      {settings.filter(s => !["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].includes(s.key)).map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-900 p-3 border border-neutral-700">
                           <span className="font-mono text-neutral-300">{s.key}</span>
                           <div className="flex gap-2">

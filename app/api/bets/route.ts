@@ -98,6 +98,17 @@ export async function POST(request: Request) {
         },
       });
 
+      // 6. Accumulate Global Tension
+      const tensionSetting = await tx.systemSetting.findUnique({ where: { key: "GLOBAL_TENSION" } });
+      const currentTension = tensionSetting ? parseInt(tensionSetting.value, 10) : 0;
+      const newTension = currentTension + amount;
+
+      await tx.systemSetting.upsert({
+        where: { key: "GLOBAL_TENSION" },
+        update: { value: String(newTension) },
+        create: { key: "GLOBAL_TENSION", value: String(newTension) },
+      });
+
       return { bet, updatedUser };
     });
 

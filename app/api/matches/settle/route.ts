@@ -44,6 +44,12 @@ export async function POST(request: Request) {
       const userWinningPool = winner === "A" ? userPoolA : userPoolB;
       const loserChoice = winner === "A" ? "B" : "A";
 
+      // 2.5 Tension and Tax logic
+      const tensionSetting = await tx.systemSetting.findUnique({ where: { key: "GLOBAL_TENSION" } });
+      const currentTension = tensionSetting ? parseInt(tensionSetting.value, 10) : 0;
+      const isTensionMaxed = currentTension >= 50000;
+      const taxRate = isTensionMaxed ? 0 : 0.05;
+
       // Process losers: Reset winStreak
       const losingBets = match.bets.filter((bet) => bet.choice === loserChoice);
       for (const bet of losingBets) {
@@ -82,7 +88,7 @@ export async function POST(request: Request) {
             combo_bonus = profit * 0.05;
           }
 
-          const tax = Math.floor(profit * 0.05);
+          const tax = Math.floor(profit * taxRate);
           const final_payout = Math.floor(bet.amount + profit + combo_bonus - tax);
 
           await tx.user.update({
@@ -120,6 +126,14 @@ export async function POST(request: Request) {
         where: { id: matchId },
         data: updateData,
       });
+
+      // 5. Tension Release
+      if (isTensionMaxed) {
+        await tx.systemSetting.update({
+          where: { key: "GLOBAL_TENSION" },
+          data: { value: "0" },
+        });
+      }
 
       return updatedMatch;
     });
