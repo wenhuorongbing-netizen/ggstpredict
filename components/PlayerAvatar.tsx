@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { buildLooseKey } from "@/lib/tournament-data";
+import { EMPTY_CLIENT_ASSET_CATALOG, loadAssetCatalog, resolveAssetUrl } from "@/lib/client-asset-catalog";
 
 interface PlayerAvatarProps {
   playerName: string;
@@ -9,9 +11,36 @@ interface PlayerAvatarProps {
 }
 
 export default function PlayerAvatar({ playerName, charName, playerType }: PlayerAvatarProps) {
-  const [tier, setTier] = useState<1 | 2 | 3>(1);
+  const [catalog, setCatalog] = useState(EMPTY_CLIENT_ASSET_CATALOG);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [errorState, setErrorState] = useState<{ key: string; tier: 1 | 2 | 3 }>({
+    key: "",
+    tier: 1,
+  });
 
-  const sanitize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, "");
+  useEffect(() => {
+    let cancelled = false;
+
+    loadAssetCatalog().then((result) => {
+      if (cancelled) {
+        return;
+      }
+
+      setCatalog(result);
+      setCatalogLoaded(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const playerUrl = resolveAssetUrl(catalog.players.urls, playerName) ?? `/assets/players/${buildLooseKey(playerName)}.png`;
+  const charUrl = charName
+    ? resolveAssetUrl(catalog.characters.urls, charName) ?? `/assets/characters/${buildLooseKey(charName)}.png`
+    : null;
+  const avatarKey = `${playerUrl}::${charUrl ?? ""}`;
+  const tier = errorState.key === avatarKey ? errorState.tier : 1;
 
   const getStyles = () => {
     if (playerType === "A") {
@@ -22,21 +51,21 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
 
   const handleErrorTier1 = () => {
     if (charName) {
-      setTier(2);
+      setErrorState({ key: avatarKey, tier: 2 });
     } else {
-      setTier(3);
+      setErrorState({ key: avatarKey, tier: 3 });
     }
   };
 
   const handleErrorTier2 = () => {
-    setTier(3);
+    setErrorState({ key: avatarKey, tier: 3 });
   };
 
   return (
     <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square rounded-md bg-neutral-800 border-2 ${getStyles()}`}>
       {tier === 1 && (
         <img
-          src={`/assets/players/${sanitize(playerName)}.png`}
+          src={playerUrl}
           alt={playerName}
           className="w-full h-full object-cover absolute inset-0"
           onError={handleErrorTier1}
@@ -44,7 +73,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
       )}
       {tier === 2 && charName && (
         <img
-          src={`/assets/characters/${sanitize(charName)}.png`}
+          src={charUrl ?? undefined}
           alt={charName}
           className="w-full h-full object-cover absolute inset-0"
           onError={handleErrorTier2}
@@ -56,6 +85,9 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
             {playerName.charAt(0).toUpperCase()}
           </span>
         </div>
+      )}
+      {!catalogLoaded && tier === 3 && (
+        <div className="absolute inset-0 bg-neutral-800/60" />
       )}
     </div>
   );

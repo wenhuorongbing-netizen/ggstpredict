@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { synchronizeCanonicalMatchData } from "@/lib/match-data-maintenance";
+import { buildCanonicalMaps, normalizeMatchEntry } from "@/lib/tournament-data";
 
 export async function POST(request: Request) {
   try {
@@ -29,15 +31,29 @@ export async function POST(request: Request) {
       activeTournamentId = tournament.id;
     }
 
+    await synchronizeCanonicalMatchData(prisma);
+    const existingMatches = await prisma.match.findMany({
+      select: {
+        playerA: true,
+        playerB: true,
+        charA: true,
+        charB: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    const { playerMap, characterMap } = buildCanonicalMaps(existingMatches);
+
     const formattedMatches = matches.map((m) => {
       if (!m.playerA || !m.playerB) {
         throw new Error("每场对决都必须包含 Player A 和 Player B");
       }
+      const normalizedMatch = normalizeMatchEntry(m, playerMap, characterMap);
       return {
-        playerA: m.playerA.trim(),
-        playerB: m.playerB.trim(),
-        charA: m.charA ? m.charA.trim() : null,
-        charB: m.charB ? m.charB.trim() : null,
+        playerA: normalizedMatch.playerA,
+        playerB: normalizedMatch.playerB,
+        charA: normalizedMatch.charA,
+        charB: normalizedMatch.charB,
         status: "LOCKED",
         tournamentId: activeTournamentId,
         stageType: stageType || "GROUP",

@@ -1,10 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
+import {
+  buildLooseKey,
+  PLAYER_ROSTER_SIZE,
+  buildCaseInsensitiveKey,
+  buildDefaultPlayerRoster,
+  formatMatchLine,
+  normalizePlayerRoster,
+  normalizeCharacterName,
+  normalizePlayerName,
+  OFFICIAL_CHARACTER_NAMES,
+  parseBulkMatchInput,
+  parsePlayerRosterSetting,
+  serializePlayerRosterSetting,
+} from "@/lib/tournament-data";
+import { EMPTY_CLIENT_ASSET_CATALOG, loadAssetCatalog } from "@/lib/client-asset-catalog";
 
 interface Match {
   id: string;
@@ -17,14 +31,40 @@ interface Match {
 interface InviteCode {
   id: string;
   code: string;
+  used?: boolean;
   createdAt: string;
 }
 
+interface AdminLog {
+  id: string;
+  action: string;
+  details: string;
+  createdAt: string;
+}
+
+interface AdminUser {
+  id: string;
+  username: string;
+  displayName?: string;
+  points: number;
+  role: string;
+}
+
+interface PendingPurchase {
+  id: string;
+  item: string;
+  cost: number;
+  createdAt: string;
+  user?: {
+    username?: string;
+    displayName?: string;
+  };
+}
+
 export default function AdminPage() {
-  const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [invites, setInvites] = useState<InviteCode[]>([]);
-  const [adminLogs, setAdminLogs] = useState<any[]>([]);
+  const [adminLogs, setAdminLogs] = useState<AdminLog[]>([]);
   const [bulkInput, setBulkInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -41,9 +81,16 @@ export default function AdminPage() {
   const [groupId, setGroupId] = useState("A");
   const [tournamentId, setTournamentId] = useState("");
   const [tournaments, setTournaments] = useState<{id: string, name: string}[]>([]);
+  const [playerRoster, setPlayerRoster] = useState<string[]>(() => buildDefaultPlayerRoster());
+  const [selectedPlayerA, setSelectedPlayerA] = useState("");
+  const [selectedPlayerB, setSelectedPlayerB] = useState("");
+  const [selectedCharA, setSelectedCharA] = useState("");
+  const [selectedCharB, setSelectedCharB] = useState("");
+  const [isSavingRoster, setIsSavingRoster] = useState(false);
+  const [assetCatalog, setAssetCatalog] = useState(EMPTY_CLIENT_ASSET_CATALOG);
 
   // GOD MODE STATES
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [settings, setSettings] = useState<{ id: string, key: string, value: string }[]>([]);
   const [showGodMode, setShowGodMode] = useState(false);
   const [injectA, setInjectA] = useState("");
@@ -55,7 +102,7 @@ export default function AdminPage() {
   const [injectMatchId, setInjectMatchId] = useState<string | null>(null);
 
   const [isCrawlingAvatars, setIsCrawlingAvatars] = useState(false);
-  const [pendingPurchases, setPendingPurchases] = useState<any[]>([]);
+  const [pendingPurchases, setPendingPurchases] = useState<PendingPurchase[]>([]);
   const [fulfillingId, setFulfillingId] = useState<string | null>(null);
 
 
@@ -105,9 +152,44 @@ export default function AdminPage() {
     fetchPendingPurchases();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
-      if (stored) setRecentPlayers(JSON.parse(stored));
+      if (stored) {
+        try {
+          setRecentPlayers(JSON.parse(stored));
+        } catch {
+          setRecentPlayers([]);
+        }
+      }
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadAssetCatalog().then((catalog) => {
+      if (!cancelled) {
+        setAssetCatalog(catalog);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (playerRoster.some(Boolean)) {
+      return;
+    }
+
+    const derivedRoster = buildDefaultPlayerRoster([
+      ...recentPlayers,
+      ...matches.flatMap((match) => [match.playerA, match.playerB]),
+    ]);
+
+    if (derivedRoster.some(Boolean)) {
+      setPlayerRoster(derivedRoster);
+    }
+  }, [matches, playerRoster, recentPlayers]);
 
 
   const fetchUsers = async () => {
@@ -120,7 +202,14 @@ export default function AdminPage() {
   const fetchSettings = async () => {
     try {
       const res = await fetch("/api/admin/settings");
-      if (res.ok) setSettings(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data);
+        const rosterSetting = data.find((setting: { key: string; value: string }) => setting.key === "PLAYER_ROSTER_16");
+        if (rosterSetting) {
+          setPlayerRoster(parsePlayerRosterSetting(rosterSetting.value));
+        }
+      }
     } catch (err) {}
   };
 
@@ -133,6 +222,17 @@ export default function AdminPage() {
       });
       fetchSettings();
     } catch (err) {}
+  };
+
+  const handleSavePlayerRoster = async () => {
+    setIsSavingRoster(true);
+    try {
+      const normalizedRoster = buildDefaultPlayerRoster(playerRoster);
+      setPlayerRoster(normalizedRoster);
+      await handleUpdateSetting("PLAYER_ROSTER_16", serializePlayerRosterSetting(normalizedRoster));
+    } finally {
+      setIsSavingRoster(false);
+    }
   };
 
   const handleUpdateUserPoints = async (id: string, points: number) => {
@@ -322,39 +422,8 @@ export default function AdminPage() {
     e.preventDefault();
     setError(null);
     setIsCreating(true);
-
-    const lines = bulkInput.split("\n").map(l => l.trim()).filter(line => line !== "" && /vs/i.test(line));
-    const newMatches = [];
-    const newPlayers = new Set(recentPlayers);
-
-    for (const line of lines) {
-      const parts = line.split(/vs/i);
-      if (parts.length === 2) {
-        const rawA = parts[0].trim();
-        const rawB = parts[1].trim();
-
-        // Extract optional character in parentheses: Player (Char)
-        const extractChar = (rawStr: string) => {
-          const match = rawStr.match(/^(.*?)(?:\((.*?)\))?$/);
-          if (match) {
-            return {
-              player: match[1].trim(),
-              char: match[2] ? match[2].trim() : null
-            };
-          }
-          return { player: rawStr, char: null };
-        };
-
-        const { player: pA, char: charA } = extractChar(rawA);
-        const { player: pB, char: charB } = extractChar(rawB);
-
-        if (pA && pB) {
-          newMatches.push({ playerA: pA, playerB: pB, charA, charB });
-          newPlayers.add(pA);
-          newPlayers.add(pB);
-        }
-      }
-    }
+    const parsed = parseBulkMatchInput(bulkInput, playerSuggestions);
+    const newMatches = parsed.matches;
 
     if (newMatches.length === 0) {
       setError("未检测到有效对决，请检查格式。");
@@ -376,7 +445,7 @@ export default function AdminPage() {
         fetchMatches();
 
         // Update recent players
-        const updatedPlayers = Array.from(newPlayers).slice(0, 10); // Keep max 10
+        const updatedPlayers = parsed.recentPlayers.slice(0, PLAYER_ROSTER_SIZE);
         setRecentPlayers(updatedPlayers);
         if (typeof window !== "undefined") {
           localStorage.setItem("recentPlayers", JSON.stringify(updatedPlayers));
@@ -391,6 +460,52 @@ export default function AdminPage() {
 
   const handleChipClick = (player: string) => {
     setBulkInput(prev => prev + (prev.endsWith(" ") || prev === "" ? "" : " ") + player);
+  };
+
+  const handleAddRosterMatch = () => {
+    const canonicalizePlayerInput = (value: string) => {
+      const normalizedValue = normalizePlayerName(value);
+      const matchedValue = playerSuggestions.find(
+        (player) => buildCaseInsensitiveKey(player) === buildCaseInsensitiveKey(normalizedValue),
+      );
+      return matchedValue ?? normalizedValue;
+    };
+    const canonicalizeCharacterInput = (value: string) => {
+      const normalizedValue = normalizeCharacterName(value);
+      if (!normalizedValue) {
+        return null;
+      }
+
+      const matchedValue = characterSuggestions.find(
+        (character) => buildLooseKey(character) === buildLooseKey(normalizedValue),
+      );
+      return matchedValue ?? normalizedValue;
+    };
+
+    const playerA = canonicalizePlayerInput(selectedPlayerA);
+    const playerB = canonicalizePlayerInput(selectedPlayerB);
+
+    if (!playerA || !playerB) {
+      setError("璇峰厛浠?16 浜哄悕鍗曢€夋嫨涓や釜閫夋墜");
+      return;
+    }
+
+    if (buildCaseInsensitiveKey(playerA) === buildCaseInsensitiveKey(playerB)) {
+      setError("涓や釜涓嬫媺妗嗕笉鑳介€夋嫨鍚屼竴浣嶉€夋墜");
+      return;
+    }
+
+    const line = formatMatchLine({
+      playerA,
+      playerB,
+      charA: canonicalizeCharacterInput(selectedCharA),
+      charB: canonicalizeCharacterInput(selectedCharB),
+    });
+
+    setBulkInput((previous) => (previous.trim() ? `${previous}\n${line}` : line));
+    setSelectedCharA("");
+    setSelectedCharB("");
+    setError(null);
   };
 
   const handleSettleMatchPrompt = (matchId: string, winner: "A" | "B", pName: string) => {
@@ -469,6 +584,25 @@ export default function AdminPage() {
 
   const activeMatches = matches.filter(m => m.status !== "SETTLED");
   const settledMatches = matches.filter(m => m.status === "SETTLED");
+  const playerSuggestions = normalizePlayerRoster([
+    ...playerRoster,
+    ...recentPlayers,
+    ...matches.flatMap((match) => [match.playerA, match.playerB]),
+    ...assetCatalog.players.choices.map((choice) => choice.label),
+  ]);
+  const characterSuggestionMap = new Map<string, string>();
+  for (const characterName of [...OFFICIAL_CHARACTER_NAMES, ...assetCatalog.characters.choices.map((choice) => choice.label)]) {
+    const normalizedCharacter = normalizeCharacterName(characterName);
+    if (!normalizedCharacter) {
+      continue;
+    }
+
+    const key = buildLooseKey(normalizedCharacter);
+    if (!characterSuggestionMap.has(key)) {
+      characterSuggestionMap.set(key, normalizedCharacter);
+    }
+  }
+  const characterSuggestions = [...characterSuggestionMap.values()];
 
   return (
     <ProtectedRoute requireAdmin={true}>
@@ -592,6 +726,108 @@ export default function AdminPage() {
               )}
             </div>
 
+            <div className="border-2 border-neutral-700 bg-[#111111] p-4">
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div>
+                  <h3 className="text-xl text-red-400 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+                    16 人名单 (PLAYER ROSTER)
+                  </h3>
+                  <p className="text-xs text-neutral-400">保存后，下方建赛器会只从这 16 个名字里选，减少手输错误。</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSavePlayerRoster}
+                  disabled={isSavingRoster}
+                  className="ggst-button px-4 py-2 text-sm border-yellow-500 hover:bg-yellow-600"
+                >
+                  {isSavingRoster ? "SAVING..." : "SAVE ROSTER"}
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {playerRoster.map((player, index) => (
+                  <label key={`roster-${index}`} className="flex flex-col gap-1">
+                    <span className="text-[11px] text-neutral-500 font-mono">P{index + 1}</span>
+                    <input
+                      type="text"
+                      value={player}
+                      onChange={(e) => {
+                        const nextRoster = [...playerRoster];
+                        nextRoster[index] = e.target.value;
+                        setPlayerRoster(nextRoster);
+                      }}
+                      placeholder={`Player ${index + 1}`}
+                      className="bg-black border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-2 border-blue-900/40 bg-[#111111] p-4">
+              <h3 className="text-xl text-blue-400 font-bold tracking-widest mb-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                16 人下拉建赛器 (ROSTER BUILDER)
+              </h3>
+              <p className="text-xs text-neutral-400 mb-4">选手和角色都支持手动输入，也支持从已有选手记录和资源文件下拉选择。</p>
+              <datalist id="player-name-options">
+                {playerSuggestions.map((player) => (
+                  <option key={`player-option-${player}`} value={player} />
+                ))}
+              </datalist>
+              <datalist id="character-name-options">
+                {characterSuggestions.map((character) => (
+                  <option key={`character-option-${character}`} value={character} />
+                ))}
+              </datalist>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                  <label className="block text-sm text-neutral-400 font-bold tracking-widest">PLAYER A</label>
+                  <input
+                    type="text"
+                    list="player-name-options"
+                    value={selectedPlayerA}
+                    onChange={(e) => setSelectedPlayerA(e.target.value)}
+                    placeholder="Type or choose Player A"
+                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    list="character-name-options"
+                    value={selectedCharA}
+                    onChange={(e) => setSelectedCharA(e.target.value)}
+                    placeholder="Character A (optional)"
+                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm text-neutral-400 font-bold tracking-widest">PLAYER B</label>
+                  <input
+                    type="text"
+                    list="player-name-options"
+                    value={selectedPlayerB}
+                    onChange={(e) => setSelectedPlayerB(e.target.value)}
+                    placeholder="Type or choose Player B"
+                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  />
+                  <input
+                    type="text"
+                    list="character-name-options"
+                    value={selectedCharB}
+                    onChange={(e) => setSelectedCharB(e.target.value)}
+                    placeholder="Character B (optional)"
+                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddRosterMatch}
+                disabled={playerSuggestions.length < 2}
+                className="ggst-button w-full md:w-auto px-6 py-3 border-blue-500 hover:bg-blue-600 disabled:opacity-40"
+              >
+                ADD MATCH TO BULK LIST
+              </button>
+            </div>
+
             <div className="w-full group">
               <label htmlFor="bulkInput" className="block text-xl text-red-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>🤖 批量智能部署 (SMART DEPLOY)</label>
               <p className="text-xs text-neutral-400 mb-2">每行输入一场对决，格式：选手A vs 选手B (例如：Sol vs Ky)</p>
@@ -667,9 +903,9 @@ export default function AdminPage() {
               </h2>
             </div>
             <div className="flex gap-4">
-              <button
+                <button
                 onClick={() => {
-                  const unused = invites.filter((i: any) => !i.used).map((i: any) => i.code).join('\n');
+                  const unused = invites.filter((invite) => !invite.used).map((invite) => invite.code).join('\n');
                   if (unused) {
                     if (navigator.clipboard && window.isSecureContext) {
                       navigator.clipboard.writeText(unused).then(() => {

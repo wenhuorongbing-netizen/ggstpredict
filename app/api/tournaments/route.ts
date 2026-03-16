@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { synchronizeCanonicalMatchData } from "@/lib/match-data-maintenance";
 
 export async function GET() {
   try {
+    await synchronizeCanonicalMatchData(prisma);
+
     // For MVP, just get the most recently created active tournament
     // and include all its associated matches
     const tournament = await prisma.tournament.findFirst({

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import BracketMatchNode from "@/components/BracketMatchNode";
+import { buildGroupStandings } from "@/lib/tournament-data";
 
 interface Match {
   id: string;
@@ -32,13 +32,7 @@ interface Tournament {
   matches: Match[];
 }
 
-interface PlayerStanding {
-  name: string;
-  points: number;
-}
-
 export default function BracketPage() {
-  const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,49 +52,6 @@ export default function BracketPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Calculate Group Standings
-  // In GGST Round Robins, advancement isn't just Match W/L; it's based on Round Points.
-  // Add match.scoreA to Player A's total points, and match.scoreB to Player B's total points.
-  // Sort leaderboard strictly descending by Total Points.
-  const getGroupStandings = () => {
-    if (!tournament) return {};
-
-    const standings: Record<string, Record<string, PlayerStanding>> = {};
-
-    tournament.matches.forEach((m) => {
-      if (m.stageType !== "GROUP" || !m.groupId) return;
-
-      const group = m.groupId;
-      if (!standings[group]) standings[group] = {};
-
-      // Initialize players if not exist
-      if (!standings[group][m.playerA]) standings[group][m.playerA] = { name: m.playerA, points: 0 };
-      if (!standings[group][m.playerB]) standings[group][m.playerB] = { name: m.playerB, points: 0 };
-
-      if (m.status === "SETTLED") {
-        if (typeof m.scoreA === 'number') {
-          standings[group][m.playerA].points += m.scoreA;
-        } else if (m.winner === 'A') {
-          standings[group][m.playerA].points += 1;
-        }
-
-        if (typeof m.scoreB === 'number') {
-          standings[group][m.playerB].points += m.scoreB;
-        } else if (m.winner === 'B') {
-          standings[group][m.playerB].points += 1;
-        }
-      }
-    });
-
-    // Convert to sorted arrays: sort leaderboard strictly descending by these Total Points
-    const sortedStandings: Record<string, PlayerStanding[]> = {};
-    for (const group in standings) {
-      sortedStandings[group] = Object.values(standings[group]).sort((a, b) => b.points - a.points);
-    }
-
-    return sortedStandings;
   };
 
   if (isLoading) {
@@ -123,7 +74,7 @@ export default function BracketPage() {
     );
   }
 
-  const groupStandings = getGroupStandings();
+  const groupStandings = tournament ? buildGroupStandings(tournament.matches) : {};
   const groups = Object.keys(groupStandings).sort();
 
   // Filter and group BRACKET matches
@@ -196,10 +147,6 @@ export default function BracketPage() {
                         </thead>
                         <tbody className="font-mono text-sm">
                           {groupStandings[group].map((player, idx) => {
-                            // Find a match involving this player to get their character (optional)
-                            const playerMatch = tournament.matches.find(m => m.playerA === player.name || m.playerB === player.name);
-                            const charName = playerMatch ? (playerMatch.playerA === player.name ? playerMatch.charA : playerMatch.charB) : null;
-
                             return (
                               <tr key={player.name} className={`border-b border-neutral-800 ${idx === 0 ? 'bg-yellow-900/10 text-white' : 'text-neutral-300 hover:bg-neutral-900/50'}`}>
                                 <td className="p-3 font-bold flex items-center gap-3">
@@ -207,7 +154,7 @@ export default function BracketPage() {
                                   <div className="w-10 h-10 flex-shrink-0">
                                     <PlayerAvatar
                                       playerName={player.name}
-                                      charName={charName || ""}
+                                      charName={player.charName || ""}
                                       playerType="A" // Just to give it a border
                                     />
                                   </div>

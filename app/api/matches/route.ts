@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildCanonicalMaps, normalizeMatchEntry } from "@/lib/tournament-data";
+import { synchronizeCanonicalMatchData } from "@/lib/match-data-maintenance";
 
 export async function GET(request: Request) {
   try {
+    await synchronizeCanonicalMatchData(prisma);
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
@@ -43,7 +47,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { playerA, playerB } = await request.json();
+    const { playerA, playerB, charA, charB } = await request.json();
 
     if (!playerA || !playerB) {
       return NextResponse.json(
@@ -52,10 +56,29 @@ export async function POST(request: Request) {
       );
     }
 
+    const existingMatches = await prisma.match.findMany({
+      select: {
+        playerA: true,
+        playerB: true,
+        charA: true,
+        charB: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    const { playerMap, characterMap } = buildCanonicalMaps(existingMatches);
+    const normalizedMatch = normalizeMatchEntry(
+      { playerA, playerB, charA, charB },
+      playerMap,
+      characterMap,
+    );
+
     const match = await prisma.match.create({
       data: {
-        playerA,
-        playerB,
+        playerA: normalizedMatch.playerA,
+        playerB: normalizedMatch.playerB,
+        charA: normalizedMatch.charA,
+        charB: normalizedMatch.charB,
       },
     });
 
