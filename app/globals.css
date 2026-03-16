@@ -15,7 +15,8 @@
 }
 
 body {
-  background: radial-gradient(circle at center, #1a1a1a 0%, #060606 100%);
+  background-color: #060606;
+  background-image: radial-gradient(circle at center, #1a1a1a 0%, #060606 100%);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   position: relative;
@@ -43,7 +44,7 @@ body::before {
 }
 
 .clip-modal {
-  clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
 }
 
 .clip-tab {
@@ -175,29 +176,26 @@ body::before {
   position: relative;
   background-color: #D91616;
   color: #ffffff;
-  transform: skewX(-15deg);
-  transition: all 0.1s ease-out;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  padding: 0.75rem 2rem;
+  transform: skewX(-12deg);
+  transition: background-color 0.15s ease-out, color 0.15s ease-out;
   border: none;
   cursor: pointer;
 }
 
-.btn-lets-rock > span {
+.btn-lets-rock > span,
+.btn-lets-rock > div {
   display: inline-block;
-  transform: skewX(15deg); /* Reverse skew for text */
-}
-
-.btn-lets-rock::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #D91616;
-  z-index: -1;
-  transition: all 0.1s ease-out;
-  opacity: 0;
+  transform: skewX(12deg); /* Reverse skew for text */
 }
 
 .btn-lets-rock:hover:not(:disabled) {
-  animation: roman-cancel-flash 0.3s forwards;
+  background-color: #ffffff;
+  color: #000000;
 }
 
 .btn-lets-rock:hover:not(:disabled)::before {

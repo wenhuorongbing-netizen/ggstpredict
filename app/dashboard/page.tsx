@@ -191,42 +191,50 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                   </div>
 
                   {/* Players Info */}
-                  <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
-                    {/* VS Divider */}
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
+                  <div className="relative w-full h-40 flex overflow-hidden mt-6 mb-6 group transform skew-x-2" style={{ clipPath: 'polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)' }}>
+                    {/* Player 1 Side (Red) */}
+                    <div className="w-1/2 h-full bg-gradient-to-r from-red-900/80 to-red-950/20 flex flex-col justify-center pl-6 border-b-4 border-red-600 relative z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 clip-chamfer border-2 border-[#D91616] shadow-[4px_4px_0px_#000]">
+                          <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
+                        </div>
+                        <div className="flex flex-col">
+                          <h3 className="text-4xl font-black text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                          <p className="text-sm text-[#D91616] font-black tracking-widest uppercase bg-black/50 px-2 self-start mt-1">Player A</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Player 2 Side (Blue) */}
+                    <div className="w-1/2 h-full bg-gradient-to-l from-blue-900/80 to-blue-950/20 flex flex-col justify-center items-end pr-6 border-b-4 border-blue-600 relative z-10">
+                      <div className="flex items-center gap-4 flex-row-reverse">
+                        <div className="w-20 h-20 clip-chamfer border-2 border-[#0055FF] shadow-[4px_4px_0px_#000]">
+                          <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <h3 className="text-4xl font-black text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                          <p className="text-sm text-[#0055FF] font-black tracking-widest uppercase bg-black/50 px-2 self-end mt-1">Player B</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* The Absolute FGC Center "VS" */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black italic text-neutral-200 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] -skew-x-12 z-20 pointer-events-none">
                       {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
                         <span
-                          className="text-[#FFD700] font-black italic my-2 transform -skew-x-12"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "4.5rem", textShadow: "4px 4px 0 #000, 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4)" }}
+                          className="text-[#FFD700] drop-shadow-[4px_4px_0px_#000]"
+                          style={{ fontFamily: "var(--font-bebas)", textShadow: "4px 4px 0 #000, 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4)" }}
                         >
                           {match.scoreA} - {match.scoreB}
                         </span>
                       ) : (
                         <span
-                          className="text-[#D91616] font-black italic my-2 transform -skew-x-12"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "4.5rem", textShadow: "4px 4px 0 #000, 0 0 20px rgba(217, 22, 22, 0.8)" }}
+                          className="text-[#D91616]"
+                          style={{ fontFamily: "var(--font-bebas)", textShadow: "4px 4px 0 #000, 0 0 20px rgba(217, 22, 22, 0.8)" }}
                         >
                           VS
                         </span>
                       )}
-                    </div>
-
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-20 h-20 clip-chamfer border-2 border-[#D91616] shadow-[4px_4px_0px_#000]">
-                        <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
-                      </div>
-                      <h3 className="text-4xl font-black mb-1 text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
-                      <p className="text-sm text-[#D91616] font-black tracking-widest uppercase bg-black/50 px-2">Player A</p>
-                    </div>
-
-                    <div className="w-16"></div> {/* Spacer for VS */}
-
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-20 h-20 clip-chamfer border-2 border-[#0055FF] shadow-[4px_4px_0px_#000]">
-                        <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
-                      </div>
-                      <h3 className="text-4xl font-black mb-1 text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
-                      <p className="text-sm text-[#0055FF] font-black tracking-widest uppercase bg-black/50 px-2">Player B</p>
                     </div>
                   </div>
 

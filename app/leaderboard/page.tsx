@@ -104,12 +104,12 @@ export default function LeaderboardPage() {
                           </div>
                         </div>
                         <div className="flex flex-col items-end">
-                          <div className={`font-black tracking-widest ${
+                          <div className={`font-black tracking-widest font-mono ${
                             index === 0 && page === 1 ? "text-4xl text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" :
                             index === 1 && page === 1 ? "text-3xl text-neutral-300" :
                             index === 2 && page === 1 ? "text-3xl text-amber-600" :
                             "text-2xl text-neutral-400"
-                          }`} style={{ fontFamily: "var(--font-bebas)" }}>
+                          }`}>
                             {Math.floor(user.points).toLocaleString()}
                           </div>
                           <div className="text-[12px] text-neutral-500 font-mono font-bold uppercase tracking-widest">W$ Bounty</div>
