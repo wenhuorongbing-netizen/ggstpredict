@@ -22,11 +22,20 @@ export async function POST() {
     const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
     const newCode = `GGST-${randomStr}`;
 
-    const inviteCode = await prisma.inviteCode.create({
-      data: { code: newCode },
+    const result = await prisma.$transaction(async (tx) => {
+      const inviteCode = await tx.inviteCode.create({
+        data: { code: newCode },
+      });
+      await tx.adminLog.create({
+        data: {
+          action: "GENERATE_INVITE",
+          details: `生成密钥: ${newCode}`
+        }
+      });
+      return inviteCode;
     });
 
-    return NextResponse.json(inviteCode, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Failed to generate invite code:", error);
     return NextResponse.json(

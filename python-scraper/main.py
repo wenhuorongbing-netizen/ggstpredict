@@ -36,7 +36,14 @@ async def crawl(request: CrawlRequest):
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                extra_http_headers={
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Referer": "https://www.google.com/"
+                }
+            )
+            page = await context.new_page()
             await page.goto(request.url, wait_until="domcontentloaded", timeout=30000)
             text_content = await page.evaluate("() => document.body.innerText")
             await browser.close()
@@ -93,7 +100,14 @@ async def crawl_players(request: CrawlPlayersRequest):
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                extra_http_headers={
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Referer": "https://liquipedia.net/"
+                }
+            )
+            page = await context.new_page()
 
             for player_name in request.players:
                 sanitized_name = sanitize_name(player_name)
@@ -107,6 +121,7 @@ async def crawl_players(request: CrawlPlayersRequest):
                     continue
 
                 # Navigate to liquipedia
+                # Note: prioritize GGST/Guilty Gear sections if possible but general fighter page is usually ok
                 url = f"https://liquipedia.net/fighters/{player_name}"
                 try:
                     response = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
@@ -153,7 +168,14 @@ async def scrape_bracket(request: ScrapeBracketRequest):
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                extra_http_headers={
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Referer": "https://www.google.com/"
+                }
+            )
+            page = await context.new_page()
             await page.goto(request.url, wait_until="domcontentloaded", timeout=30000)
 
             # Additional wait to let dynamic bracket trees render (like start.gg)

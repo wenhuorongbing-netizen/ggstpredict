@@ -246,7 +246,17 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                       )}
 
                       <div className="flex justify-between items-center mb-3">
-                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score)</label>
+                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score) <span className="text-yellow-500 ml-2">
+                            {(() => {
+                              if (match.stageType === "GROUP") return `(下注限额: ${sysSettings.GROUP_MAX} W$)`;
+                              if (match.stageType === "BRACKET") {
+                                const currentLimit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
+                                return `(下注限额: ${currentLimit} W$ (资产的 ${sysSettings.KO_PERCENT}%, 保底 ${sysSettings.KO_MIN}))`;
+                              }
+                              return "";
+                            })()}
+                          </span>
+                        </label>
                         <div className="flex gap-2">
                           {[100, 500].map(amt => (
                             <button
@@ -746,8 +756,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
           {/* Main Matches Area (Left) */}
           <div className="lg:col-span-2">
-            {/* Filters */}
-            <div className="flex gap-2 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2 mb-8">
+            {/* Balance Display & Filters */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div className="bg-black/80 border-2 border-yellow-500 p-3 transform -skew-x-2 shadow-[4px_4px_0px_rgba(234,179,8,1)]">
+                <span className="text-xl font-bold tracking-widest text-yellow-400 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                  当前余额: {points.toLocaleString()} W$
+                </span>
+              </div>
+              <div className="flex gap-2 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2">
               {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
                 <button
                   key={f}
@@ -763,6 +779,7 @@ export default function DashboardPage() {
                   {f === "OPEN" ? "🔥 LET'S ROCK" : f === "SETTLED" ? "⚔️ SLASH!" : "📋 ALL"}
                 </button>
               ))}
+              </div>
             </div>
 
             {/* Match List */}

@@ -236,10 +236,30 @@ export default function AdminPage() {
   };
 
   const copyToClipboard = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    alert("密钥已复制！");
-    setTimeout(() => setCopiedCode(null), 2000);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(code).then(() => {
+        setCopiedCode(code);
+        alert("密钥已复制！");
+        setTimeout(() => setCopiedCode(null), 2000);
+      });
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = code;
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px";
+      document.body.prepend(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopiedCode(code);
+        alert("密钥已复制！");
+        setTimeout(() => setCopiedCode(null), 2000);
+      } catch (error) {
+        console.error("Fallback copy failed", error);
+      } finally {
+        textArea.remove();
+      }
+    }
   };
 
   const handleCrawlAWT = async () => {
@@ -651,8 +671,26 @@ export default function AdminPage() {
                 onClick={() => {
                   const unused = invites.filter((i: any) => !i.used).map((i: any) => i.code).join('\n');
                   if (unused) {
-                    navigator.clipboard.writeText(unused);
-                    alert("密钥已复制！");
+                    if (navigator.clipboard && window.isSecureContext) {
+                      navigator.clipboard.writeText(unused).then(() => {
+                        alert("密钥已复制！");
+                      });
+                    } else {
+                      const textArea = document.createElement("textarea");
+                      textArea.value = unused;
+                      textArea.style.position = "absolute";
+                      textArea.style.left = "-999999px";
+                      document.body.prepend(textArea);
+                      textArea.select();
+                      try {
+                        document.execCommand('copy');
+                        alert("密钥已复制！");
+                      } catch (error) {
+                        console.error("Fallback copy failed", error);
+                      } finally {
+                        textArea.remove();
+                      }
+                    }
                   } else {
                     alert("无可用密钥!");
                   }
