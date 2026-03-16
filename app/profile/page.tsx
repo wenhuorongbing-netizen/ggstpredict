@@ -127,14 +127,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <div className="bg-neutral-900 border border-neutral-700 p-3 rounded flex items-center gap-3">
+                  <div className="bg-[#0a0a0a] border border-[#333] p-3 clip-chamfer flex items-center gap-3">
                     <span className="text-neutral-500 font-bold text-xs tracking-widest">积分 (W$)</span>
-                    <span className="text-yellow-500 font-black text-2xl tracking-widest">{profile.points.toLocaleString()}</span>
+                    <span className="text-[#FFD700] font-black text-2xl tracking-widest">{profile.points.toLocaleString()}</span>
                   </div>
 
-                  <div className="bg-neutral-900 border border-neutral-700 p-3 rounded flex items-center gap-3">
+                  <div className="bg-[#0a0a0a] border border-[#333] p-3 clip-chamfer flex items-center gap-3">
                     <span className="text-neutral-500 font-bold text-xs tracking-widest">连胜 (STREAK)</span>
-                    <span className="text-red-500 font-black text-2xl tracking-widest flex items-center gap-2">
+                    <span className="text-[#D91616] font-black text-2xl tracking-widest flex items-center gap-2">
                       {profile.winStreak}
                       {profile.winStreak > 0 && <span className="animate-pulse">🔥</span>}
                     </span>

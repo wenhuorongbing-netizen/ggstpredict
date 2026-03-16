@@ -131,8 +131,8 @@ export default function DocsClient({
                            prose-headings:font-black prose-h1:text-4xl prose-h1:text-red-500 prose-h1:tracking-widest prose-h1:drop-shadow-[2px_2px_0px_rgba(239,68,68,0.5)]
                            prose-h2:text-2xl prose-h2:text-white prose-h2:border-b-2 prose-h2:border-neutral-800 prose-h2:pb-2 prose-h2:mt-10
                            prose-a:text-red-400 prose-a:no-underline hover:prose-a:text-white hover:prose-a:bg-red-600 hover:prose-a:px-1
-                           prose-code:bg-neutral-900 prose-code:text-yellow-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-                           prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-neutral-800 prose-pre:shadow-[4px_4px_0px_rgba(38,38,38,1)] prose-pre:rounded-none
+                           prose-code:bg-neutral-900 prose-code:text-yellow-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+                           prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-neutral-800 prose-pre:shadow-[4px_4px_0px_rgba(38,38,38,1)]
                            prose-strong:text-red-400
                            prose-li:marker:text-red-500"
               >

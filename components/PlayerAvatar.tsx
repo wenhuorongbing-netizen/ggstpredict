@@ -33,7 +33,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
   };
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square rounded-md bg-neutral-800 border-2 ${getStyles()}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden shrink-0 aspect-square bg-neutral-800 border-2 ${getStyles()}`}>
       {tier === 1 && (
         <img
           src={`/assets/players/${sanitize(playerName)}.png`}

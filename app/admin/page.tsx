@@ -499,7 +499,7 @@ export default function AdminPage() {
         </AnimatePresence>
 
         {/* Create Match Module */}
-        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+        <div className="bg-[#0a0a0a] border-t-4 border-[#39FF14] p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2 clip-modal">
           <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-600 pointer-events-none z-20"></div>
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
              新建赛事 (DEPLOYMENT)
@@ -613,7 +613,7 @@ export default function AdminPage() {
                     key={p}
                     type="button"
                     onClick={() => handleChipClick(p)}
-                    className="text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-neutral-300 px-3 py-1 rounded transition-colors"
+                    className="text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 text-neutral-300 px-3 py-1 clip-chamfer transition-colors"
                   >
                     {p}
                   </button>
@@ -635,7 +635,7 @@ export default function AdminPage() {
         </div>
 
         {/* Admin Logs Section */}
-        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+        <div className="bg-[#0a0a0a] border-t-4 border-[#39FF14] p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2 clip-modal">
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
             <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
               📝 操作记录日志 (ACTION LOGS)
@@ -658,7 +658,7 @@ export default function AdminPage() {
         </div>
 
         {/* Invite Codes Section */}
-        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+        <div className="bg-[#0a0a0a] border-t-4 border-[#39FF14] p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2 clip-modal">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
             <div className="flex flex-col gap-2">
@@ -734,7 +734,7 @@ export default function AdminPage() {
                       >
                         <span className="flex-1">{invite.code}</span>
                         <span
-                          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-600 px-2 py-1 text-xs rounded transition-colors"
+                          className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-600 px-2 py-1 text-xs clip-chamfer transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
                             copyToClipboard(invite.code);
@@ -744,7 +744,7 @@ export default function AdminPage() {
                         </span>
                       </button>
                       {copiedCode === invite.code && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 rounded font-bold pointer-events-none z-10">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] px-2 py-0.5 clip-chamfer font-bold pointer-events-none z-10">
                           COPIED!
                         </span>
                       )}
@@ -757,7 +757,7 @@ export default function AdminPage() {
         </div>
 
         {/* Black Market Orders Section */}
-        <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
+        <div className="bg-[#0a0a0a] border-t-4 border-[#39FF14] p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2 clip-modal">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
             <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -797,7 +797,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleFulfillPurchase(p.id)}
                             disabled={fulfillingId === p.id}
-                            className="bg-green-900 hover:bg-green-700 border border-green-500 text-white px-4 py-1 rounded-sm text-xs tracking-widest transition-colors font-bold shadow-[2px_2px_0px_rgba(34,197,94,0.5)]"
+                            className="bg-green-900 hover:bg-green-700 border border-green-500 text-white px-4 py-1 clip-chamfer text-xs tracking-widest transition-colors font-bold shadow-[2px_2px_0px_rgba(34,197,94,0.5)]"
                           >
                             {fulfillingId === p.id ? "PROCESSING..." : "[ ✅ 履行完毕 (MARK FULFILLED) ]"}
                           </button>
@@ -1028,7 +1028,7 @@ export default function AdminPage() {
                     <h3 className="text-2xl font-bold text-white mb-4 border-b border-red-900 pb-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>⚙️ 全局机制控制 (SYSTEM CONTROLS)</h3>
                     <div className="space-y-4">
                       {/* Explicit Defined Settings */}
-                      <div className="bg-red-950/20 p-4 border border-red-900/50 rounded shadow-inner mb-6">
+                      <div className="bg-red-950/20 p-4 border border-red-900/50 clip-chamfer shadow-inner mb-6">
                         <h4 className="text-lg font-bold text-red-400 mb-4 border-b border-red-900/50 pb-2">动态限额参数 (Betting Limits)</h4>
                         {["GROUP_MAX", "KO_PERCENT", "KO_MIN"].map(key => {
                           const setting = settings.find(s => s.key === key) || { key, value: key === "GROUP_MAX" ? "300" : key === "KO_PERCENT" ? "50" : "200" };
@@ -1047,7 +1047,7 @@ export default function AdminPage() {
                           );
                         })}
                         <button
-                          className="mt-2 w-full py-2 bg-red-800 text-white font-bold text-sm hover:bg-red-700 rounded transition-all"
+                          className="mt-2 w-full py-2 bg-red-800 text-white font-bold text-sm hover:bg-red-700 clip-chamfer transition-all"
                           onClick={async () => {
                             const groupLimit = (document.getElementById('input-GROUP_MAX') as HTMLInputElement).value;
                             const koPercent = (document.getElementById('input-KO_PERCENT') as HTMLInputElement).value;

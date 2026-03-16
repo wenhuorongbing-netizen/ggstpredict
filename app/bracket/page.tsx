@@ -233,7 +233,7 @@ export default function BracketPage() {
                             <span className="text-neutral-600 text-[10px]">vs</span>
                             <span className={m.winner === 'B' ? 'text-yellow-500 font-bold' : 'text-neutral-300'}>{m.playerB}</span>
                           </div>
-                          <div className="text-[10px] px-2 py-1 bg-neutral-900 rounded">
+                          <div className="text-[10px] px-2 py-1 bg-neutral-900">
                             {m.status === 'SETTLED' ? 'SLASH!' : m.status === 'OPEN' ? 'LET\'S ROCK' : m.status}
                           </div>
                         </div>

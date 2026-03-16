@@ -83,7 +83,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         ></div>
         {isTensionMaxed && (
           <div className="absolute top-2 w-full text-center pointer-events-none">
-            <span className="bg-yellow-400 text-black text-xs font-black px-4 py-1 rounded-b shadow-[0_4px_10px_rgba(250,204,21,0.5)] transform -skew-x-6 inline-block" style={{ fontFamily: "var(--font-bebas)" }}>
+            <span className="bg-yellow-400 text-black text-xs font-black px-4 py-1 clip-tab shadow-[0_4px_10px_rgba(250,204,21,0.5)] transform -skew-x-6 inline-block" style={{ fontFamily: "var(--font-bebas)" }}>
               ⚡ MAX TENSION: 气槽已满，管理员即将触发特殊效果!
             </span>
           </div>
@@ -107,7 +107,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <motion.aside
         className={`${
           isMobileMenuOpen ? "flex" : "hidden"
-        } md:flex flex-col w-full md:w-64 bg-[#0a0a0a]/95 backdrop-blur-md border-b-2 md:border-b-0 md:border-r-4 border-red-600 relative z-20 flex-shrink-0 min-h-[50vh] md:min-h-screen p-6 shadow-[4px_0_15px_rgba(239,68,68,0.15)]`}
+        } md:flex flex-col w-full md:w-64 bg-[#0a0a0a]/95 backdrop-blur-md border-b-2 md:border-b-0 md:border-r-4 border-red-600/50 relative z-20 flex-shrink-0 min-h-[50vh] md:min-h-screen p-6 shadow-[4px_0_15px_rgba(239,68,68,0.15)]`}
         initial={false}
         animate={{ x: 0 }}
       >
@@ -125,10 +125,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block py-3 px-4 text-lg font-bold tracking-widest transition-all transform -skew-x-2 ${
+                className={`block py-3 px-4 text-lg font-bold tracking-widest transition-all transform -skew-x-2 border-l-4 ${
                   isActive
-                    ? "bg-red-600 text-white shadow-[4px_4px_0px_rgba(239,68,68,0.5)] translate-x-2"
-                    : "text-neutral-400 border border-transparent hover:border-red-500 hover:text-red-400 hover:bg-[#1a1a1a]"
+                    ? "border-[#39FF14] bg-red-600 text-white shadow-[4px_4px_0px_rgba(239,68,68,0.5)] translate-x-2"
+                    : "border-transparent text-neutral-400 hover:border-red-500 hover:text-red-400 hover:bg-[#1a1a1a]"
                 }`}
                 style={{ fontFamily: "var(--font-bebas)" }}
               >
@@ -143,7 +143,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <div className="text-xl text-white font-black truncate">{displayName}</div>
           <div className="text-sm font-mono font-bold text-yellow-500 flex items-center gap-2">
             <span>₩ {Number(points).toLocaleString()}</span>
-            {Number(winStreak) > 0 && <span className="ml-2 bg-red-600/20 px-2 py-0.5 rounded text-red-400">🔥 x{winStreak} 连胜</span>}
+            {Number(winStreak) > 0 && <span className="ml-2 bg-red-600/20 px-2 py-0.5 text-red-400">🔥 x{winStreak} 连胜</span>}
           </div>
         </div>
       </motion.aside>

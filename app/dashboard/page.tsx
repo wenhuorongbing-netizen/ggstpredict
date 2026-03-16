@@ -132,10 +132,16 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.2 }}
-                  className={`bg-black/80 border-2 relative overflow-hidden backdrop-blur-md transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] scroll-mt-24 ${
-                    match.status === "OPEN" ? "border-neutral-600 hover:border-red-500/50" : "border-neutral-800 opacity-80"
+                  className={`relative overflow-hidden transition-all duration-300 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] scroll-mt-24 clip-match-card ${
+                    match.status === "OPEN" ? "border-b-4 border-[#1a1a1a] hover:border-[#D91616]" : "border-b-4 border-neutral-800 opacity-80"
                   }`}
                 >
+                  {/* Split Red/Blue Background */}
+                  <div className="absolute inset-0 flex pointer-events-none z-0">
+                    <div className="flex-1 bg-gradient-to-br from-[#D91616]/80 to-black/90"></div>
+                    <div className="flex-1 bg-gradient-to-bl from-[#0055FF]/80 to-black/90"></div>
+                  </div>
+                  <div className="absolute inset-0 pointer-events-none z-0 opacity-5" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}></div>
                   {/* Settled Badge */}
                   {match.status === "SETTLED" && (
                     <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold flex items-center shadow-[-4px_4px_0px_rgba(234,179,8,0.2)] z-20" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
@@ -155,7 +161,7 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                       const ratio = pA / pB;
                       if (ratio >= 9 || ratio <= (1/9)) {
                         return (
-                          <div className="absolute -top-3 -right-3 rotate-12 z-50">
+                          <div className="absolute -top-3 -right-3 rotate-12 z-50 clip-chamfer">
                             <div className="bg-red-600 text-white text-xs font-black px-3 py-1 border-2 border-yellow-400 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse whitespace-nowrap">
                               ⚠️ 破招预警 (POTENTIAL COUNTER HIT!)
                             </div>
@@ -166,20 +172,19 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                     return null;
                   })()}
 
-                  {/* Players Info */}
                   {/* Tug of War UI */}
                   <div className="px-6 mt-4 relative z-10 transform skew-x-2">
                      <div className="flex justify-between text-[10px] font-mono font-bold tracking-widest text-neutral-400 mb-1">
-                        <div>POOL A: {(match.poolA || 0).toLocaleString()}</div>
-                        <div>POOL B: {(match.poolB || 0).toLocaleString()}</div>
+                        <div className="text-[#D91616] drop-shadow-[1px_1px_0px_#000]">POOL A: {(match.poolA || 0).toLocaleString()}</div>
+                        <div className="text-[#0055FF] drop-shadow-[1px_1px_0px_#000]">POOL B: {(match.poolB || 0).toLocaleString()}</div>
                      </div>
-                     <div className="w-full h-3 bg-neutral-900 border border-neutral-700/50 flex overflow-hidden transform -skew-x-[10deg]">
+                     <div className="w-full h-3 bg-neutral-900 border-2 border-[#1a1a1a] flex overflow-hidden transform -skew-x-[10deg]">
                         <div
-                          className="h-full bg-red-600 transition-all duration-500"
+                          className="h-full bg-[#D91616] transition-all duration-500"
                           style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolA || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
                         ></div>
                         <div
-                          className="h-full bg-blue-600 transition-all duration-500"
+                          className="h-full bg-[#0055FF] transition-all duration-500"
                           style={{ width: `${(match.poolA || 0) + (match.poolB || 0) === 0 ? 50 : ((match.poolB || 0) / ((match.poolA || 0) + (match.poolB || 0))) * 100}%`, boxShadow: "inset 0 0 5px rgba(0,0,0,0.5)" }}
                         ></div>
                      </div>
@@ -191,15 +196,15 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
                       {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
                         <span
-                          className="text-yellow-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3.5rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
+                          className="text-[#FFD700] font-black italic my-2 transform -skew-x-12"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "4.5rem", textShadow: "4px 4px 0 #000, 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4)" }}
                         >
                           {match.scoreA} - {match.scoreB}
                         </span>
                       ) : (
                         <span
-                          className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
+                          className="text-[#D91616] font-black italic my-2 transform -skew-x-12"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "4.5rem", textShadow: "4px 4px 0 #000, 0 0 20px rgba(217, 22, 22, 0.8)" }}
                         >
                           VS
                         </span>
@@ -207,27 +212,27 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                     </div>
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-16 h-16">
+                      <div className="mb-3 w-20 h-20 clip-chamfer border-2 border-[#D91616] shadow-[4px_4px_0px_#000]">
                         <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
-                      <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
+                      <h3 className="text-4xl font-black mb-1 text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                      <p className="text-sm text-[#D91616] font-black tracking-widest uppercase bg-black/50 px-2">Player A</p>
                     </div>
 
                     <div className="w-16"></div> {/* Spacer for VS */}
 
                     <div className="flex-1 flex flex-col items-center text-center relative z-10">
-                      <div className="mb-3 w-16 h-16">
+                      <div className="mb-3 w-20 h-20 clip-chamfer border-2 border-[#0055FF] shadow-[4px_4px_0px_#000]">
                         <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
-                      <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
+                      <h3 className="text-4xl font-black mb-1 text-white drop-shadow-[4px_4px_0px_#000]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                      <p className="text-sm text-[#0055FF] font-black tracking-widest uppercase bg-black/50 px-2">Player B</p>
                     </div>
                   </div>
 
                   {/* Betting Area */}
                   {match.status === "OPEN" && (
-                    <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
+                    <div className="bg-[#111] p-4 border-t-4 border-[#1a1a1a] relative z-20">
 
                       {/* Roman Cancel (Cancel Bet) */}
                       {match.bets?.some((b: any) => b.userId === userId) && (
@@ -237,10 +242,10 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                               const userBet = match.bets?.find((b: any) => b.userId === userId);
                               if (userBet) handleCancelBet(userBet.amount);
                             }}
-                            className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
+                            className="w-full py-2 bg-[#D91616]/20 border-2 border-[#D91616] text-[#ffffff] hover:bg-[#D91616]/80 font-black tracking-widest transition-all clip-chamfer transform -skew-x-12 hover:scale-[1.02]"
                             style={{ fontFamily: "var(--font-bebas)" }}
                           >
-                            [ 🔄 RC取消 (扣5%) ]
+                            <span className="inline-block transform skew-x-12">[ 🔄 RC取消 (扣5%) ]</span>
                           </button>
                         </div>
                       )}
@@ -262,7 +267,7 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                             <button
                               key={amt}
                               onClick={() => setQuickAmount(amt)}
-                              className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
+                              className="text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-3 py-1 clip-chamfer font-mono focus:outline-none border border-neutral-700 focus:border-[#39FF14]"
                               aria-label={`快捷下注 ${amt} 积分`}
                             >
                               +{amt}
@@ -270,10 +275,10 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                           ))}
                           <button
                             onClick={() => setQuickAmount("ALL")}
-                            className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
+                            className="text-xs bg-[#D91616]/20 hover:bg-[#D91616]/40 text-[#D91616] font-black px-3 py-1 clip-chamfer focus:outline-none border-2 border-[#D91616]"
                             aria-label="全押"
                           >
-                            最大押注 (MAX)
+                            MAX
                           </button>
                         </div>
                       </div>
@@ -301,7 +306,7 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                           if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
                           return "输入注额... (最大 500)";
                         })()}
-                        className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
+                        className="w-full bg-[#0a0a0a] border border-[#333] border-b-[4px] border-b-[#555] p-3 text-white focus:outline-none focus:border-b-[#39FF14] font-mono text-center text-2xl mb-4 transition-all"
                       />
 
                       <input
@@ -310,28 +315,28 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                         onChange={(e) => setBetComment(e.target.value)}
                         placeholder="赛事分析 / 留言 (Optional Comment)..."
                         maxLength={50}
-                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
+                        className="w-full bg-[#0a0a0a] border border-[#333] border-b-[2px] border-b-[#555] p-3 text-neutral-300 text-sm focus:outline-none focus:border-b-[#39FF14] mb-4 transition-all placeholder:text-neutral-600 font-mono"
                       />
 
-                      <div className="flex gap-3">
+                      <div className="flex gap-4">
                         <button
                           onClick={() => handleBet("A")}
                           disabled={isBetting || !betAmount}
-                          className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
+                          className={`flex-1 py-4 clip-chamfer text-2xl tracking-widest relative overflow-hidden transition-all duration-100 ease-out border-none cursor-pointer transform -skew-x-12 ${isBetting || !betAmount ? 'opacity-50 cursor-not-allowed bg-neutral-800 text-neutral-500' : 'bg-[#D91616] text-white hover:scale-105 hover:bg-white hover:text-[#D91616]'}`}
+                          style={{ fontFamily: "var(--font-bebas)" }}
                           aria-label={`押注选手 A: ${match.playerA}`}
                         >
-                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 A")}
+                          <span className="inline-block transform skew-x-12">{isBetting ? "..." : (!betAmount ? "ENTER SCORE" : "BET P1")}</span>
                         </button>
 
                         <button
                           onClick={() => handleBet("B")}
                           disabled={isBetting || !betAmount}
-                          className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
+                          className={`flex-1 py-4 clip-chamfer text-2xl tracking-widest relative overflow-hidden transition-all duration-100 ease-out border-none cursor-pointer transform -skew-x-12 ${isBetting || !betAmount ? 'opacity-50 cursor-not-allowed bg-neutral-800 text-neutral-500' : 'bg-[#0055FF] text-white hover:scale-105 hover:bg-white hover:text-[#0055FF]'}`}
+                          style={{ fontFamily: "var(--font-bebas)" }}
                           aria-label={`押注选手 B: ${match.playerB}`}
                         >
-                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 B")}
+                          <span className="inline-block transform skew-x-12">{isBetting ? "..." : (!betAmount ? "ENTER SCORE" : "BET P2")}</span>
                         </button>
                       </div>
                     </div>
@@ -344,8 +349,8 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                     </h4>
 
                     {(!match.bets || match.bets.length === 0) ? (
-                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded-xl bg-neutral-900/20">
-                        No intel yet. Be the first to analyze this matchup.
+                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border-2 border-dashed border-[#1a1a1a] bg-[#0a0a0a] clip-chamfer">
+                        [ NO INTEL YET ]
                       </div>
                     ) : (
                       <div
@@ -354,12 +359,12 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                       >
                         {match.bets.map((bet: any) => {
                           const isRed = bet.choice === 'A';
-                          const accentColor = isRed ? 'border-l-red-500 bg-gradient-to-r from-red-950/30 to-transparent' : 'border-l-blue-500 bg-gradient-to-r from-blue-950/30 to-transparent';
-                          const textColor = isRed ? 'text-red-400' : 'text-blue-400';
+                          const accentColor = isRed ? 'border-l-[#D91616] bg-gradient-to-r from-[#D91616]/20 to-transparent' : 'border-l-[#0055FF] bg-gradient-to-r from-[#0055FF]/20 to-transparent';
+                          const textColor = isRed ? 'text-[#D91616]' : 'text-[#0055FF]';
                           const playerName = isRed ? match.playerA : match.playerB;
 
                           return (
-                            <div key={bet.id} className={`rounded-r-lg p-3 text-sm border-l-2 ${accentColor} border-y border-r border-neutral-800/30`}>
+                            <div key={bet.id} className={`clip-tab p-3 text-sm border-l-4 ${accentColor} border-y border-r border-[#1a1a1a]`}>
                               <div className="flex flex-wrap items-center gap-1.5 text-xs text-neutral-300">
                     <span
                       className="font-black text-white"
@@ -370,16 +375,16 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                     >
                       {bet.user.displayName || bet.user.username}
                     </span>
-                                <span className="text-neutral-500">投入了</span>
-                                <span className="font-mono text-yellow-500/90 font-bold">{bet.amount} 积分</span>
-                                <span className="text-neutral-500">支持</span>
-                                <span className={`font-bold ${textColor}`}>{playerName}</span>
+                                <span className="text-neutral-500 font-mono">- W$</span>
+                                <span className="font-mono text-[#FFD700] font-black">{bet.amount}</span>
+                                <span className="text-neutral-500 font-mono">-&gt;</span>
+                                <span className={`font-black uppercase tracking-widest ${textColor}`}>{playerName}</span>
                               </div>
 
                               {bet.comment && (
                                 <div className="mt-2 text-neutral-400 text-xs italic break-words relative">
-                                  <div className={`absolute -left-2 top-0 bottom-0 w-0.5 rounded ${isRed ? 'bg-red-900/50' : 'bg-blue-900/50'}`}></div>
-                                  <p className="pl-2">&quot;{bet.comment}&quot;</p>
+                                  <div className={`absolute -left-2 top-0 bottom-0 w-1 ${isRed ? 'bg-[#D91616]' : 'bg-[#0055FF]'}`}></div>
+                                  <p className="pl-2 font-mono">&gt; &quot;{bet.comment}&quot;</p>
                                 </div>
                               )}
                             </div>
@@ -686,7 +691,7 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-[#111111] border-4 border-red-600 p-8 max-w-lg w-full shadow-[10px_10px_0px_rgba(239,68,68,0.5)] transform -skew-x-2 relative"
+                className="bg-[#111111] border-4 border-red-600 border-t-[#39FF14] p-8 max-w-lg w-full shadow-[10px_10px_0px_rgba(239,68,68,0.5)] transform -skew-x-2 relative clip-modal"
               >
                 <button
                   onClick={() => setShowRules(false)}
@@ -763,20 +768,20 @@ export default function DashboardPage() {
                   当前余额: {points.toLocaleString()} W$
                 </span>
               </div>
-              <div className="flex gap-2 bg-[#000000] p-1.5 w-fit border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2">
+              <div className="flex bg-transparent">
               {(["OPEN", "SETTLED", "ALL"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-6 py-2 font-bold tracking-widest transition-all focus-visible:outline-none ${
+                  className={`px-8 py-3 font-black tracking-widest transition-all focus-visible:outline-none transform -skew-x-12 clip-tab mx-[-5px] z-10 ${
                     filter === f
-                      ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                      ? "bg-[#D91616] text-white scale-105 shadow-[0_0_15px_rgba(217,22,22,0.8)] relative z-20"
+                      : "bg-[#111] text-neutral-500 hover:text-white hover:bg-[#222] border-2 border-[#1a1a1a]"
                   }`}
-                  style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}
+                  style={{ fontFamily: "var(--font-bebas)", fontSize: "1.5rem" }}
                   aria-pressed={filter === f}
                 >
-                  {f === "OPEN" ? "🔥 LET'S ROCK" : f === "SETTLED" ? "⚔️ SLASH!" : "📋 ALL"}
+                  <span className="inline-block transform skew-x-12">{f === "OPEN" ? "LET'S ROCK" : f === "SETTLED" ? "SLASH!" : "ALL DATA"}</span>
                 </button>
               ))}
               </div>
