@@ -82,9 +82,32 @@ export async function POST(request: Request) {
       }
     }
 
+    // Log the successful scrape
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.adminLog.create({
+        data: {
+          action: "STARTGG_SCRAPE",
+          details: `Start.gg 官方抓取成功 (Phase Group: ${phaseGroupId}), 抓取 ${validMatches.length} 场比赛`
+        }
+      });
+    } catch (logError) {
+      console.error("Failed to log start.gg scrape", logError);
+    }
+
     return NextResponse.json({ matches: validMatches }, { status: 200 });
   } catch (error: any) {
     console.error("Start.gg GraphQL bridge error:", error);
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.adminLog.create({
+        data: {
+          action: "STARTGG_SCRAPE_ERROR",
+          details: `Start.gg API Error: ${error.message || "Unknown error"}`
+        }
+      });
+    } catch (logError) {}
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

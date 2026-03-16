@@ -16,10 +16,19 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     if (body.key && body.value !== undefined) {
-      await prisma.systemSetting.upsert({
-        where: { key: body.key },
-        update: { value: String(body.value) },
-        create: { key: body.key, value: String(body.value) },
+      await prisma.$transaction(async (tx) => {
+        await tx.systemSetting.upsert({
+          where: { key: body.key },
+          update: { value: String(body.value) },
+          create: { key: body.key, value: String(body.value) },
+        });
+
+        await tx.adminLog.create({
+          data: {
+            action: "UPDATE_SETTING",
+            details: `修改全局机制: ${body.key} -> ${body.value}`
+          }
+        });
       });
     }
 

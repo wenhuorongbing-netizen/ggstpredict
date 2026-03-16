@@ -10,6 +10,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return NextResponse.json({ error: "Invalid points value" }, { status: 400 });
     }
 
+    const currentUser = await prisma.user.findUnique({ where: { id } });
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const updatedUser = await prisma.$transaction(async (tx) => {
       const user = await tx.user.update({
         where: { id },
@@ -19,7 +24,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       await tx.adminLog.create({
         data: {
           action: "Update Balance",
-          details: `Updated user ${user.username} (${user.id}) balance to ${body.points}`
+          details: `修改用户 ${user.username} 余额: ${currentUser.points} -> ${body.points}`
         }
       });
       return user;

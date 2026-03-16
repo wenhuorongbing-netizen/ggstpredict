@@ -72,7 +72,9 @@ async function fetchPortrait(charName) {
         console.log(`[FETCHING] ${charName} from ${url}`);
         const response = await axios.get(url, {
              headers: {
-                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                 'Accept-Language': 'en-US,en;q=0.9',
+                 'Referer': 'https://www.google.com/'
              }
         });
 
@@ -109,7 +111,14 @@ async function fetchPortrait(charName) {
         }
 
         console.log(`[DOWNLOADING] ${charName}: Downloading image from ${imgUrl}`);
-        const imgResponse = await axios.get(imgUrl, { responseType: 'stream' });
+        const imgResponse = await axios.get(imgUrl, {
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://www.dustloop.com/'
+            }
+        });
 
         const writer = fs.createWriteStream(filepath);
         imgResponse.data.pipe(writer);

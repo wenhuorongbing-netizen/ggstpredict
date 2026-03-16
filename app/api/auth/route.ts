@@ -69,6 +69,13 @@ export async function POST(request: Request) {
           },
         });
 
+        await tx.adminLog.create({
+          data: {
+            action: "USER_REGISTER",
+            details: `新用户 ${finalUsername} 使用密钥 ${validCode.code} 完成注册`
+          }
+        });
+
         return newUser;
       });
     }
