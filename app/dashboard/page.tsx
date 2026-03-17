@@ -123,6 +123,14 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
     setBetAmount(finalAmt);
   };
 
+  const isPlayerAdvanced = (playerName: string) => {
+    return sysSettings.AWT_ADVANCED_PLAYERS?.includes(playerName.trim().toLowerCase());
+  };
+
+  const isPlayerEliminated = (playerName: string) => {
+    return sysSettings.AWT_ELIMINATED_PLAYERS?.includes(playerName.trim().toLowerCase());
+  };
+
   return (
 <motion.div
 
@@ -206,21 +214,33 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                       )}
                     </div>
 
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''} ${isPlayerAdvanced(match.playerA) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                      {isPlayerAdvanced(match.playerA) && (
+                        <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
+                      )}
+                      {isPlayerEliminated(match.playerA) && (
+                        <div className="absolute -top-6 text-red-800 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                      )}
                       <div className="mb-3 w-16 h-16">
                         <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                      <h3 className={`text-3xl font-black mb-1 text-white ${isPlayerAdvanced(match.playerA) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]'}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
                       <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
                     </div>
 
                     <div className="w-16"></div> {/* Spacer for VS */}
 
-                    <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''} ${isPlayerAdvanced(match.playerB) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                      {isPlayerAdvanced(match.playerB) && (
+                        <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
+                      )}
+                      {isPlayerEliminated(match.playerB) && (
+                        <div className="absolute -top-6 text-red-800 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                      )}
                       <div className="mb-3 w-16 h-16">
                         <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
-                      <h3 className="text-3xl font-black mb-1 text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                      <h3 className={`text-3xl font-black mb-1 text-white ${isPlayerAdvanced(match.playerB) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]'}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
                       <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
                     </div>
                   </div>
@@ -419,10 +439,12 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number }>({
+  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[] }>({
     GROUP_MAX: 300,
     KO_PERCENT: 50,
-    KO_MIN: 200
+    KO_MIN: 200,
+    AWT_ADVANCED_PLAYERS: [],
+    AWT_ELIMINATED_PLAYERS: []
   });
 
   const fetchSettings = async () => {
@@ -430,11 +452,23 @@ export default function DashboardPage() {
       const res = await fetch("/api/admin/settings");
       if (res.ok) {
         const data = await res.json();
-        const newSettings = { GROUP_MAX: 300, KO_PERCENT: 50, KO_MIN: 200 };
+        const newSettings = {
+          GROUP_MAX: 300,
+          KO_PERCENT: 50,
+          KO_MIN: 200,
+          AWT_ADVANCED_PLAYERS: [] as string[],
+          AWT_ELIMINATED_PLAYERS: [] as string[]
+        };
         data.forEach((s: any) => {
           if (s.key === "GROUP_MAX") newSettings.GROUP_MAX = parseInt(s.value, 10);
           if (s.key === "KO_PERCENT") newSettings.KO_PERCENT = parseInt(s.value, 10);
           if (s.key === "KO_MIN") newSettings.KO_MIN = parseInt(s.value, 10);
+          if (s.key === "AWT_ADVANCED_PLAYERS" && s.value) {
+            newSettings.AWT_ADVANCED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+          }
+          if (s.key === "AWT_ELIMINATED_PLAYERS" && s.value) {
+            newSettings.AWT_ELIMINATED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+          }
         });
         setSysSettings(newSettings);
       }

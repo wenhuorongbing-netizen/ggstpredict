@@ -1416,7 +1416,50 @@ export default function AdminPage() {
                         </button>
                       </div>
 
-                      {settings.filter(s => !["GROUP_MAX", "KO_PERCENT", "KO_MIN", "GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN"].includes(s.key)).map(s => (
+                      {/* AWT Stage Status Settings */}
+                      <div className="bg-yellow-950/20 p-4 border border-yellow-900/50 rounded shadow-inner mb-6">
+                        <h4 className="text-lg font-bold text-yellow-500 mb-4 border-b border-yellow-900/50 pb-2">AWT 赛制状态 (Stage Status)</h4>
+                        <div className="space-y-4">
+                          <div className="bg-black/50 p-3 border border-yellow-900/30">
+                            <label className="block text-yellow-400 font-mono mb-2">✨ 晋级名单 (AWT_ADVANCED_PLAYERS)</label>
+                            <input
+                              type="text"
+                              id="input-AWT_ADVANCED_PLAYERS"
+                              defaultValue={settings.find(s => s.key === "AWT_ADVANCED_PLAYERS")?.value || ""}
+                              placeholder="e.g. UMISHO, TempestNYC"
+                              className="w-full bg-black border border-yellow-900/50 px-3 py-2 text-yellow-100 font-mono focus:outline-none focus:border-yellow-500"
+                            />
+                            <p className="text-neutral-500 text-xs mt-1">输入用逗号分隔的选手名字</p>
+                          </div>
+
+                          <div className="bg-black/50 p-3 border border-red-900/30">
+                            <label className="block text-red-400 font-mono mb-2">💀 淘汰名单 (AWT_ELIMINATED_PLAYERS)</label>
+                            <input
+                              type="text"
+                              id="input-AWT_ELIMINATED_PLAYERS"
+                              defaultValue={settings.find(s => s.key === "AWT_ELIMINATED_PLAYERS")?.value || ""}
+                              placeholder="e.g. Zando, Leffen"
+                              className="w-full bg-black border border-red-900/50 px-3 py-2 text-red-100 font-mono focus:outline-none focus:border-red-500"
+                            />
+                            <p className="text-neutral-500 text-xs mt-1">输入用逗号分隔的选手名字</p>
+                          </div>
+
+                          <button
+                            className="w-full py-2 bg-yellow-800 text-white font-bold text-sm hover:bg-yellow-700 rounded transition-all"
+                            onClick={async () => {
+                              const advanced = (document.getElementById('input-AWT_ADVANCED_PLAYERS') as HTMLInputElement).value;
+                              const eliminated = (document.getElementById('input-AWT_ELIMINATED_PLAYERS') as HTMLInputElement).value;
+                              await handleUpdateSetting("AWT_ADVANCED_PLAYERS", advanced);
+                              await handleUpdateSetting("AWT_ELIMINATED_PLAYERS", eliminated);
+                              alert("赛制状态名单已保存！");
+                            }}
+                          >
+                            💾 保存状态名单
+                          </button>
+                        </div>
+                      </div>
+
+                      {settings.filter(s => !["GROUP_MAX", "KO_PERCENT", "KO_MIN", "GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT", "KNOCKOUT_MIN", "AWT_ADVANCED_PLAYERS", "AWT_ELIMINATED_PLAYERS"].includes(s.key)).map(s => (
                         <div key={s.id} className="flex justify-between items-center bg-neutral-900 p-3 border border-neutral-700">
                           <span className="font-mono text-neutral-300">{s.key}</span>
                           <div className="flex gap-2">
