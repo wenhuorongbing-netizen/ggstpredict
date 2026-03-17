@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         throw new Error("User not found");
       }
 
-      if (user.points >= 10) {
+      if (user.points >= 50) {
         throw new Error("积分充足，无需救治");
       }
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: {
-          points: { increment: 50 },
+          points: { increment: 100 },
           lastWelfareAt: now,
         },
       });

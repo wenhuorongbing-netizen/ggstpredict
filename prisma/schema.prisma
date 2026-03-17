@@ -19,6 +19,8 @@ model User {
   role          String     @default("USER") // 角色区分："USER" 或 "ADMIN"
   nameColor     String     @default("#ffffff")
   winStreak     Int        @default(0)
+  fdShields     Int        @default(0) // FD 完美防御护盾数
+  fatalCounters Int        @default(0) // 致命打康标记数
   bets          Bet[] // 关联：一个用户可以有多次下注
   purchases     Purchase[]
   lastWelfareAt DateTime? // 记录上次领取救济金的时间

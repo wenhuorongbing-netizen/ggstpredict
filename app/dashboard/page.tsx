@@ -683,12 +683,12 @@ export default function DashboardPage() {
 
         <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2 min-h-[40px]">
           <div className="flex gap-4 items-center">
-            {!isInitialLoad && points < 10 && (
+            {!isInitialLoad && points < 50 && (
               <button
                 onClick={handleWelfare}
                 className="ggst-button border-red-500 hover:bg-red-600 text-xs px-4 py-2 shadow-[2px_2px_0px_0px_rgba(239,68,68,0.8)] animate-pulse transform -skew-x-2"
               >
-                ⚕️ FAUST 紧急救治 (领取 50 积分)
+                ⚕️ FAUST 紧急救治 (领取 100 积分)
               </button>
             )}
           </div>
