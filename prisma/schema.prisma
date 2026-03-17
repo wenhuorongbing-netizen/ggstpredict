@@ -67,6 +67,7 @@ model Match {
   poolInjectB       Int         @default(0) // Admin injected funds for B
   scoreA            Int? // 选手A得分
   scoreB            Int? // 选手B得分
+  lockAt            DateTime? // 定时封盘时间
   bets              Bet[] // 关联：一场比赛可以有多个下注
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt

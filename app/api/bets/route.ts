@@ -51,7 +51,11 @@ export async function POST(request: Request) {
       }
 
       if (match.status !== "OPEN") {
-        throw new Error("Match is no longer open for betting");
+        throw new Error("当前比赛已封盘或已结束");
+      }
+
+      if (match.lockAt && new Date() >= new Date(match.lockAt)) {
+        throw new Error("下注时间已截止");
       }
 
       // 3. Dynamic Betting Logic Validation
@@ -122,10 +126,16 @@ export async function POST(request: Request) {
     console.error("Betting error:", error);
     // Determine if it's a known error from our transaction
     if (
+      error.message === "当前比赛已封盘或已结束" ||
+      error.message === "下注时间已截止"
+    ) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
+    if (
       error.message === "User not found" ||
       error.message === "积分不足" ||
       error.message === "Match not found" ||
-      error.message === "Match is no longer open for betting" ||
       error.message.includes("最大下注额")
     ) {
         return NextResponse.json({ error: error.message }, { status: 400 });

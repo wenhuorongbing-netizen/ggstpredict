@@ -26,6 +26,7 @@ interface Match {
   playerB: string;
   status: string;
   winner: string | null;
+  lockAt?: string | null;
 }
 
 interface InviteCode {
@@ -582,6 +583,52 @@ export default function AdminPage() {
     }
   };
 
+  const handleLockMatch = async (matchId: string, type: "IMMEDIATE" | "COUNTDOWN" | "SCHEDULED", customTime?: string) => {
+    setError(null);
+    let bodyData: any = { action: "LOCK", lockType: type };
+
+    if (type === "COUNTDOWN") {
+      const mins = parseInt(customTime || "0", 10);
+      const lockAt = new Date(Date.now() + mins * 60000);
+      bodyData.lockTime = lockAt.toISOString();
+    } else if (type === "SCHEDULED") {
+      if (!customTime) {
+        setError("请选择具体的时间");
+        return;
+      }
+      const lockAt = new Date(customTime);
+      bodyData.lockTime = lockAt.toISOString();
+    }
+
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!res.ok) setError((await res.json()).error || "封盘设置失败");
+      else fetchMatches();
+    } catch (err) {
+      setError("网络错误，请稍后再试");
+    }
+  };
+
+  const [openLockMenuId, setOpenLockMenuId] = useState<string | null>(null);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as Element).closest('.lock-menu-container')) {
+        setOpenLockMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.addEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const activeMatches = matches.filter(m => m.status !== "SETTLED");
   const settledMatches = matches.filter(m => m.status === "SETTLED");
   const playerSuggestions = normalizePlayerRoster([
@@ -1056,7 +1103,7 @@ export default function AdminPage() {
              [ NO ACTIVE OPERATIONS ]
           </div>
         ) : (
-          <div className="grid gap-6 mb-12 relative z-10">
+          <div className="flex flex-col gap-2 mb-12 relative z-10">
             <AnimatePresence>
               {activeMatches.map((match) => (
                 <motion.div
@@ -1066,101 +1113,170 @@ export default function AdminPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-black/80 border-2 border-neutral-700 p-5 flex flex-col md:flex-row justify-between items-center gap-6 transform -skew-x-2 shadow-[8px_8px_0px_rgba(0,0,0,0.5)]"
+                  className={`bg-black/80 border-l-4 border-y border-r border-neutral-800 p-1.5 pl-2 flex flex-col md:flex-row justify-between items-center gap-2 transform -skew-x-2 transition-colors ${match.status === 'OPEN' ? 'border-l-green-500/80 hover:border-l-green-400 bg-gradient-to-r from-green-900/10 to-transparent' : 'border-l-yellow-500/80 hover:border-l-yellow-400 bg-gradient-to-r from-yellow-900/10 to-transparent'}`}
                 >
-                  <div className="flex items-center justify-center md:justify-start gap-4 w-full md:w-auto text-2xl transform skew-x-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                    <span className="text-red-500 w-32 text-right truncate drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" title={match.playerA}>{match.playerA}</span>
-                    <span className="text-white font-black italic text-xl select-none drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]">VS</span>
-                    <span className="text-blue-500 w-32 text-left truncate drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" title={match.playerB}>{match.playerB}</span>
+                  <div className="flex flex-col md:flex-row md:items-center justify-start gap-2 w-full md:w-auto transform skew-x-2 flex-1">
+                    <div className="flex items-center gap-1.5 text-lg" style={{ fontFamily: "var(--font-bebas)" }}>
+                      <span className="text-red-500 w-20 text-right truncate drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" title={match.playerA}>{match.playerA}</span>
+                      <span className="text-neutral-500 font-black italic text-xs select-none">VS</span>
+                      <span className="text-blue-500 w-20 text-left truncate drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" title={match.playerB}>{match.playerB}</span>
+                    </div>
+                    <div className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-neutral-600 opacity-50 hover:opacity-100 transition-opacity">
+                       <span>ID: {match.id.substring(0,8)}</span>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3 w-full md:w-auto transform skew-x-2">
+                  <div className="flex gap-1 w-full md:w-auto transform skew-x-2 items-center justify-end">
                     {match.status === "LOCKED" ? (
                       <button
                         onClick={() => handleUnlockMatch(match.id)}
-                        className="ggst-button px-6 py-2 border-yellow-500 text-lg hover:bg-yellow-600"
-                        style={{ boxShadow: "4px 4px 0px 0px rgba(234, 179, 8, 0.8)" }}
+                        className="px-2 py-0.5 bg-yellow-900/50 border border-yellow-500 text-yellow-500 text-[10px] font-bold hover:bg-yellow-600 hover:text-white transition-colors"
                       >
-                        🔓 强制开盘 (LET&apos;S ROCK)
+                        🔓 UNLOCK
                       </button>
                     ) : (
                       <>
-                        <button
-                          onClick={() => handleSettleMatchPrompt(match.id, "A", match.playerA)}
-                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                          className="ggst-button px-6 py-2 border-red-500 text-lg hover:bg-red-600"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)" }}
-                          aria-label={`判定 ${match.playerA} (A) 胜`}
-                        >
-                          {settlingMatchId === match.id ? "..." : `P1 WIN`}
-                        </button>
-                        <button
-                          onClick={() => handleSettleMatchPrompt(match.id, "B", match.playerB)}
-                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                          className="ggst-button px-6 py-2 border-blue-500 text-lg hover:bg-blue-600"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
-                          aria-label={`判定 ${match.playerB} (B) 胜`}
-                        >
-                          {settlingMatchId === match.id ? "..." : `P2 WIN`}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMatch(match.id)}
-                          disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                          className="ggst-button px-6 py-2 border-neutral-500 text-lg hover:bg-neutral-600 bg-neutral-800 text-neutral-300"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)" }}
-                          aria-label={`撤销赛事 ${match.id}`}
-                        >
-                          {deletingMatchId === match.id ? "..." : `🗑️ 撤销赛事 (VOID)`}
-                        </button>
-                        <button
-                          onClick={() => setInjectMatchId(match.id)}
-                          className="ggst-button px-4 py-2 border-purple-500 text-sm hover:bg-purple-600 bg-purple-900 text-purple-200"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(168, 85, 247, 0.8)" }}
-                        >
-                          💉 注入 (INJECT)
-                        </button>
+                        <div className="relative ml-1 mr-1 lock-menu-container">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenLockMenuId(openLockMenuId === match.id ? null : match.id);
+                            }}
+                            className={`px-2 py-0.5 text-[10px] font-bold border transition-colors ${match.lockAt ? 'bg-yellow-900/50 border-yellow-500 text-yellow-400' : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white'}`}
+                          >
+                            {match.lockAt ? `⏳ ${new Date(match.lockAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : "🔒 LOCK"}
+                          </button>
+                          {openLockMenuId === match.id && (
+                            <div className="absolute right-0 top-full pt-1 flex flex-col bg-black border border-neutral-700 shadow-xl z-50 min-w-[140px]">
+                              {match.lockAt ? (
+                                <button
+                                  onClick={() => {
+                                    handleUnlockMatch(match.id);
+                                    setOpenLockMenuId(null);
+                                  }}
+                                  className="px-2 py-1.5 text-left text-[10px] text-yellow-500 hover:bg-yellow-900/30 hover:text-yellow-200 border-b border-neutral-800"
+                                >
+                                  ❌ 取消定时封盘
+                                </button>
+                              ) : null}
+                              <button
+                                onClick={() => {
+                                  handleLockMatch(match.id, "IMMEDIATE");
+                                  setOpenLockMenuId(null);
+                                }}
+                                className="px-2 py-1.5 text-left text-[10px] text-white hover:bg-neutral-800 border-b border-neutral-800"
+                              >
+                                ⚡ 立即封盘
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleLockMatch(match.id, "COUNTDOWN", "5");
+                                  setOpenLockMenuId(null);
+                                }}
+                                className="px-2 py-1.5 text-left text-[10px] text-white hover:bg-neutral-800 border-b border-neutral-800"
+                              >
+                                ⏳ 5分钟后封盘
+                              </button>
+                              <div className="px-2 py-1.5 flex flex-col gap-1 hover:bg-neutral-900/50">
+                                <span className="text-[10px] text-neutral-400">📅 定时封盘:</span>
+                                <input
+                                  type="datetime-local"
+                                  className="text-[10px] bg-black text-white border border-neutral-700 p-0.5"
+                                  id={`lock-time-${match.id}`}
+                                />
+                                <button
+                                  onClick={() => {
+                                    const val = (document.getElementById(`lock-time-${match.id}`) as HTMLInputElement)?.value;
+                                    if (val) {
+                                      handleLockMatch(match.id, "SCHEDULED", val);
+                                      setOpenLockMenuId(null);
+                                    }
+                                  }}
+                                  className="text-[10px] bg-neutral-800 text-white p-0.5 hover:bg-neutral-700 mt-1"
+                                >
+                                  确定
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex border border-neutral-700">
+                          <button
+                            onClick={() => handleSettleMatchPrompt(match.id, "A", match.playerA)}
+                            disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                            className="px-2 py-0.5 bg-red-950/40 text-red-500 hover:bg-red-600 hover:text-white text-[10px] font-bold border-r border-neutral-700 transition-colors"
+                            aria-label={`判定 ${match.playerA} (A) 胜`}
+                          >
+                            {settlingMatchId === match.id ? "..." : `P1 WIN`}
+                          </button>
+                          <button
+                            onClick={() => handleSettleMatchPrompt(match.id, "B", match.playerB)}
+                            disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                            className="px-2 py-0.5 bg-blue-950/40 text-blue-500 hover:bg-blue-600 hover:text-white text-[10px] font-bold transition-colors"
+                            aria-label={`判定 ${match.playerB} (B) 胜`}
+                          >
+                            {settlingMatchId === match.id ? "..." : `P2 WIN`}
+                          </button>
+                        </div>
+
+                        <div className="relative group ml-1">
+                           <button className="px-1.5 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 hover:text-white text-[10px] font-bold">
+                             ...
+                           </button>
+                           <div className="absolute right-0 top-full mt-1 hidden group-hover:flex flex-col bg-black border border-neutral-700 shadow-xl z-50 min-w-[100px]">
+                             <button
+                               onClick={() => setInjectMatchId(match.id)}
+                               className="px-2 py-1.5 text-left text-[10px] text-purple-400 hover:bg-purple-900/30 hover:text-purple-200 border-b border-neutral-800"
+                             >
+                               💉 INJECT
+                             </button>
+                             <button
+                               onClick={() => handleDeleteMatch(match.id)}
+                               disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                               className="px-2 py-1.5 text-left text-[10px] text-red-500 hover:bg-red-900/30 hover:text-red-200"
+                             >
+                               {deletingMatchId === match.id ? "..." : `🗑️ VOID`}
+                             </button>
+                           </div>
+                        </div>
                       </>
                     )}
                   </div>
 
                   {settleMatchInfo?.id === match.id && (
-                    <div className="mt-4 pt-4 border-t border-neutral-700/50">
-                      <h4 className="text-white font-bold mb-2">SETTLE MATCH - FINAL SCORE</h4>
-                      <p className="text-neutral-400 text-sm mb-4">Winner: <span className={settleMatchInfo.winner === "A" ? "text-red-500 font-bold" : "text-blue-500 font-bold"}>{settleMatchInfo.pName}</span></p>
-                      <div className="flex gap-4 mb-4">
-                        <div className="flex-1">
-                          <label className="block text-neutral-400 text-xs mb-1 font-bold">P1 Score (Score A)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={scoreA}
-                            onChange={(e) => setScoreA(e.target.value)}
-                            className="w-full bg-neutral-950 border-2 border-red-900/50 p-2 text-white font-mono"
-                            placeholder="e.g. 3"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <label className="block text-neutral-400 text-xs mb-1 font-bold">P2 Score (Score B)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={scoreB}
-                            onChange={(e) => setScoreB(e.target.value)}
-                            className="w-full bg-neutral-950 border-2 border-blue-900/50 p-2 text-white font-mono"
-                            placeholder="e.g. 1"
-                          />
-                        </div>
+                    <div className="w-full mt-1.5 pt-1.5 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-neutral-500 text-[10px] font-bold">SETTLE SCORE | Winner:</span>
+                        <span className={settleMatchInfo.winner === "A" ? "text-red-500 text-xs font-bold" : "text-blue-500 text-xs font-bold"}>{settleMatchInfo.pName}</span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          value={scoreA}
+                          onChange={(e) => setScoreA(e.target.value)}
+                          className="w-12 bg-black border border-red-900/50 p-0.5 text-white font-mono text-xs text-center focus:border-red-500 focus:outline-none"
+                          placeholder="P1"
+                        />
+                        <span className="text-neutral-600">-</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={scoreB}
+                          onChange={(e) => setScoreB(e.target.value)}
+                          className="w-12 bg-black border border-blue-900/50 p-0.5 text-white font-mono text-xs text-center focus:border-blue-500 focus:outline-none"
+                          placeholder="P2"
+                        />
                         <button
                           onClick={executeSettleMatch}
-                          className="ggst-button flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2"
+                          className="px-3 py-0.5 bg-red-600/80 border border-red-500 text-white font-bold text-[10px] hover:bg-red-500 ml-1"
                         >
-                          CONFIRM SETTLEMENT
+                          CONFIRM
                         </button>
                         <button
                           onClick={() => setSettleMatchInfo(null)}
-                          className="ggst-button px-4 border-neutral-600 text-neutral-400 hover:bg-neutral-800"
+                          className="px-2 py-0.5 bg-neutral-800/80 border border-neutral-700 text-neutral-400 text-[10px] hover:text-white"
                         >
                           CANCEL
                         </button>
@@ -1169,20 +1285,22 @@ export default function AdminPage() {
                   )}
 
                   {injectMatchId === match.id && (
-                    <div className="w-full mt-4 p-4 border-2 border-purple-500 bg-purple-900/20 transform skew-x-2">
-                      <div className="flex flex-col md:flex-row gap-4 items-center">
-                        <div className="flex items-center gap-2">
-                          <label className="text-purple-300 font-bold">P1 Inject:</label>
-                          <input type="number" className="bg-black border border-purple-500 text-white px-2 py-1 w-24" value={injectA} onChange={(e) => setInjectA(e.target.value)} />
+                    <div className="w-full mt-1.5 p-1.5 border border-purple-500/30 bg-purple-900/10 transform skew-x-2 text-[10px] flex flex-col md:flex-row gap-2 items-center justify-between">
+                      <div className="flex gap-3">
+                        <div className="flex items-center gap-1">
+                          <label className="text-purple-500 font-bold">P1 INJ:</label>
+                          <input type="number" className="bg-black border border-purple-500/50 text-purple-200 px-1 py-0.5 w-16 text-xs focus:outline-none focus:border-purple-400" value={injectA} onChange={(e) => setInjectA(e.target.value)} />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <label className="text-purple-300 font-bold">P2 Inject:</label>
-                          <input type="number" className="bg-black border border-purple-500 text-white px-2 py-1 w-24" value={injectB} onChange={(e) => setInjectB(e.target.value)} />
+                        <div className="flex items-center gap-1">
+                          <label className="text-purple-500 font-bold">P2 INJ:</label>
+                          <input type="number" className="bg-black border border-purple-500/50 text-purple-200 px-1 py-0.5 w-16 text-xs focus:outline-none focus:border-purple-400" value={injectB} onChange={(e) => setInjectB(e.target.value)} />
                         </div>
-                        <button onClick={() => handleInjectFunds(match.id)} className="px-4 py-1 bg-purple-500 text-black font-bold border-2 border-purple-300 hover:bg-purple-400">
-                          CONFIRM INJECTION
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => handleInjectFunds(match.id)} className="px-2 py-0.5 bg-purple-800/80 border border-purple-500 text-purple-100 font-bold hover:bg-purple-700">
+                          CONFIRM
                         </button>
-                        <button onClick={() => setInjectMatchId(null)} className="px-4 py-1 bg-neutral-800 text-white border border-neutral-600 hover:bg-neutral-700">
+                        <button onClick={() => setInjectMatchId(null)} className="px-2 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 hover:text-white">
                           CANCEL
                         </button>
                       </div>
@@ -1199,7 +1317,7 @@ export default function AdminPage() {
         <h2 className="text-3xl font-bold mb-6 text-neutral-500 flex items-center gap-2 border-t-2 border-neutral-800 pt-8 relative z-10 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
            ≡ ARCHIVED RECORDS
         </h2>
-        <motion.div className="grid gap-3 opacity-60 hover:opacity-100 transition-opacity duration-300 relative z-10" layout>
+        <motion.div className="flex flex-col gap-1 opacity-50 hover:opacity-100 transition-opacity duration-300 relative z-10" layout>
           <AnimatePresence>
             {settledMatches.map((match) => (
               <motion.div
@@ -1207,21 +1325,21 @@ export default function AdminPage() {
                 layout
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-black/40 border-l-4 border-neutral-800 p-3 flex flex-col sm:flex-row justify-between items-center transform -skew-x-2"
+                className="bg-black/40 border-l-4 border-neutral-800 p-1.5 flex flex-col sm:flex-row justify-between items-center transform -skew-x-2"
               >
-                <div className="font-bold text-xl transform skew-x-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                  <span className={match.winner === "A" ? "text-yellow-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" : "text-neutral-600"}>{match.playerA}</span>
-                  <span className="text-neutral-700 px-4 font-black italic select-none">VS</span>
-                  <span className={match.winner === "B" ? "text-yellow-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" : "text-neutral-600"}>{match.playerB}</span>
+                <div className="font-bold text-lg transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className={match.winner === "A" ? "text-yellow-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] w-20 text-right truncate" : "text-neutral-600 w-20 text-right truncate"}>{match.playerA}</span>
+                  <span className="text-neutral-700 font-black italic select-none text-xs">VS</span>
+                  <span className={match.winner === "B" ? "text-yellow-500 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] w-20 text-left truncate" : "text-neutral-600 w-20 text-left truncate"}>{match.playerB}</span>
                 </div>
-                <div className="flex items-center gap-4 transform skew-x-2">
-                  <div className="text-neutral-400 font-bold text-lg bg-[#1a1a1a] px-4 py-1 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
+                <div className="flex items-center gap-2 transform skew-x-2">
+                  <div className="text-neutral-400 font-bold text-sm bg-[#1a1a1a] px-2 py-0.5 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
                     WINNER: <span className="text-yellow-500 ml-2">{match.winner === "A" ? match.playerA : match.playerB}</span>
                   </div>
                   <button
                     onClick={() => handleDeleteMatch(match.id)}
                     disabled={deletingMatchId === match.id}
-                    className="text-red-500 hover:text-red-400 text-xs border border-red-900 bg-red-950/50 px-2 py-1 h-fit"
+                    className="text-red-500 hover:text-red-400 text-[10px] border border-red-900 bg-red-950/50 px-2 py-0.5 h-fit font-bold"
                   >
                     {deletingMatchId === match.id ? "..." : "HARD DELETE"}
                   </button>

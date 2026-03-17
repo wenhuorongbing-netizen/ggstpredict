@@ -226,7 +226,7 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                   </div>
 
                   {/* Betting Area */}
-                  {match.status === "OPEN" && (
+                  {match.status === "OPEN" && (!match.lockAt || new Date() < new Date(match.lockAt)) ? (
                     <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
 
                       {/* Roman Cancel (Cancel Bet) */}
@@ -335,7 +335,13 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                         </button>
                       </div>
                     </div>
-                  )}
+                  ) : match.status !== "SETTLED" ? (
+                    <div className="bg-neutral-900/80 rounded-2xl py-6 px-4 border border-neutral-800 flex flex-col items-center justify-center min-h-[160px] relative z-20">
+                      <div className="text-yellow-500/50 text-4xl mb-2">🔒</div>
+                      <div className="text-yellow-500 font-bold tracking-widest text-xl mb-1" style={{ fontFamily: "var(--font-bebas)" }}>已封盘 (LOCKED)</div>
+                      <div className="text-neutral-500 text-sm">当前比赛已停止下注</div>
+                    </div>
+                  ) : null}
 
                   {/* Comments & Bets Feed */}
                   <div className="mt-6 pt-4 border-t border-neutral-800/50">

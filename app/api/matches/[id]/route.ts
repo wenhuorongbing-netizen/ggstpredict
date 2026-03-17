@@ -15,10 +15,33 @@ export async function PATCH(
       return NextResponse.json({ error: "Missing match ID" }, { status: 400 });
     }
 
+    if (body.action === "LOCK") {
+      const { lockType, lockTime } = body;
+
+      let updateData: any = {};
+
+      if (lockType === "IMMEDIATE") {
+        updateData = { status: "LOCKED", lockAt: null };
+      } else if (lockType === "COUNTDOWN" || lockType === "SCHEDULED") {
+        if (!lockTime) {
+          return NextResponse.json({ error: "Missing lockTime" }, { status: 400 });
+        }
+        updateData = { status: "OPEN", lockAt: new Date(lockTime) };
+      } else {
+        return NextResponse.json({ error: "Invalid lockType" }, { status: 400 });
+      }
+
+      const updatedMatch = await prisma.match.update({
+        where: { id: matchId },
+        data: updateData,
+      });
+      return NextResponse.json({ match: updatedMatch }, { status: 200 });
+    }
+
     if (body.action === "UNLOCK") {
       const updatedMatch = await prisma.match.update({
         where: { id: matchId },
-        data: { status: "OPEN" },
+        data: { status: "OPEN", lockAt: null },
       });
       return NextResponse.json({ match: updatedMatch }, { status: 200 });
     }
