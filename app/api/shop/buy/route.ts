@@ -19,7 +19,8 @@ export async function POST(req: Request) {
     // Server-side price mapping to prevent client spoofing
     const SHOP_PRICES: Record<string, number> = {
       "金色传说ID (Gold Name)": 10000,
-      // Default placeholder if item is valid but price is missing
+      "ITEM_FD": 100,
+      "ITEM_FATAL": 300,
     };
 
     const costNum = SHOP_PRICES[item];
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid item or price" }, { status: 400 });
     }
 
-    const purchase = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({ where: { id: userId } });
       if (!user) {
         throw new Error("User not found");
@@ -43,14 +44,20 @@ export async function POST(req: Request) {
       if (item.includes("金色传说ID")) {
         updateData.nameColor = "#fbbf24"; // Gold color
         purchaseStatus = "FULFILLED"; // Auto-fulfill this specific cosmetic
+      } else if (item === "ITEM_FD") {
+        updateData.fdShields = { increment: 1 };
+        purchaseStatus = "FULFILLED"; // Consumables auto-fulfill instantly
+      } else if (item === "ITEM_FATAL") {
+        updateData.fatalCounters = { increment: 1 };
+        purchaseStatus = "FULFILLED"; // Consumables auto-fulfill instantly
       }
 
-      await tx.user.update({
+      const updatedUser = await tx.user.update({
         where: { id: userId },
         data: updateData,
       });
 
-      return tx.purchase.create({
+      const purchase = await tx.purchase.create({
         data: {
           userId,
           item,
@@ -58,9 +65,17 @@ export async function POST(req: Request) {
           status: purchaseStatus,
         },
       });
+
+      return { purchase, updatedUser };
     });
 
-    return NextResponse.json({ success: true, purchase }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      purchase: result.purchase,
+      points: result.updatedUser.points,
+      fdShields: result.updatedUser.fdShields,
+      fatalCounters: result.updatedUser.fatalCounters
+    }, { status: 200 });
   } catch (error: any) {
     console.error("Black Market Purchase Error:", error);
     return NextResponse.json(

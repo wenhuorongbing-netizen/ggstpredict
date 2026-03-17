@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/components/AppLayout";
@@ -16,18 +16,18 @@ interface ShopItem {
 
 const ITEMS: ShopItem[] = [
   {
-    id: "gold_name",
-    name: "金色传说ID (Gold Name)",
-    cost: 10000,
-    description: "将你在排行榜和匹配卡片上的名字变为全服闪耀的金色！",
-    icon: "🌟",
+    id: "ITEM_FD",
+    name: "ITEM_FD",
+    cost: 100,
+    description: "绝对防御 (FD Shield) - 购买后可获得一层护盾，未来使用可抵消一次预测失败的扣分。",
+    icon: "🛡️",
   },
   {
-    id: "discord_role",
-    name: "群内专属称号 (Custom Role)",
-    cost: 5000,
-    description: "在官方群组频道获得自定义颜色的专属头衔。",
-    icon: "🎭",
+    id: "ITEM_FATAL",
+    name: "ITEM_FATAL",
+    cost: 300,
+    description: "致命打康 (Fatal Counter) - 购买后获得打康标记，未来使用可让某场比赛的收益翻倍。",
+    icon: "⚡",
   },
 ];
 
@@ -37,9 +37,41 @@ export default function ShopPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Real-time user stats
+  const [points, setPoints] = useState<number>(0);
+  const [fdShields, setFdShields] = useState<number>(0);
+  const [fatalCounters, setFatalCounters] = useState<number>(0);
+
+  // Fetch stats when opening the shop
+  const fetchUserStats = async () => {
+    if (typeof window === "undefined") return;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/users/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPoints(data.points || 0);
+        setFdShields(data.fdShields || 0);
+        setFatalCounters(data.fatalCounters || 0);
+      }
+    } catch (e) {
+      console.error("Failed to fetch user stats", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserStats();
+  }, []);
+
   const handlePurchase = async (item: ShopItem) => {
     setError(null);
     setSuccessMsg(null);
+
+    if (points < item.cost) {
+      setError("余额不足，无法购买 (INSUFFICIENT FUNDS)");
+      return;
+    }
 
     if (!confirm(`⚠️ 危险交易：确定要花费 ${item.cost} 积分购买 [ ${item.name} ] 吗？`)) {
       return;
@@ -59,15 +91,21 @@ export default function ShopPage() {
           "Content-Type": "application/json",
           "x-user-id": userId
         },
-        body: JSON.stringify({ item: item.name, cost: item.cost }),
+        body: JSON.stringify({ item: item.name }),
       });
 
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "购买失败");
       } else {
-        setSuccessMsg(`✅ 交易成功！[ ${item.name} ] 订单已提交给管理员。`);
-        // We do not fetch user points here; the AppLayout interval will catch it.
+        setSuccessMsg(`✅ 交易成功！获得了 [ ${item.name} ]。`);
+        // Update local state instantly with API response
+        setPoints(data.points);
+        setFdShields(data.fdShields);
+        setFatalCounters(data.fatalCounters);
+
+        // Also trigger a layout update by setting localStorage
+        window.dispatchEvent(new Event("storage"));
       }
     } catch (err) {
       setError("网络中断，黑市交易失败");
@@ -81,13 +119,30 @@ export default function ShopPage() {
       <AppLayout>
         <div className="max-w-5xl mx-auto p-4 sm:p-8 relative">
 
-          <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2">
-            <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-              THE BLACK MARKET
-            </h1>
-            <p className="text-red-500 font-bold uppercase tracking-widest text-sm">
-              地下交易终端 (Bounty Sinks)
-            </p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 relative z-10 transform skew-x-2 gap-4">
+            <div>
+              <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                THE BLACK MARKET
+              </h1>
+              <p className="text-red-500 font-bold uppercase tracking-widest text-sm">
+                地下交易终端 (Bounty Sinks)
+              </p>
+            </div>
+
+            <div className="flex gap-4 bg-black/80 border-2 border-neutral-700 p-3 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 w-full sm:w-auto">
+              <div className="flex flex-col border-r border-neutral-800 pr-4">
+                <span className="text-[10px] text-neutral-500 font-bold tracking-widest">W$ 余额 (FUNDS)</span>
+                <span className="text-xl font-black text-yellow-400 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "var(--font-bebas)" }}>{points.toLocaleString()}</span>
+              </div>
+              <div className="flex flex-col border-r border-neutral-800 pr-4">
+                <span className="text-[10px] text-blue-500 font-bold tracking-widest">🛡️ FD 护盾</span>
+                <span className="text-xl font-black text-white" style={{ fontFamily: "var(--font-bebas)" }}>x{fdShields}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-red-500 font-bold tracking-widest">⚡ 致命打康</span>
+                <span className="text-xl font-black text-white" style={{ fontFamily: "var(--font-bebas)" }}>x{fatalCounters}</span>
+              </div>
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
