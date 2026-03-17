@@ -1,0 +1,257 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "个人资料" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]: 个人资料
+        - link "赛事战局" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e12]: 赛事战局
+        - link "赛程分组" [ref=e13] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e14]: 赛程分组
+        - link "悬赏榜单" [ref=e15] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e16]: 悬赏榜单
+        - link "商店" [ref=e17] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e18]: 商店
+        - link "设置" [ref=e19] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e20]: 设置
+        - link "文档" [ref=e21] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e22]: 文档
+        - link "关于" [ref=e23] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e24]: 关于
+        - link "管理" [ref=e25] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e26]: 管理
+      - generic [ref=e27]:
+        - generic [ref=e28]: 当前斗士
+        - generic [ref=e29]: Challenger
+        - generic [ref=e31]: W$ 1,000
+    - main [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e36]:
+            - heading "OVERSEER PANEL" [level=1] [ref=e37]
+            - paragraph [ref=e38]: System Administration
+          - generic [ref=e39]:
+            - heading "新建赛事 (DEPLOYMENT)" [level=2] [ref=e40]
+            - generic [ref=e41]:
+              - generic [ref=e42]:
+                - generic [ref=e43]:
+                  - generic [ref=e44]:
+                    - generic [ref=e45]: ⚡
+                    - text: Start.gg 官方 API 直连 (Phase Group ID)
+                  - textbox "⚡ Start.gg 官方 API 直连 (Phase Group ID)" [ref=e46]:
+                    - /placeholder: "输入 Start.gg Phase Group ID (如: 2541323)..."
+                - button "[ ⚡ Start.gg 官方闪电抓取 ]" [ref=e47]
+              - generic [ref=e48]:
+                - generic [ref=e49]:
+                  - generic [ref=e50]: 🔗 备用：AI 神谕抓取 (URL)
+                  - textbox "🔗 备用：AI 神谕抓取 (URL)" [ref=e51]:
+                    - /placeholder: 输入 Start.gg / Liquipedia 赛程链接...
+                - button "🕷️ 备用抓取" [ref=e52]
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - generic [ref=e55]:
+                  - generic [ref=e56]: 锦标赛 (TOURNAMENT)
+                  - combobox [ref=e57]:
+                    - option "-- 未关联赛事 --"
+                    - option "AWT Finals (Default)" [selected]
+                - generic [ref=e58]:
+                  - generic [ref=e59]: 赛制段 (STAGE TYPE)
+                  - combobox [ref=e60]:
+                    - option "小组赛 (GROUP STAGE)" [selected]
+                    - option "淘汰赛 (BRACKET)"
+                - generic [ref=e61]:
+                  - generic [ref=e62]: 分组 (GROUP ID)
+                  - combobox [ref=e63]:
+                    - option "Group A" [selected]
+                    - option "Group B"
+                    - option "Group C"
+                    - option "Group D"
+              - generic [ref=e64]:
+                - heading "AUTO PLAYER ROSTER" [level=3] [ref=e65]
+                - paragraph [ref=e66]: "Player names now come directly from `public/assets/players`. You can still type freely, but the dropdown roster is generated automatically from avatar filenames and recorded matches."
+                - generic [ref=e67]:
+                  - generic [ref=e68]: ASSET ROSTER
+                  - paragraph [ref=e69]: "Drop player avatars into `public/assets/players` to populate the roster automatically."
+                - paragraph [ref=e70]: 选手和角色都支持手动输入，也支持从已有选手记录和资源文件下拉选择。
+                - generic [ref=e71]:
+                  - generic [ref=e72]:
+                    - generic [ref=e73]: PLAYER A
+                    - combobox "Type or choose Player A" [ref=e74]
+                    - combobox "Character A (optional)" [ref=e75]
+                  - generic [ref=e76]:
+                    - generic [ref=e77]: PLAYER B
+                    - combobox "Type or choose Player B" [ref=e78]
+                    - combobox "Character B (optional)" [ref=e79]
+                - button "ADD MATCH TO BULK LIST" [ref=e80]
+              - generic [ref=e81]:
+                - generic [ref=e82]: 🤖 批量智能部署 (SMART DEPLOY)
+                - paragraph [ref=e83]: 每行输入一场对决，格式：选手A vs 选手B (例如：Sol vs Ky)
+                - textbox "🤖 批量智能部署 (SMART DEPLOY)" [ref=e84]:
+                  - /placeholder: "Sol vs Ky\nMay vs Ramlethal"
+              - button "部署新赛事" [ref=e86]: LAUNCH MATCHES
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - heading "📝 操作记录日志 (ACTION LOGS)" [level=2] [ref=e89]
+              - button "REFRESH" [ref=e90]
+            - generic [ref=e91]: Waiting for system logs...
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - heading "🔑 通行密钥管理 (ACCESS CODES)" [level=2] [ref=e95]
+              - generic [ref=e96]:
+                - button "[ 📋 一键复制所有未使用密钥 ]" [ref=e97]
+                - button "生成新密钥 (GENERATE)" [ref=e98]
+            - generic [ref=e123]:
+              - button "GGST-I8JDVB [复制]" [ref=e125]:
+                - generic [ref=e126]: GGST-I8JDVB
+                - generic [ref=e127]: "[复制]"
+              - button "GGST-4T89C7 [复制]" [ref=e129]:
+                - generic [ref=e130]: GGST-4T89C7
+                - generic [ref=e131]: "[复制]"
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - heading "🛒 黑市订单处理 (BLACK MARKET ORDERS)" [level=2] [ref=e103]
+              - button "REFRESH" [ref=e104]
+            - paragraph [ref=e106]: No pending orders.
+          - heading "● 进行中对局" [level=2] [ref=e107]:
+            - generic [ref=e108]: ●
+            - text: 进行中对局
+          - generic [ref=e109]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]:
+                  - generic [ref=e136]:
+                    - generic "TestA" [ref=e137]
+                    - generic [ref=e138]: VS
+                    - generic "TestB" [ref=e139]
+                  - generic [ref=e140]:
+                    - generic [ref=e141]: 分组
+                    - generic [ref=e142]: 已开盘
+                    - generic [ref=e143]: 未设置封盘
+                - generic [ref=e144]:
+                  - button "开盘" [disabled] [ref=e145]
+                  - button "A 胜" [ref=e146]
+                  - button "B 胜" [ref=e147]
+                  - button "封盘" [active] [ref=e148]
+                  - generic [ref=e149]:
+                    - button "注池" [ref=e150]
+                    - button "撤销" [ref=e151]
+              - generic [ref=e258]:
+                - generic [ref=e259]:
+                  - button "立刻封盘" [ref=e260]
+                  - button "分钟后封盘" [ref=e261]
+                  - button "指定时间封盘" [ref=e262]
+                - generic [ref=e263]:
+                  - button "确认封盘" [ref=e264]
+                  - button "取消" [ref=e265]
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - generic "Sol" [ref=e157]
+                  - generic [ref=e158]: VS
+                  - generic "Ky" [ref=e159]
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 分组
+                  - generic [ref=e162]: 已开盘
+                  - generic [ref=e163]: 未设置封盘
+              - generic [ref=e164]:
+                - button "开盘" [disabled] [ref=e165]
+                - button "A 胜" [ref=e166]
+                - button "B 胜" [ref=e167]
+                - button "封盘" [ref=e168]
+                - generic [ref=e169]:
+                  - button "注池" [ref=e170]
+                  - button "撤销" [ref=e171]
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - generic [ref=e176]:
+                  - generic "Axl" [ref=e177]
+                  - generic [ref=e178]: VS
+                  - generic "Potemkin" [ref=e179]
+                - generic [ref=e180]:
+                  - generic [ref=e181]: 分组
+                  - generic [ref=e182]: 已开盘
+                  - generic [ref=e183]: 未设置封盘
+              - generic [ref=e184]:
+                - button "开盘" [disabled] [ref=e185]
+                - button "A 胜" [ref=e186]
+                - button "B 胜" [ref=e187]
+                - button "封盘" [ref=e188]
+                - generic [ref=e189]:
+                  - button "注池" [ref=e190]
+                  - button "撤销" [ref=e191]
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - generic [ref=e196]:
+                  - generic "Leo" [ref=e197]
+                  - generic [ref=e198]: VS
+                  - generic "Giovanna" [ref=e199]
+                - generic [ref=e200]:
+                  - generic [ref=e201]: 分组
+                  - generic [ref=e202]: 已开盘
+                  - generic [ref=e203]: 未设置封盘
+              - generic [ref=e204]:
+                - button "开盘" [disabled] [ref=e205]
+                - button "A 胜" [ref=e206]
+                - button "B 胜" [ref=e207]
+                - button "封盘" [ref=e208]
+                - generic [ref=e209]:
+                  - button "注池" [ref=e210]
+                  - button "撤销" [ref=e211]
+            - generic [ref=e214]:
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - generic "Baiken" [ref=e217]
+                  - generic [ref=e218]: VS
+                  - generic "Anji" [ref=e219]
+                - generic [ref=e220]:
+                  - generic [ref=e221]: 分组
+                  - generic [ref=e222]: 已开盘
+                  - generic [ref=e223]: 未设置封盘
+              - generic [ref=e224]:
+                - button "开盘" [disabled] [ref=e225]
+                - button "A 胜" [ref=e226]
+                - button "B 胜" [ref=e227]
+                - button "封盘" [ref=e228]
+                - generic [ref=e229]:
+                  - button "注池" [ref=e230]
+                  - button "撤销" [ref=e231]
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic [ref=e236]:
+                  - generic "Sol Badguy" [ref=e237]
+                  - generic [ref=e238]: VS
+                  - generic "Ky Kiske" [ref=e239]
+                - generic [ref=e240]:
+                  - generic [ref=e241]: 分组
+                  - generic [ref=e242]: 已开盘
+                  - generic [ref=e243]: 未设置封盘
+              - generic [ref=e244]:
+                - button "开盘" [disabled] [ref=e245]
+                - button "A 胜" [ref=e246]
+                - button "B 胜" [ref=e247]
+                - button "封盘" [ref=e248]
+                - generic [ref=e249]:
+                  - button "注池" [ref=e250]
+                  - button "撤销" [ref=e251]
+          - heading "≡ ARCHIVED RECORDS" [level=2] [ref=e110]
+          - generic [ref=e253]:
+            - generic [ref=e254]: Sol BadguyVSKy Kiske
+            - generic [ref=e255]:
+              - generic [ref=e256]: "WINNER: Sol Badguy"
+              - button "HARD DELETE" [ref=e257]
+        - button "⚠️ ENABLE GOD MODE (SYSTEM CONTROLS) ⚠️" [ref=e112]
+  - button "Open Next.js Dev Tools" [ref=e118] [cursor=pointer]:
+    - img [ref=e119]
+  - alert [ref=e122]

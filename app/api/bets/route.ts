@@ -1,110 +1,126 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isMatchBettingClosed } from "@/lib/match-betting";
+import { validateFatalPrediction } from "@/lib/bet-effects";
 
 export async function POST(request: Request) {
   try {
-    const { userId, matchId, choice, amount, comment } = await request.json();
+    const {
+      userId,
+      matchId,
+      choice,
+      amount,
+      comment,
+      useFdShield = false,
+      useFatalCounter = false,
+      predictedScoreA,
+      predictedScoreB,
+    } = await request.json();
 
-    if (!userId || !matchId || !choice || !amount) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    const amountValue = Number(amount);
+
+    if (!userId || !matchId || !choice || !amountValue) {
+      return NextResponse.json({ error: "缺少必要字段" }, { status: 400 });
     }
 
-    if (amount <= 0) {
-      return NextResponse.json(
-        { error: "Bet amount must be greater than zero" },
-        { status: 400 }
-      );
+    if (amountValue <= 0) {
+      return NextResponse.json({ error: "下注金额必须大于 0" }, { status: 400 });
     }
 
     if (choice !== "A" && choice !== "B") {
-      return NextResponse.json(
-        { error: "Choice must be 'A' or 'B'" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "下注方向无效" }, { status: 400 });
     }
 
-    // Use Prisma transaction to ensure consistency
+    if (useFatalCounter) {
+      const fatalValidation = validateFatalPrediction({
+        choice,
+        predictedScoreA,
+        predictedScoreB,
+      });
+
+      if (fatalValidation) {
+        return NextResponse.json({ error: fatalValidation }, { status: 400 });
+      }
+    }
+
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Check user points
       const user = await tx.user.findUnique({
         where: { id: userId },
       });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error("用户不存在");
       }
 
-      if (user.points < amount) {
-        throw new Error("积分不足");
+      if (user.points < amountValue) {
+        throw new Error("余额不足");
       }
 
-      // 2. Check match status
+      if (useFdShield && user.fdShields < 1) {
+        throw new Error("FD 护盾不足");
+      }
+
+      if (useFatalCounter && user.fatalCounters < 1) {
+        throw new Error("致命打康数量不足");
+      }
+
       const match = await tx.match.findUnique({
         where: { id: matchId },
       });
 
       if (!match) {
-        throw new Error("Match not found");
+        throw new Error("对局不存在");
       }
 
-      if (match.status !== "OPEN") {
-        throw new Error("Match is no longer open for betting");
+      if (isMatchBettingClosed(match)) {
+        throw new Error("该对局已封盘，无法继续下注");
       }
 
-      // 3. Dynamic Betting Logic Validation
-      // Fetch global settings
       const settings = await tx.systemSetting.findMany({
-        where: { key: { in: ["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT"] } }
+        where: { key: { in: ["GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT"] } },
       });
-      const groupLimitSetting = settings.find(s => s.key === "GROUP_STAGE_LIMIT")?.value;
-      const knockoutPercentSetting = settings.find(s => s.key === "KNOCKOUT_PERCENT")?.value;
-
-      const groupLimit = groupLimitSetting ? parseInt(groupLimitSetting, 10) : 300;
-      const knockoutPercent = knockoutPercentSetting ? parseInt(knockoutPercentSetting, 10) : 50;
+      const groupLimit = Number(settings.find((setting) => setting.key === "GROUP_STAGE_LIMIT")?.value ?? 300);
+      const knockoutPercent = Number(settings.find((setting) => setting.key === "KNOCKOUT_PERCENT")?.value ?? 50);
 
       if (match.stageType === "GROUP") {
-        if (amount > groupLimit) {
-            throw new Error(`小组赛阶段最大下注额为 ${groupLimit}`);
+        if (amountValue > groupLimit) {
+          throw new Error(`小组赛下注上限为 ${groupLimit} W$`);
         }
       } else if (match.stageType === "BRACKET") {
         const knockoutMax = Math.max(200, Math.floor(user.points * (knockoutPercent / 100)));
-        if (amount > knockoutMax) {
-            throw new Error(`淘汰赛阶段您的最大下注额为 ${knockoutMax}`);
+        if (amountValue > knockoutMax) {
+          throw new Error(`淘汰赛下注上限为 ${knockoutMax} W$`);
         }
-      } else {
-        // Fallback max limit if no stageType or unknown
-        if (amount > 500) {
-            throw new Error("最大下注额为 500");
-        }
+      } else if (amountValue > 500) {
+        throw new Error("默认下注上限为 500 W$");
       }
 
-      // 4. Deduct points
       const updatedUser = await tx.user.update({
         where: { id: userId },
-        data: { points: { decrement: amount } },
+        data: {
+          points: { decrement: amountValue },
+          fdShields: useFdShield ? { decrement: 1 } : undefined,
+          fatalCounters: useFatalCounter ? { decrement: 1 } : undefined,
+        },
       });
 
-      // 5. Create Bet
       const bet = await tx.bet.create({
         data: {
           userId,
           matchId,
-          amount,
+          amount: amountValue,
           choice,
           comment,
+          usedFdShield: Boolean(useFdShield),
+          usedFatalCounter: Boolean(useFatalCounter),
+          predictedScoreA: useFatalCounter ? Number(predictedScoreA) : null,
+          predictedScoreB: useFatalCounter ? Number(predictedScoreB) : null,
         },
       });
 
-      // 6. Accumulate Global Tension (Capped at 20000)
       const tensionSetting = await tx.systemSetting.findUnique({ where: { key: "GLOBAL_TENSION" } });
-      const currentTension = tensionSetting ? parseInt(tensionSetting.value, 10) : 0;
-      let newTension = currentTension + amount;
-      if (newTension > 20000) {
-        newTension = 20000;
-      }
+      const currentTension = Number(tensionSetting?.value ?? 0);
+      const newTension = Math.min(currentTension + amountValue, 20000);
 
       await tx.systemSetting.upsert({
         where: { key: "GLOBAL_TENSION" },
@@ -116,23 +132,22 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (err: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const error = err as any;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "下注失败";
     console.error("Betting error:", error);
-    // Determine if it's a known error from our transaction
+
     if (
-      error.message === "User not found" ||
-      error.message === "积分不足" ||
-      error.message === "Match not found" ||
-      error.message === "Match is no longer open for betting" ||
-      error.message.includes("最大下注额")
+      message === "用户不存在" ||
+      message === "余额不足" ||
+      message === "FD 护盾不足" ||
+      message === "致命打康数量不足" ||
+      message === "对局不存在" ||
+      message === "该对局已封盘，无法继续下注" ||
+      message.includes("下注上限")
     ) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: message }, { status: 400 });
     }
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

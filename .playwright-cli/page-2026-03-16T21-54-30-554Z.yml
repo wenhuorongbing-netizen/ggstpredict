@@ -1,0 +1,54 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "个人资料" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]: 个人资料
+        - link "赛事战局" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e12]: 赛事战局
+        - link "赛程分组" [ref=e13] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e14]: 赛程分组
+        - link "悬赏榜单" [ref=e15] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e16]: 悬赏榜单
+        - link "商店" [ref=e17] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e18]: 商店
+        - link "设置" [ref=e19] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e20]: 设置
+        - link "文档" [ref=e21] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e22]: 文档
+        - link "关于" [ref=e23] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e24]: 关于
+        - link "管理" [ref=e25] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e26]: 管理
+      - generic [ref=e27]:
+        - generic [ref=e28]: 当前斗士
+        - generic [ref=e29]: Challenger
+        - generic [ref=e31]: W$ 1,000
+    - main [ref=e32]:
+      - generic [ref=e34]:
+        - generic [ref=e36]:
+          - button "\\u5237\\u65b0\\u5bf9\\u5c40" [disabled] [ref=e37]:
+            - generic [ref=e38]: R
+            - text: 刷新
+          - button "\\u67e5\\u770b\\u89c4\\u5219" [ref=e39]: 规则
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e44]: 当前余额：0 W$
+            - generic [ref=e45]:
+              - button "开盘中" [pressed] [ref=e46]
+              - button "已结算" [ref=e47]
+              - button "全部" [ref=e48]
+          - paragraph [ref=e50]: 暂无进行中的对局
+  - alert [ref=e52]

@@ -30,7 +30,7 @@ export default function SettingsPage() {
     setSuccess(null);
 
     if (!displayName.trim() || displayName.length < 3) {
-      setError("FIGHTER NAME MUST BE AT LEAST 3 CHARACTERS");
+      setError("显示名称至少需要 3 个字符");
       return;
     }
 
@@ -51,15 +51,15 @@ export default function SettingsPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "FAILED TO UPDATE PROFILE");
+        setError(data.error || "更新资料失败");
       } else {
         localStorage.setItem("displayName", data.displayName);
         setOriginalName(data.displayName);
-        setSuccess("PROFILE UPDATED SUCCESSFULLY");
+        setSuccess("显示名称已更新");
         setTimeout(() => setSuccess(null), 3000);
       }
-    } catch (err) {
-      setError("NETWORK ERROR. TRY AGAIN.");
+    } catch {
+      setError("网络错误，请稍后重试");
     } finally {
       setIsUpdating(false);
     }
@@ -79,15 +79,16 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <div className="max-w-3xl mx-auto relative z-10 p-4 sm:p-8">
-
-          {/* Header */}
-          <div className="flex justify-between items-center mb-12 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
+        <div className="relative z-10 mx-auto max-w-3xl p-4 sm:p-8">
+          <div className="mb-12 flex items-center justify-between border border-neutral-800 bg-[#1a1a1a] p-4 transform -skew-x-2">
             <div className="transform skew-x-2">
-              <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(59,130,246,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                SYSTEM SETTINGS
+              <h1
+                className="text-4xl font-black tracking-widest text-white drop-shadow-[2px_2px_0px_rgba(59,130,246,1)]"
+                style={{ fontFamily: "var(--font-bebas)" }}
+              >
+                系统设置
               </h1>
-              <p className="text-blue-500 text-sm tracking-widest font-bold uppercase">玩家档案配置</p>
+              <p className="text-sm font-bold tracking-widest text-blue-500">玩家档案配置</p>
             </div>
           </div>
 
@@ -97,10 +98,12 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="bg-red-950/80 border-2 border-red-500 text-red-200 p-4 mb-6 flex justify-between items-center shadow-[4px_4px_0px_rgba(239,68,68,1)] transform -skew-x-2 animate-ggst-shake"
+                className="mb-6 flex items-center justify-between border-2 border-red-500 bg-red-950/80 p-4 text-red-200 shadow-[4px_4px_0px_rgba(239,68,68,1)] transform -skew-x-2 animate-ggst-shake"
               >
-                <span className="font-mono text-sm tracking-wide font-bold">系统错误 (ERROR): {error}</span>
-                <button onClick={() => setError(null)} className="text-red-400 hover:text-white p-1">✕</button>
+                <span className="font-mono text-sm font-bold tracking-wide">系统错误：{error}</span>
+                <button onClick={() => setError(null)} className="p-1 text-red-400 hover:text-white" aria-label="关闭错误">
+                  关闭
+                </button>
               </motion.div>
             )}
             {success && (
@@ -108,71 +111,78 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="bg-green-950/80 border-2 border-green-500 text-green-200 p-4 mb-6 flex justify-between items-center shadow-[4px_4px_0px_rgba(34,197,94,1)] transform -skew-x-2"
+                className="mb-6 flex items-center justify-between border-2 border-green-500 bg-green-950/80 p-4 text-green-200 shadow-[4px_4px_0px_rgba(34,197,94,1)] transform -skew-x-2"
               >
-                <span className="font-mono text-sm tracking-wide font-bold">{success}</span>
-                <button onClick={() => setSuccess(null)} className="text-green-400 hover:text-white p-1">✕</button>
+                <span className="font-mono text-sm font-bold tracking-wide">{success}</span>
+                <button onClick={() => setSuccess(null)} className="p-1 text-green-400 hover:text-white" aria-label="关闭通知">
+                  关闭
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Profile Module */}
-          <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 pointer-events-none z-20"></div>
+          <div className="relative mb-10 overflow-hidden border-2 border-neutral-700 bg-black/80 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] transform -skew-x-2">
+            <div className="pointer-events-none absolute right-0 top-0 z-20 h-8 w-8 border-r-4 border-t-4 border-blue-500"></div>
 
-            <h2 className="text-3xl font-bold mb-8 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               玩家档案 (DOSSIER)
+            <h2
+              className="mb-8 flex items-center gap-2 text-3xl font-bold tracking-widest text-white transform skew-x-2"
+              style={{ fontFamily: "var(--font-bebas)" }}
+            >
+              玩家档案
             </h2>
 
-            <form onSubmit={handleUpdateName} className="flex flex-col gap-6 relative z-10 transform skew-x-2">
-              <div className="w-full group">
-                <label htmlFor="displayName" className="block text-xl text-blue-500 mb-2 font-bold tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>玩家昵称 (R-CODE)</label>
+            <form onSubmit={handleUpdateName} className="relative z-10 flex flex-col gap-6 transform skew-x-2">
+              <div className="group w-full">
+                <label
+                  htmlFor="displayName"
+                  className="mb-2 block text-xl font-bold tracking-widest text-blue-500"
+                  style={{ fontFamily: "var(--font-bebas)" }}
+                >
+                  显示名称
+                </label>
                 <input
                   id="displayName"
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-4 text-white text-2xl focus:outline-none focus:border-blue-500 transition-colors font-bold tracking-widest"
+                  className="w-full border-2 border-neutral-700 bg-[#1a1a1a] p-4 text-2xl font-bold tracking-widest text-white transition-colors focus:border-blue-500 focus:outline-none"
                   style={{ fontFamily: "var(--font-bebas)" }}
                   required
                 />
               </div>
 
-              <div className="flex justify-end mt-4">
+              <div className="mt-4 flex justify-end">
                 <button
                   type="submit"
                   disabled={isUpdating || displayName === originalName}
-                  className="ggst-button border-blue-500 hover:bg-blue-600 px-8 py-3 text-xl disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                  className="ggst-button w-full border-blue-500 px-8 py-3 text-xl hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
                   style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)" }}
                 >
-                  {isUpdating ? "正在更新..." : "保存昵称"}
+                  {isUpdating ? "正在更新..." : "保存名称"}
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Danger Zone */}
-          <div className="bg-red-950/20 border-2 border-red-900/50 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] relative overflow-hidden transform -skew-x-2">
-            <h2 className="text-3xl font-bold mb-8 text-red-500 flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-               系统终端 (TERMINAL)
+          <div className="relative overflow-hidden border-2 border-red-900/50 bg-red-950/20 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] transform -skew-x-2">
+            <h2
+              className="mb-8 flex items-center gap-2 text-3xl font-bold tracking-widest text-red-500 transform skew-x-2"
+              style={{ fontFamily: "var(--font-bebas)" }}
+            >
+              退出登录
             </h2>
 
             <div className="transform skew-x-2">
-              <p className="text-neutral-400 mb-6 font-mono text-sm border-l-2 border-red-500 pl-4 py-2 bg-red-950/20">
-                警告：终止连接将清除当前会话，您需要重新登录才能继续。
-              </p>
-
               <button
                 onClick={handleLogout}
-                className="ggst-button w-full border-red-600 hover:bg-red-700 hover:text-white px-8 py-4 text-2xl font-black bg-black text-red-500 flex items-center justify-between"
+                className="ggst-button flex w-full items-center justify-between border-red-600 bg-black px-8 py-4 text-2xl font-black text-red-500 hover:bg-red-700 hover:text-white"
                 style={{ boxShadow: "4px 4px 0px 0px rgba(220, 38, 38, 0.8)" }}
               >
-                <span>退出登录 (LOGOUT)</span>
-                <span className="text-4xl leading-none">⚠️</span>
+                <span>退出登录</span>
+                <span className="text-4xl leading-none">→</span>
               </button>
             </div>
           </div>
-
         </div>
       </AppLayout>
     </ProtectedRoute>

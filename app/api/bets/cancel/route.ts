@@ -1,37 +1,28 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { isMatchBettingClosed } from "@/lib/match-betting";
 
-// Initialize Prisma Client
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
-} else {
-  if (!(global as any).prisma) {
-    (global as any).prisma = new PrismaClient();
-  }
-  prisma = (global as any).prisma;
-}
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { userId, matchId } = await req.json();
+    const { userId, matchId } = await request.json();
 
     if (!userId || !matchId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "缺少必要字段" }, { status: 400 });
     }
 
-    // Wrap in a transaction to ensure atomic operations
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Find the match and verify it's OPEN
       const match = await tx.match.findUnique({
         where: { id: matchId },
       });
 
-      if (!match) throw new Error("Match not found");
-      if (match.status !== "OPEN") throw new Error("Cannot cancel bet for a match that is not OPEN");
+      if (!match) {
+        throw new Error("对局不存在");
+      }
 
-      // 2. Find the user's bet for this match
+      if (isMatchBettingClosed(match)) {
+        throw new Error("该对局已封盘，无法撤回下注");
+      }
+
       const bet = await tx.bet.findFirst({
         where: {
           userId,
@@ -39,29 +30,54 @@ export async function POST(req: Request) {
         },
       });
 
-      if (!bet) throw new Error("No bet found for this user and match");
+      if (!bet) {
+        throw new Error("未找到这笔下注");
+      }
 
-      // 3. Calculate refund (95%)
       const refund = Math.floor(bet.amount * 0.95);
 
-      // 4. Refund points to user
       await tx.user.update({
         where: { id: userId },
-        data: { points: { increment: refund } },
+        data: {
+          points: { increment: refund },
+          fdShields: bet.usedFdShield ? { increment: 1 } : undefined,
+          fatalCounters: bet.usedFatalCounter ? { increment: 1 } : undefined,
+        },
       });
 
-      // 5. Delete the bet
       await tx.bet.delete({
         where: { id: bet.id },
       });
 
-      return { refund, originalAmount: bet.amount };
+      return {
+        refund,
+        originalAmount: bet.amount,
+        restoredFdShield: bet.usedFdShield,
+        restoredFatalCounter: bet.usedFatalCounter,
+      };
     });
 
-    return NextResponse.json({ message: "Bet cancelled successfully", refund: result.refund });
-
-  } catch (error: any) {
+    return NextResponse.json(
+      {
+        message: "下注已撤回",
+        refund: result.refund,
+        restoredFdShield: result.restoredFdShield,
+        restoredFatalCounter: result.restoredFatalCounter,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "撤回下注失败";
     console.error("Cancel bet error:", error);
-    return NextResponse.json({ error: error.message || "Failed to cancel bet" }, { status: 500 });
+
+    if (
+      message === "对局不存在" ||
+      message === "未找到这笔下注" ||
+      message === "该对局已封盘，无法撤回下注"
+    ) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

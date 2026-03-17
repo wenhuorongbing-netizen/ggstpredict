@@ -14,50 +14,134 @@ interface BracketMatchNodeProps {
     winner?: string | null;
     roundName?: string | null;
   };
+  variant?: "winners" | "losers" | "grand" | "reset";
+  className?: string;
+  isHighlighted?: boolean;
+  onHoverStart?: (matchId: string) => void;
+  onHoverEnd?: () => void;
 }
 
-export default function BracketMatchNode({ match }: BracketMatchNodeProps) {
+function getStatusPlate(status: string) {
+  if (status === "OPEN") {
+    return { label: "\u53ef\u4e0b\u6ce8", className: "bracket-match-node__plate bracket-match-node__plate--open" };
+  }
+
+  if (status === "LOCKED") {
+    return { label: "\u8fdb\u884c\u4e2d", className: "bracket-match-node__plate bracket-match-node__plate--locked" };
+  }
+
+  if (status === "SETTLED") {
+    return { label: "\u5df2\u7ed3\u7b97", className: "bracket-match-node__plate bracket-match-node__plate--settled" };
+  }
+
+  return { label: status, className: "bracket-match-node__plate" };
+}
+
+function getRootClasses(
+  status: string,
+  variant: "winners" | "losers" | "grand" | "reset",
+  isGrand: boolean,
+  isHighlighted: boolean,
+) {
+  const classes = ["bracket-match-node"];
+
+  if (status === "OPEN") {
+    classes.push("border-l-[#c7a128]", "border-[#4c4324]");
+  } else if (status === "LOCKED") {
+    classes.push("border-l-[#d5101e]", "border-[#4d1b20]");
+  } else if (variant === "losers") {
+    classes.push("border-l-[#8d232a]", "border-[#3f1315]");
+  } else if (isGrand) {
+    classes.push("border-l-[#c7a128]", "border-[#7d2025]");
+  } else {
+    classes.push("border-l-[#3A3F49]", "border-[#2a2e36]");
+  }
+
+  if (isGrand) {
+    classes.push("bracket-match-node--grand");
+  }
+
+  if (isHighlighted) {
+    classes.push("bracket-match-node--highlighted");
+  }
+
+  return classes.join(" ");
+}
+
+export default function BracketMatchNode({
+  match,
+  variant = "winners",
+  className = "",
+  isHighlighted = false,
+  onHoverStart,
+  onHoverEnd,
+}: BracketMatchNodeProps) {
   const isSettled = match.status === "SETTLED";
+  const isGrand =
+    match.roundName === "Grand Final" ||
+    match.roundName === "Grand Final Reset" ||
+    variant === "grand" ||
+    variant === "reset";
   const aWins = isSettled && match.winner === "A";
   const bWins = isSettled && match.winner === "B";
+  const clipPath =
+    "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))";
+  const statusPlate = getStatusPlate(match.status);
 
-  const getContainerStyles = () => {
-    if (match.status === "OPEN") return "border-red-600 bg-[#1a1a1a]";
-    if (match.status === "LOCKED") return "border-neutral-700 bg-[#111111] opacity-75";
-    return "border-neutral-800 bg-[#1a1a1a]"; // CLOSED or SETTLED, strictly #1a1a1a as requested
-  };
-
-  const getRowStyles = (isWinner: boolean, isLoser: boolean) => {
-    if (!isSettled) return "text-white";
-    if (isWinner) return "text-yellow-400 font-bold border-yellow-500 bg-yellow-900/20"; // gold accent
-    if (isLoser) return "text-neutral-500 opacity-50 border-transparent";
-    return "text-white border-transparent";
-  };
+  const renderRow = (
+    playerName: string,
+    charName: string | null | undefined,
+    score: number | null | undefined,
+    playerType: "A" | "B",
+    isWinner: boolean,
+    isLoser: boolean,
+  ) => (
+    <div
+      className={[
+        "bracket-match-node__row",
+        isWinner ? "bracket-match-node__row--winner" : "",
+        isLoser ? "bracket-match-node__row--loser" : "",
+      ].join(" ")}
+    >
+      <div className={`bracket-match-node__avatar ${isGrand ? "h-10 w-10" : "h-9 w-9"}`}>
+        <PlayerAvatar
+          playerName={playerName}
+          charName={charName}
+          playerType={playerType}
+          showCharBadge={false}
+        />
+      </div>
+      <span
+        className={[
+          "bracket-match-node__name truncate",
+          isGrand ? "text-[1.8rem]" : "",
+          isWinner ? "bracket-match-node__name--winner" : "",
+          isLoser ? "bracket-match-node__name--loser" : "",
+        ].join(" ")}
+      >
+        {playerName}
+      </span>
+      <span className={`bracket-match-node__score font-oswald ${isGrand ? "text-[1.55rem]" : "text-xl"}`}>
+        {typeof score === "number" ? score : "-"}
+      </span>
+    </div>
+  );
 
   return (
-    <Link href={`/dashboard#match-${match.id}`} className="block hover:scale-105 transition-transform">
-      <div className={`w-48 sm:w-56 p-1 border-2 shadow-lg overflow-hidden flex flex-col font-mono text-sm relative z-10 ${getContainerStyles()}`}>
-        {/* Player A Row */}
-        <div className={`flex items-center justify-between p-1 border-l-2 border-b border-b-neutral-800 ${getRowStyles(aWins, bWins)}`}>
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-5 h-5 flex-shrink-0">
-              <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
-            </div>
-            <span className="truncate">{match.playerA}</span>
-          </div>
-          <span className="font-black text-right ml-2">{typeof match.scoreA === 'number' ? match.scoreA : '-'}</span>
-        </div>
+    <Link
+      href={`/dashboard#match-${match.id}`}
+      className={`${getRootClasses(match.status, variant, isGrand, isHighlighted)} ${isGrand ? "w-72" : "w-56"} ${className}`}
+      style={{ clipPath }}
+      onMouseEnter={() => onHoverStart?.(match.id)}
+      onMouseLeave={() => onHoverEnd?.()}
+      onFocus={() => onHoverStart?.(match.id)}
+      onBlur={() => onHoverEnd?.()}
+    >
+      <span className={statusPlate.className}>{statusPlate.label}</span>
 
-        {/* Player B Row */}
-        <div className={`flex items-center justify-between p-1 border-l-2 ${getRowStyles(bWins, aWins)}`}>
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-5 h-5 flex-shrink-0">
-              <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
-            </div>
-            <span className="truncate">{match.playerB}</span>
-          </div>
-          <span className="font-black text-right ml-2">{typeof match.scoreB === 'number' ? match.scoreB : '-'}</span>
-        </div>
+      <div className="bracket-match-node__shell">
+        {renderRow(match.playerA, match.charA, match.scoreA, "A", aWins, bWins)}
+        {renderRow(match.playerB, match.charB, match.scoreB, "B", bWins, aWins)}
       </div>
     </Link>
   );

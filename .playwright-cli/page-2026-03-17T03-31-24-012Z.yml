@@ -1,0 +1,205 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "ID 个人资料" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]:
+            - generic [ref=e11]: ID
+            - generic [ref=e12]: 个人资料
+        - link "VS 赛事战局" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e14]:
+            - generic [ref=e15]: VS
+            - generic [ref=e16]: 赛事战局
+        - link "BR 赛程分组" [ref=e17] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e18]:
+            - generic [ref=e19]: BR
+            - generic [ref=e20]: 赛程分组
+        - link "TOP 悬赏榜单" [ref=e21] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e22]:
+            - generic [ref=e23]: TOP
+            - generic [ref=e24]: 悬赏榜单
+        - link "BK 商店" [ref=e25] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e26]:
+            - generic [ref=e27]: BK
+            - generic [ref=e28]: 商店
+        - link "SYS 设置" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e30]:
+            - generic [ref=e31]: SYS
+            - generic [ref=e32]: 设置
+        - link "DOC 文档" [ref=e33] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e34]:
+            - generic [ref=e35]: DOC
+            - generic [ref=e36]: 文档
+        - link "INF 关于" [ref=e37] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e38]:
+            - generic [ref=e39]: INF
+            - generic [ref=e40]: 关于
+      - generic [ref=e41]:
+        - generic [ref=e42]: 当前斗士
+        - generic [ref=e43]: 斗士
+        - generic [ref=e45]: W$ 1,000
+    - main [ref=e46]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - generic [ref=e51]: 黑市补给
+            - heading "BLACK MARKET" [level=1] [ref=e52]
+            - paragraph [ref=e53]: 当前经济基准按 1,000 W$ 初始资金计算。道具买完立刻到账，下注时可直接调用。
+          - generic [ref=e54]:
+            - generic [ref=e55]: 账户快照
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - generic [ref=e58]: 余额
+                - generic [ref=e59]: 1,000 W$
+              - generic [ref=e60]:
+                - generic [ref=e61]:
+                  - generic [ref=e62]: FD
+                  - generic [ref=e63]: "0"
+                - generic [ref=e64]:
+                  - generic [ref=e65]: 打康
+                  - generic [ref=e66]: "0"
+                - generic [ref=e67]:
+                  - generic [ref=e68]: 在飞
+                  - generic [ref=e69]: "0"
+              - generic [ref=e70]: 当前已持有 0 个即时道具。
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - generic [ref=e75]: 🛡️
+                - generic [ref=e76]:
+                  - generic [ref=e77]: 即时道具
+                  - heading "FD 完美防御" [level=2] [ref=e78]
+                  - paragraph [ref=e79]: 下注时可消耗 1 层护盾。押错后本金照扣，但连胜不会清零。
+              - generic [ref=e80]:
+                - generic [ref=e81]: 当前护盾
+                - generic [ref=e82]: x0
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - generic [ref=e85]: 穷人的连胜险，专门保护那条快要开始滚雪球的连胜。
+                - generic [ref=e86]:
+                  - generic [ref=e87]:
+                    - generic [ref=e88]: 使用时机
+                    - generic [ref=e89]: 在下注确认弹窗中勾选使用。失败后只保住连胜，不返还本金。
+                  - generic [ref=e90]:
+                    - generic [ref=e91]: 公开显示
+                    - generic [ref=e92]: 下注动态和个人资料都会显示你这次用了 FD 护盾。
+              - generic [ref=e93]:
+                - generic [ref=e94]:
+                  - generic [ref=e95]: 售价
+                  - generic [ref=e96]: "100"
+                  - generic [ref=e97]: W$
+                - button "立即购买" [ref=e98]
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]:
+                - generic [ref=e102]: ⚡
+                - generic [ref=e103]:
+                  - generic [ref=e104]: 即时道具
+                  - heading "致命打康" [level=2] [ref=e105]
+                  - paragraph [ref=e106]: 下注时可启用并填写预测比分。猜中胜负且比分完全一致时，纯利润额外 +50%。
+              - generic [ref=e107]:
+                - generic [ref=e108]: 当前标记
+                - generic [ref=e109]: x0
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]: 不是只押输赢，而是逼你把整场比赛的节奏也一起押进去。
+                - generic [ref=e113]:
+                  - generic [ref=e114]:
+                    - generic [ref=e115]: 使用时机
+                    - generic [ref=e116]: 下注确认时勾选使用，并填写完整预测比分。
+                  - generic [ref=e117]:
+                    - generic [ref=e118]: 公开显示
+                    - generic [ref=e119]: 下注动态和个人资料会公开显示你这次的打康预测比分。
+              - generic [ref=e120]:
+                - generic [ref=e121]:
+                  - generic [ref=e122]: 售价
+                  - generic [ref=e123]: "300"
+                  - generic [ref=e124]: W$
+                - button "立即购买" [ref=e125]
+          - generic [ref=e126]:
+            - generic [ref=e127]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: 🔮
+                - generic [ref=e130]:
+                  - generic [ref=e131]: 即时道具
+                  - heading "紫色的罗比印记" [level=2] [ref=e132]
+                  - paragraph [ref=e133]: 选择当前赛程中的一位选手，为他的头像永久贴上显眼的 [罗比!] 标签。
+              - generic [ref=e134]:
+                - generic [ref=e135]: 已贴标签
+                - generic [ref=e136]: x0
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - generic [ref=e139]: 不加数值，只加心理压力。全场都知道你在毒奶谁。
+                - generic [ref=e140]:
+                  - generic [ref=e141]:
+                    - generic [ref=e142]: 使用时机
+                    - generic [ref=e143]: 购买时立刻选择目标选手，提交后马上生效。
+                  - generic [ref=e144]:
+                    - generic [ref=e145]: 公开显示
+                    - generic [ref=e146]: 大厅、对局卡和头像展示区都会公开显示这个标签。
+                - generic [ref=e147]:
+                  - generic [ref=e148]: 罗比目标
+                  - combobox [ref=e149]:
+                    - option "选择当前赛程选手" [selected]
+                    - option "Anji"
+                    - option "Axl"
+                    - option "Baiken"
+                    - option "Giovanna"
+                    - option "Ky"
+                    - option "Ky Kiske"
+                    - option "Leo"
+                    - option "Potemkin"
+                    - option "Sol"
+                    - option "Sol Badguy"
+                    - option "TestA"
+                    - option "TestB"
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - generic [ref=e152]: 售价
+                  - generic [ref=e153]: "1500"
+                  - generic [ref=e154]: W$
+                - button "立即购买" [ref=e155]
+          - generic [ref=e156]:
+            - generic [ref=e157]:
+              - generic [ref=e158]:
+                - generic [ref=e159]: 📣
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 即时道具
+                  - heading "高频扩音器" [level=2] [ref=e162]
+                  - paragraph [ref=e163]: 在首页顶部发送一条持续 120 分钟的滚动横幅，可同时存在多条。
+              - generic [ref=e164]:
+                - generic [ref=e165]: 在飞条数
+                - generic [ref=e166]: x0
+            - generic [ref=e167]:
+              - generic [ref=e168]:
+                - generic [ref=e169]: 便宜、吵、有效，最适合赛前放话和粉丝互喷。
+                - generic [ref=e170]:
+                  - generic [ref=e171]:
+                    - generic [ref=e172]: 使用时机
+                    - generic [ref=e173]: 购买时直接填写内容，提交后立刻出现在首页顶部。
+                  - generic [ref=e174]:
+                    - generic [ref=e175]: 公开显示
+                    - generic [ref=e176]: 所有在线用户都会看到这条横幅，直到 120 分钟后过期。
+                - generic [ref=e177]:
+                  - generic [ref=e178]: 扩音内容
+                  - textbox "例如：今晚 Sol 必须倒在这里。" [ref=e179]
+                  - generic [ref=e180]: 0 / 80
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - generic [ref=e183]: 售价
+                  - generic [ref=e184]: "100"
+                  - generic [ref=e185]: W$
+                - button "立即购买" [ref=e186]
+  - alert [ref=e187]

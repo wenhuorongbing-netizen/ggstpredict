@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "ID 个人资料" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]:
+            - generic [ref=e11]: ID
+            - generic [ref=e12]: 个人资料
+        - link "VS 赛事战局" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e14]:
+            - generic [ref=e15]: VS
+            - generic [ref=e16]: 赛事战局
+        - link "BR 赛程分组" [ref=e17] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e18]:
+            - generic [ref=e19]: BR
+            - generic [ref=e20]: 赛程分组
+        - link "TOP 悬赏榜单" [ref=e21] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e22]:
+            - generic [ref=e23]: TOP
+            - generic [ref=e24]: 悬赏榜单
+        - link "BK 商店" [ref=e25] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e26]:
+            - generic [ref=e27]: BK
+            - generic [ref=e28]: 商店
+        - link "SYS 设置" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e30]:
+            - generic [ref=e31]: SYS
+            - generic [ref=e32]: 设置
+        - link "DOC 文档" [ref=e33] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e34]:
+            - generic [ref=e35]: DOC
+            - generic [ref=e36]: 文档
+        - link "INF 关于" [ref=e37] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e38]:
+            - generic [ref=e39]: INF
+            - generic [ref=e40]: 关于
+        - link "ADM 管理" [ref=e41] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e42]:
+            - generic [ref=e43]: ADM
+            - generic [ref=e44]: 管理
+      - generic [ref=e45]:
+        - generic [ref=e46]: 当前斗士
+        - generic [ref=e47]: Challenger
+        - generic [ref=e48]:
+          - generic [ref=e49]: W$ 1,000
+          - generic [ref=e50]: 连胜 x2
+    - main [ref=e51]:
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: 当前余额
+            - generic [ref=e60]: 0 W$
+          - generic [ref=e62]:
+            - button "开盘中" [pressed] [ref=e63]
+            - button "已结算" [ref=e64]
+            - button "全部" [ref=e65]
+          - generic [ref=e66]:
+            - button "\\u5237\\u65b0\\u5bf9\\u5c40" [disabled] [ref=e67]:
+              - generic [ref=e68]: R
+              - text: 刷新
+            - button "\\u67e5\\u770b\\u89c4\\u5219" [ref=e69]: 规则
+        - paragraph [ref=e71]: 暂无进行中的对局
+  - button "Open Next.js Dev Tools" [ref=e78] [cursor=pointer]:
+    - img [ref=e79]
+  - alert [ref=e82]

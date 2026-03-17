@@ -1,33 +1,91 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  getFatalCounterBonus,
+  shouldPreserveStreakOnLoss,
+  validateSettledScore,
+} from "@/lib/bet-effects";
+import {
+  parseMatchRef,
+  resolveBracketPlaceholderParticipant,
+} from "@/lib/awt-korea-bracket";
+
+function buildParticipantSlotUpdate(
+  targetMatch: { playerA: string; playerB: string },
+  ref: ReturnType<typeof parseMatchRef>,
+  participant: { name: string; charName: string | null },
+) {
+  const targetSlot =
+    ref?.slot ?? (!targetMatch.playerA || targetMatch.playerA.includes("待定") ? "A" : "B");
+
+  if (targetSlot === "B") {
+    return {
+      playerB: participant.name,
+      charB: participant.charName,
+    };
+  }
+
+  return {
+    playerA: participant.name,
+    charA: participant.charName,
+  };
+}
 
 export async function POST(request: Request) {
   try {
     const { matchId, winner, scoreA, scoreB } = await request.json();
 
-    if (!matchId || !winner || (winner !== "A" && winner !== "B")) {
-      return NextResponse.json(
-        { error: "Valid matchId and winner ('A' or 'B') are required" },
-        { status: 400 }
-      );
+    if (!matchId || (winner !== "A" && winner !== "B")) {
+      return NextResponse.json({ error: "必须提供有效的对局和胜者" }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Get the match and its bets
       const match = await tx.match.findUnique({
         where: { id: matchId },
         include: { bets: true },
       });
 
       if (!match) {
-        throw new Error("Match not found");
+        throw new Error("对局不存在");
       }
 
       if (match.status === "SETTLED") {
-        throw new Error("Match is already settled");
+        throw new Error("该对局已经结算");
       }
 
-      // 2. Calculate pools
+      const tournamentMatches = match.tournamentId
+        ? await tx.match.findMany({
+            where: { tournamentId: match.tournamentId },
+            orderBy: { createdAt: "asc" },
+          })
+        : [match];
+
+      const resolvedA = resolveBracketPlaceholderParticipant(match.playerA, tournamentMatches);
+      const resolvedB = resolveBracketPlaceholderParticipant(match.playerB, tournamentMatches);
+      const participantA = {
+        name: resolvedA.name,
+        charName: match.charA ?? resolvedA.charName,
+      };
+      const participantB = {
+        name: resolvedB.name,
+        charName: match.charB ?? resolvedB.charName,
+      };
+      const winnerParticipant = winner === "A" ? participantA : participantB;
+      const loserParticipant = winner === "A" ? participantB : participantA;
+
+      const fatalWinningBets = match.bets.filter((bet) => bet.choice === winner && bet.usedFatalCounter);
+      const shouldValidateScore =
+        fatalWinningBets.length > 0 ||
+        Number.isInteger(scoreA) ||
+        Number.isInteger(scoreB);
+
+      if (shouldValidateScore) {
+        const scoreValidation = validateSettledScore(winner, scoreA, scoreB);
+        if (scoreValidation) {
+          throw new Error(scoreValidation);
+        }
+      }
+
       let userPoolA = 0;
       let userPoolB = 0;
       match.bets.forEach((bet) => {
@@ -35,151 +93,176 @@ export async function POST(request: Request) {
         if (bet.choice === "B") userPoolB += bet.amount;
       });
 
-      // Total pools include injections
       const poolA = userPoolA + (match.poolInjectA || 0);
       const poolB = userPoolB + (match.poolInjectB || 0);
-
       const winningPool = winner === "A" ? poolA : poolB;
       let losingPool = winner === "A" ? poolB : poolA;
       const userWinningPool = winner === "A" ? userPoolA : userPoolB;
       const loserChoice = winner === "A" ? "B" : "A";
+      const taxRate = 0.05;
 
-      // 2.5 Tension and Tax logic
-      const taxRate = 0.05; // Tax is always 5%. Tension is purely manual by Admin.
-
-      // Process losers: Reset winStreak
       const losingBets = match.bets.filter((bet) => bet.choice === loserChoice);
       for (const bet of losingBets) {
+        if (shouldPreserveStreakOnLoss(bet.usedFdShield)) {
+          continue;
+        }
+
         await tx.user.update({
           where: { id: bet.userId },
           data: { winStreak: 0 },
         });
       }
 
-      // Check Counter Hit condition
-      if (losingPool > 0 && winningPool > 0) {
-        if (losingPool >= winningPool * 9) {
-          losingPool += 2000;
-        }
+      if (losingPool > 0 && winningPool > 0 && losingPool >= winningPool * 9) {
+        losingPool += 2000;
       }
 
-      // 3. Distribute rewards to winners
       if (userWinningPool > 0 && losingPool > 0) {
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         for (const bet of winningBets) {
-          const their_share = bet.amount / userWinningPool;
-          const profit = their_share * losingPool;
+          const share = bet.amount / userWinningPool;
+          const profit = share * losingPool;
 
-          // Increment streak and get new streak length
-          const user = await tx.user.update({
+          const streakUser = await tx.user.update({
             where: { id: bet.userId },
             data: { winStreak: { increment: 1 } },
-            select: { winStreak: true }
+            select: { winStreak: true },
           });
 
-          // Combo bonus based on NEW win streak
-          let combo_bonus = 0;
-          if (user.winStreak >= 5) {
-            combo_bonus = profit * 0.15;
-          } else if (user.winStreak >= 2) {
-            combo_bonus = profit * 0.05;
+          let comboBonus = 0;
+          if (streakUser.winStreak >= 5) {
+            comboBonus = profit * 0.15;
+          } else if (streakUser.winStreak >= 2) {
+            comboBonus = profit * 0.05;
           }
 
+          const fatalBonus = getFatalCounterBonus({
+            choice: bet.choice as "A" | "B",
+            usedFatalCounter: bet.usedFatalCounter,
+            predictedScoreA: bet.predictedScoreA,
+            predictedScoreB: bet.predictedScoreB,
+            winner,
+            scoreA,
+            scoreB,
+            profit,
+          });
+
           const tax = Math.floor(profit * taxRate);
-          const final_payout = Math.floor(bet.amount + profit + combo_bonus - tax);
+          const finalPayout = Math.floor(bet.amount + profit + comboBonus + fatalBonus - tax);
 
           await tx.user.update({
             where: { id: bet.userId },
-            data: { points: { increment: final_payout } },
+            data: { points: { increment: finalPayout } },
           });
         }
       } else if (userWinningPool > 0 && losingPool === 0) {
-        // If there is no losing pool, just return the original bet amount and increment win streak
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         for (const bet of winningBets) {
-            await tx.user.update({
-                where: { id: bet.userId },
-                data: {
-                  points: { increment: bet.amount },
-                  winStreak: { increment: 1 }
-                }
-            });
+          await tx.user.update({
+            where: { id: bet.userId },
+            data: {
+              points: { increment: bet.amount },
+              winStreak: { increment: 1 },
+            },
+          });
         }
-      } else if (userWinningPool === 0 && losingPool > 0) {
-        // House keeps the losing pool. We do nothing for user points here.
-      }
-
-      // 4. Update match status
-      const updateData: any = {
-        status: "SETTLED",
-        winner: winner,
-      };
-      if (typeof scoreA === 'number' && typeof scoreB === 'number') {
-        updateData.scoreA = scoreA;
-        updateData.scoreB = scoreB;
       }
 
       const updatedMatch = await tx.match.update({
         where: { id: matchId },
-        data: updateData,
+        data: {
+          status: "SETTLED",
+          winner,
+          scoreA: typeof scoreA === "number" ? scoreA : null,
+          scoreB: typeof scoreB === "number" ? scoreB : null,
+        },
       });
 
-      // 4.5 Grand Final Reset Logic
-      // In a Double Elimination bracket, if the Losers Bracket winner (typically Player B)
-      // wins the first set of Grand Finals, a "Grand Final Reset" match is generated.
+      const nextWinnerRef = parseMatchRef(match.nextWinnerMatchId);
+      if (nextWinnerRef?.matchId) {
+        const targetMatch = await tx.match.findUnique({
+          where: { id: nextWinnerRef.matchId },
+          select: { id: true, playerA: true, playerB: true },
+        });
+
+        if (targetMatch) {
+          await tx.match.update({
+            where: { id: targetMatch.id },
+            data: buildParticipantSlotUpdate(targetMatch, nextWinnerRef, winnerParticipant),
+          });
+        }
+      }
+
+      const nextLoserRef = parseMatchRef(match.nextLoserMatchId);
+      if (nextLoserRef?.matchId) {
+        const targetMatch = await tx.match.findUnique({
+          where: { id: nextLoserRef.matchId },
+          select: { id: true, playerA: true, playerB: true },
+        });
+
+        if (targetMatch) {
+          await tx.match.update({
+            where: { id: targetMatch.id },
+            data: buildParticipantSlotUpdate(targetMatch, nextLoserRef, loserParticipant),
+          });
+        }
+      }
+
       if (
         (match.roundName === "Grand Final" || match.roundName === "Grand Finals" || match.roundName === "GF") &&
         winner === "B"
       ) {
-        // Check if a reset hasn't already been created manually or somehow duplicated
         const existingReset = await tx.match.findFirst({
           where: {
             tournamentId: match.tournamentId,
             roundName: "Grand Final Reset",
-            playerA: match.playerA,
-            playerB: match.playerB,
-          }
+            playerA: participantA.name,
+            playerB: participantB.name,
+          },
         });
 
         if (!existingReset) {
           await tx.match.create({
             data: {
-              playerA: match.playerA,
-              playerB: match.playerB,
-              charA: match.charA,
-              charB: match.charB,
+              playerA: participantA.name,
+              playerB: participantB.name,
+              charA: participantA.charName,
+              charB: participantB.charName,
               status: "LOCKED",
               tournamentId: match.tournamentId,
               stageType: match.stageType,
               groupId: match.groupId,
               roundName: "Grand Final Reset",
-            }
+            },
           });
         }
       }
 
-      // 6. Audit Log
       await tx.adminLog.create({
         data: {
           action: "Settle Match",
-          details: `Match ${matchId} settled. Winner: ${winner}`
-        }
+          details: `Match ${matchId} settled. Winner: ${winner}${typeof scoreA === "number" && typeof scoreB === "number" ? ` (${scoreA}-${scoreB})` : ""}`,
+        },
       });
 
       return updatedMatch;
     });
 
     return NextResponse.json(result, { status: 200 });
-  } catch (err: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const error = err as any;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "结算失败";
     console.error("Settlement error:", error);
-    if (error.message === "Match not found" || error.message === "Match is already settled") {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+
+    if (
+      message === "对局不存在" ||
+      message === "该对局已经结算" ||
+      message === "本场存在比分相关结算，必须填写有效小分" ||
+      message === "胜者为 A 时，比分必须是 A 方领先" ||
+      message === "胜者为 B 时，比分必须是 B 方领先"
+    ) {
+      return NextResponse.json({ error: message }, { status: 400 });
     }
-    return NextResponse.json(
-      { error: "An unexpected error occurred during settlement" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

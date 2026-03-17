@@ -1,0 +1,371 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "👤 猎人档案" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]: 👤 猎人档案
+        - link "⚔️ 赛事战局" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e12]: ⚔️ 赛事战局
+        - link "🏆 比赛赛程" [ref=e13] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e14]: 🏆 比赛赛程
+        - link "👑 排行榜" [ref=e15] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e16]: 👑 排行榜
+        - link "🛒 黑市交易" [ref=e17] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e18]: 🛒 黑市交易
+        - link "⚙️ 账户设置" [ref=e19] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e20]: ⚙️ 账户设置
+        - link "📖 用户手册" [ref=e21] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e22]: 📖 用户手册
+        - link "ℹ️ 关于 (ABOUT)" [ref=e23] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e24]: ℹ️ 关于 (ABOUT)
+      - generic [ref=e25]:
+        - generic [ref=e26]: "当前玩家 (ACTIVE FIGHTER):"
+        - generic [ref=e27]: SolBadguyFan
+        - generic [ref=e29]: ₩ 1,000
+    - main [ref=e30]:
+      - generic [ref=e32]:
+        - generic [ref=e34]:
+          - button "刷新数据" [ref=e35]:
+            - generic [ref=e36]: ⟳
+            - text: REFRESH
+          - button "Rules" [ref=e37]: RULES [?]
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e42]: "当前余额: 1,000 W$"
+              - generic [ref=e43]:
+                - button "🔥 LET'S ROCK" [pressed] [ref=e44]
+                - button "⚔️ SLASH!" [ref=e45]
+                - button "📋 ALL" [ref=e46]
+            - generic [ref=e47]:
+              - generic [ref=e51]:
+                - generic [ref=e53]:
+                  - generic [ref=e54]:
+                    - generic [ref=e55]: POOL A
+                    - strong [ref=e56]: 0 W$
+                  - generic [ref=e57]:
+                    - generic [ref=e58]: MATCH
+                    - strong [ref=e59]: 0 W$
+                    - generic [ref=e60]: 50% / 50%
+                  - generic [ref=e61]:
+                    - generic [ref=e62]: POOL B
+                    - strong [ref=e63]: 0 W$
+                - generic [ref=e69]:
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: PLAYER A
+                    - generic [ref=e76]: T
+                    - heading "TestA" [level=3] [ref=e77]
+                  - generic [ref=e78]:
+                    - generic [ref=e79]: MATCH
+                    - generic [ref=e80]: VS
+                  - generic [ref=e81]:
+                    - generic [ref=e82]: PLAYER B
+                    - generic [ref=e87]: T
+                    - heading "TestB" [level=3] [ref=e88]
+                - generic [ref=e89]:
+                  - generic [ref=e90]:
+                    - generic [ref=e92]: 押注
+                    - generic [ref=e94]:
+                      - button "快捷下注 100 积分" [ref=e95]: "+100"
+                      - button "快捷下注 500 积分" [ref=e96]: "+500"
+                      - button "全押" [ref=e97]: 最大押注 (MAX)
+                  - generic [ref=e98]:
+                    - spinbutton "押注" [ref=e99]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e100]
+                  - generic [ref=e101]:
+                    - button "押注 TestA" [disabled] [ref=e102]:
+                      - generic [ref=e103]: 押注
+                      - generic [ref=e104]: TestA
+                    - button "押注 TestB" [disabled] [ref=e105]:
+                      - generic [ref=e106]: 押注
+                      - generic [ref=e107]: TestB
+                - generic [ref=e108]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e109]:
+                    - generic [ref=e110]: INTEL
+                    - generic [ref=e111]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e112]: No intel yet. Be the first to analyze this matchup.
+              - generic [ref=e113]:
+                - generic [ref=e115]:
+                  - generic [ref=e116]:
+                    - generic [ref=e117]: POOL A
+                    - strong [ref=e118]: 0 W$
+                  - generic [ref=e119]:
+                    - generic [ref=e120]: GROUP
+                    - strong [ref=e121]: 0 W$
+                    - generic [ref=e122]: 50% / 50%
+                  - generic [ref=e123]:
+                    - generic [ref=e124]: POOL B
+                    - strong [ref=e125]: 0 W$
+                - generic [ref=e131]:
+                  - generic [ref=e132]:
+                    - generic [ref=e133]: PLAYER A
+                    - generic [ref=e138]: S
+                    - heading "Sol" [level=3] [ref=e139]
+                  - generic [ref=e140]:
+                    - generic [ref=e141]: GROUP
+                    - generic [ref=e142]: VS
+                  - generic [ref=e143]:
+                    - generic [ref=e144]: PLAYER B
+                    - generic [ref=e149]: K
+                    - heading "Ky" [level=3] [ref=e150]
+                - generic [ref=e151]:
+                  - generic [ref=e152]:
+                    - generic [ref=e153]:
+                      - generic [ref=e154]: 押注
+                      - generic [ref=e155]: "下注限额: 300 W$"
+                    - generic [ref=e156]:
+                      - button "快捷下注 100 积分" [ref=e157]: "+100"
+                      - button "快捷下注 500 积分" [ref=e158]: "+500"
+                      - button "全押" [ref=e159]: 最大押注 (MAX)
+                  - generic [ref=e160]:
+                    - spinbutton "押注" [ref=e161]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e162]
+                  - generic [ref=e163]:
+                    - button "押注 Sol" [disabled] [ref=e164]:
+                      - generic [ref=e165]: 押注
+                      - generic [ref=e166]: Sol
+                    - button "押注 Ky" [disabled] [ref=e167]:
+                      - generic [ref=e168]: 押注
+                      - generic [ref=e169]: Ky
+                - generic [ref=e170]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e171]:
+                    - generic [ref=e172]: INTEL
+                    - generic [ref=e173]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e174]: No intel yet. Be the first to analyze this matchup.
+              - generic [ref=e175]:
+                - generic [ref=e177]:
+                  - generic [ref=e178]:
+                    - generic [ref=e179]: POOL A
+                    - strong [ref=e180]: 0 W$
+                  - generic [ref=e181]:
+                    - generic [ref=e182]: MATCH
+                    - strong [ref=e183]: 0 W$
+                    - generic [ref=e184]: 50% / 50%
+                  - generic [ref=e185]:
+                    - generic [ref=e186]: POOL B
+                    - strong [ref=e187]: 0 W$
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: PLAYER A
+                    - generic [ref=e200]: A
+                    - heading "Axl" [level=3] [ref=e201]
+                  - generic [ref=e202]:
+                    - generic [ref=e203]: MATCH
+                    - generic [ref=e204]: VS
+                  - generic [ref=e205]:
+                    - generic [ref=e206]: PLAYER B
+                    - generic [ref=e211]: P
+                    - heading "Potemkin" [level=3] [ref=e212]
+                - generic [ref=e213]:
+                  - generic [ref=e214]:
+                    - generic [ref=e216]: 押注
+                    - generic [ref=e218]:
+                      - button "快捷下注 100 积分" [ref=e219]: "+100"
+                      - button "快捷下注 500 积分" [ref=e220]: "+500"
+                      - button "全押" [ref=e221]: 最大押注 (MAX)
+                  - generic [ref=e222]:
+                    - spinbutton "押注" [ref=e223]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e224]
+                  - generic [ref=e225]:
+                    - button "押注 Axl" [disabled] [ref=e226]:
+                      - generic [ref=e227]: 押注
+                      - generic [ref=e228]: Axl
+                    - button "押注 Potemkin" [disabled] [ref=e229]:
+                      - generic [ref=e230]: 押注
+                      - generic [ref=e231]: Potemkin
+                - generic [ref=e232]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e233]:
+                    - generic [ref=e234]: INTEL
+                    - generic [ref=e235]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e236]: No intel yet. Be the first to analyze this matchup.
+              - generic [ref=e237]:
+                - generic [ref=e239]:
+                  - generic [ref=e240]:
+                    - generic [ref=e241]: POOL A
+                    - strong [ref=e242]: 0 W$
+                  - generic [ref=e243]:
+                    - generic [ref=e244]: MATCH
+                    - strong [ref=e245]: 0 W$
+                    - generic [ref=e246]: 50% / 50%
+                  - generic [ref=e247]:
+                    - generic [ref=e248]: POOL B
+                    - strong [ref=e249]: 0 W$
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - generic [ref=e257]: PLAYER A
+                    - generic [ref=e262]: L
+                    - heading "Leo" [level=3] [ref=e263]
+                  - generic [ref=e264]:
+                    - generic [ref=e265]: MATCH
+                    - generic [ref=e266]: VS
+                  - generic [ref=e267]:
+                    - generic [ref=e268]: PLAYER B
+                    - generic [ref=e273]: G
+                    - heading "Giovanna" [level=3] [ref=e274]
+                - generic [ref=e275]:
+                  - generic [ref=e276]:
+                    - generic [ref=e278]: 押注
+                    - generic [ref=e280]:
+                      - button "快捷下注 100 积分" [ref=e281]: "+100"
+                      - button "快捷下注 500 积分" [ref=e282]: "+500"
+                      - button "全押" [ref=e283]: 最大押注 (MAX)
+                  - generic [ref=e284]:
+                    - spinbutton "押注" [ref=e285]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e286]
+                  - generic [ref=e287]:
+                    - button "押注 Leo" [disabled] [ref=e288]:
+                      - generic [ref=e289]: 押注
+                      - generic [ref=e290]: Leo
+                    - button "押注 Giovanna" [disabled] [ref=e291]:
+                      - generic [ref=e292]: 押注
+                      - generic [ref=e293]: Giovanna
+                - generic [ref=e294]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e295]:
+                    - generic [ref=e296]: INTEL
+                    - generic [ref=e297]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e298]: No intel yet. Be the first to analyze this matchup.
+              - generic [ref=e299]:
+                - generic [ref=e301]:
+                  - generic [ref=e302]:
+                    - generic [ref=e303]: POOL A
+                    - strong [ref=e304]: 0 W$
+                  - generic [ref=e305]:
+                    - generic [ref=e306]: MATCH
+                    - strong [ref=e307]: 0 W$
+                    - generic [ref=e308]: 50% / 50%
+                  - generic [ref=e309]:
+                    - generic [ref=e310]: POOL B
+                    - strong [ref=e311]: 0 W$
+                - generic [ref=e317]:
+                  - generic [ref=e318]:
+                    - generic [ref=e319]: PLAYER A
+                    - generic [ref=e324]: B
+                    - heading "Baiken" [level=3] [ref=e325]
+                  - generic [ref=e326]:
+                    - generic [ref=e327]: MATCH
+                    - generic [ref=e328]: VS
+                  - generic [ref=e329]:
+                    - generic [ref=e330]: PLAYER B
+                    - generic [ref=e335]: A
+                    - heading "Anji" [level=3] [ref=e336]
+                - generic [ref=e337]:
+                  - generic [ref=e338]:
+                    - generic [ref=e340]: 押注
+                    - generic [ref=e342]:
+                      - button "快捷下注 100 积分" [ref=e343]: "+100"
+                      - button "快捷下注 500 积分" [ref=e344]: "+500"
+                      - button "全押" [ref=e345]: 最大押注 (MAX)
+                  - generic [ref=e346]:
+                    - spinbutton "押注" [ref=e347]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e348]
+                  - generic [ref=e349]:
+                    - button "押注 Baiken" [disabled] [ref=e350]:
+                      - generic [ref=e351]: 押注
+                      - generic [ref=e352]: Baiken
+                    - button "押注 Anji" [disabled] [ref=e353]:
+                      - generic [ref=e354]: 押注
+                      - generic [ref=e355]: Anji
+                - generic [ref=e356]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e357]:
+                    - generic [ref=e358]: INTEL
+                    - generic [ref=e359]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e360]: No intel yet. Be the first to analyze this matchup.
+              - generic [ref=e361]:
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - generic [ref=e365]: POOL A
+                    - strong [ref=e366]: 250 W$
+                  - generic [ref=e367]:
+                    - generic [ref=e368]: MATCH
+                    - strong [ref=e369]: 250 W$
+                    - generic [ref=e370]: 100% / 0%
+                  - generic [ref=e371]:
+                    - generic [ref=e372]: POOL B
+                    - strong [ref=e373]: 0 W$
+                - generic [ref=e378]:
+                  - generic [ref=e379]:
+                    - generic [ref=e380]: PLAYER A
+                    - generic [ref=e385]: S
+                    - heading "Sol Badguy" [level=3] [ref=e386]
+                  - generic [ref=e387]:
+                    - generic [ref=e388]: MATCH
+                    - generic [ref=e389]: VS
+                  - generic [ref=e390]:
+                    - generic [ref=e391]: PLAYER B
+                    - generic [ref=e396]: K
+                    - heading "Ky Kiske" [level=3] [ref=e397]
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - generic [ref=e401]: 押注
+                    - generic [ref=e403]:
+                      - button "快捷下注 100 积分" [ref=e404]: "+100"
+                      - button "快捷下注 500 积分" [ref=e405]: "+500"
+                      - button "全押" [ref=e406]: 最大押注 (MAX)
+                  - generic [ref=e407]:
+                    - spinbutton "押注" [ref=e408]
+                    - textbox "赛事分析 / 留言 (Optional Comment)..." [ref=e409]
+                  - generic [ref=e410]:
+                    - button "押注 Sol Badguy" [disabled] [ref=e411]:
+                      - generic [ref=e412]: 押注
+                      - generic [ref=e413]: Sol Badguy
+                    - button "押注 Ky Kiske" [disabled] [ref=e414]:
+                      - generic [ref=e415]: 押注
+                      - generic [ref=e416]: Ky Kiske
+                - generic [ref=e417]:
+                  - heading "INTEL 弹幕 / 战况情报 (Intel Feed)" [level=4] [ref=e418]:
+                    - generic [ref=e419]: INTEL
+                    - generic [ref=e420]: 弹幕 / 战况情报 (Intel Feed)
+                  - generic [ref=e421]:
+                    - generic [ref=e422]:
+                      - generic [ref=e423]:
+                        - generic [ref=e424]: Challenger
+                        - generic [ref=e425]: 投入
+                        - generic [ref=e426]: 150 W$
+                        - generic [ref=e427]: 支持
+                        - generic [ref=e428]: Sol Badguy
+                      - paragraph [ref=e430]: "\"Sol is just better!\""
+                    - generic [ref=e431]:
+                      - generic [ref=e432]:
+                        - generic [ref=e433]: Challenger
+                        - generic [ref=e434]: 投入
+                        - generic [ref=e435]: 100 W$
+                        - generic [ref=e436]: 支持
+                        - generic [ref=e437]: Sol Badguy
+                      - paragraph [ref=e439]: "\"Test comment for AI prediction!\""
+          - generic [ref=e440]:
+            - heading "🔥 悬赏榜单 (HIGH SCORES)" [level=3] [ref=e441]:
+              - generic [ref=e442]: 🔥
+              - text: 悬赏榜单 (HIGH SCORES)
+            - generic [ref=e443]:
+              - generic [ref=e444]:
+                - generic [ref=e445]:
+                  - generic [ref=e446]: 1ST
+                  - generic [ref=e447]: Challenger
+                - generic [ref=e448]: 1,000
+              - generic [ref=e449]:
+                - generic [ref=e450]:
+                  - generic [ref=e451]: 2ND
+                  - generic [ref=e452]: SolBadguyFan
+                - generic [ref=e453]: 1,000
+              - generic [ref=e454]:
+                - generic [ref=e455]:
+                  - generic [ref=e456]: 3RD
+                  - generic [ref=e457]: Challenger
+                - generic [ref=e458]: "750"
+              - generic [ref=e459]:
+                - generic [ref=e460]:
+                  - generic [ref=e461]: 4TH
+                  - generic [ref=e462]: Challenger_6278
+                - generic [ref=e463]: "0"
+  - alert [ref=e50]

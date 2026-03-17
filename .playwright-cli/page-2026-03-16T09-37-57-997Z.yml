@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "👤 猎人档案" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]: 👤 猎人档案
+        - link "⚔️ 赛事战局" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e12]: ⚔️ 赛事战局
+        - link "🏆 比赛赛程" [ref=e13] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e14]: 🏆 比赛赛程
+        - link "👑 排行榜" [ref=e15] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e16]: 👑 排行榜
+        - link "🛒 黑市交易" [ref=e17] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e18]: 🛒 黑市交易
+        - link "⚙️ 账户设置" [ref=e19] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e20]: ⚙️ 账户设置
+        - link "📖 用户手册" [ref=e21] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e22]: 📖 用户手册
+        - link "ℹ️ 关于 (ABOUT)" [ref=e23] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e24]: ℹ️ 关于 (ABOUT)
+      - generic [ref=e25]:
+        - generic [ref=e26]: "当前玩家 (ACTIVE FIGHTER):"
+        - generic [ref=e27]: SolBadguyFan
+        - generic [ref=e29]: ₩ 1,000
+    - main [ref=e30]:
+      - generic [ref=e32]:
+        - generic [ref=e34]:
+          - button "刷新数据" [disabled] [ref=e35]:
+            - generic [ref=e36]: ⟳
+            - text: REFRESH
+          - button "Rules" [ref=e37]: RULES [?]
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e42]: "当前余额: 0 W$"
+            - generic [ref=e43]:
+              - button "🔥 LET'S ROCK" [pressed] [ref=e44]
+              - button "⚔️ SLASH!" [ref=e45]
+              - button "📋 ALL" [ref=e46]
+          - paragraph [ref=e48]: 等待玩家投币挑战 (INSERT COIN...)
+  - alert [ref=e50]

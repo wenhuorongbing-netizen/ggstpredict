@@ -16,9 +16,13 @@ export async function GET(
       select: {
         id: true,
         username: true,
+        displayName: true,
+        nameColor: true,
         points: true,
         role: true,
         winStreak: true,
+        fdShields: true,
+        fatalCounters: true,
       },
     });
 

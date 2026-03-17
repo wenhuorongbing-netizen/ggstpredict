@@ -8,57 +8,62 @@ export default function AboutPage() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <div className="max-w-4xl mx-auto relative z-10 p-4 sm:p-8 h-full flex flex-col justify-center">
-
-          <div className="flex justify-between items-center mb-12 transform -skew-x-2 bg-[#1a1a1a] border border-neutral-800 p-4">
+        <div className="relative z-10 mx-auto flex h-full max-w-4xl flex-col justify-center p-4 sm:p-8">
+          <div className="mb-12 flex items-center justify-between border border-neutral-800 bg-[#1a1a1a] p-4 transform -skew-x-2">
             <div className="transform skew-x-2">
-              <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                ABOUT PROJECT
+              <h1
+                className="text-4xl font-black tracking-widest text-white drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]"
+                style={{ fontFamily: "var(--font-bebas)" }}
+              >
+                {"\u5173\u4e8e\u9879\u76ee"}
               </h1>
-              <p className="text-red-500 text-sm tracking-widest font-bold uppercase">关于本项目</p>
+              <p className="text-sm font-bold tracking-widest text-red-500">
+                {"GGST PREDICTION BUREAU"}
+              </p>
             </div>
           </div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-black/80 border-2 border-red-900 p-8 shadow-[8px_8px_0px_rgba(239,68,68,0.3)] relative overflow-hidden transform -skew-x-2"
+            className="relative overflow-hidden border-2 border-red-900 bg-black/80 p-8 shadow-[8px_8px_0px_rgba(239,68,68,0.3)] transform -skew-x-2"
           >
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-red-500 pointer-events-none z-20"></div>
+            <div className="pointer-events-none absolute right-0 top-0 z-20 h-8 w-8 border-r-4 border-t-4 border-red-500"></div>
 
-            <div className="transform skew-x-2 space-y-6">
-              <h2 className="text-3xl font-black text-white tracking-widest flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
-                 <span className="text-red-500">{"//"}</span> OPEN SOURCE FGC PREDICTION BUREAU
+            <div className="space-y-6 transform skew-x-2">
+              <h2
+                className="flex items-center gap-2 text-3xl font-black tracking-widest text-white"
+                style={{ fontFamily: "var(--font-bebas)" }}
+              >
+                <span className="text-red-500">{"//"}</span>
+                {"\u89c2\u8d5b\u9884\u6d4b\u7ad9"}
               </h2>
 
-              <div className="text-neutral-300 leading-relaxed font-medium">
-                <p className="mb-4">
-                  “罪恶装备预测局” (GGST Prediction Bureau) 是一个为格斗游戏社区 (FGC) 打造的极简、开源的赛事预测平台。
-                  本项目没有真实的金钱交易，纯粹为社区观赛增添乐趣而生。
+              <div className="space-y-4 leading-relaxed text-neutral-300">
+                <p>
+                  {"\u8fd9\u662f\u4e00\u4e2a\u7ed9 GGST \u793e\u7fa4\u7528\u7684\u89c2\u8d5b\u9884\u6d4b\u7ad9\u3002\u6ca1\u6709\u771f\u94b1\uff0c\u53ea\u7b97\u7ad9\u5185 W$\u3002"}
                 </p>
-                <p className="mb-4">
-                  采用 Next.js, Tailwind CSS, Prisma 驱动，并深度定制了 Guilty Gear Strive 的视觉语言与交互反馈。
-                  从动态的 Pari-Mutuel 奖池算法，到全自动的赛事抓取引擎，皆为开源构建。
+                <p>
+                  {"\u53ef\u4ee5\u770b\u5bf9\u5c40\u3001\u4e0b\u6ce8\u3001\u770b\u699c\u5355\uff0c\u4e5f\u53ef\u4ee5\u5728\u7ba1\u7406\u9875\u5f55\u5165\u548c\u7ed3\u7b97\u6bd4\u8d5b\u3002"}
                 </p>
-                <p className="text-neutral-500 text-sm italic border-l-2 border-neutral-700 pl-4 mt-8">
-                  "Heaven or Hell, Let's Rock!"
+                <p className="text-neutral-400">
+                  {"\u7279\u522b\u611f\u8c22\uff1a\u65af\u5361\u8482"}
                 </p>
               </div>
 
-              <div className="pt-8 flex justify-center mt-8 border-t-2 border-neutral-800/50">
+              <div className="mt-8 flex justify-center border-t-2 border-neutral-800/50 pt-8">
                 <a
                   href="https://github.com/wenhuorongbing-netizen/ggstpredict"
                   target="_blank"
                   rel="noreferrer"
-                  className="ggst-button bg-black border-white hover:bg-white hover:text-black text-white px-8 py-4 text-xl font-black tracking-widest transition-all shadow-[6px_6px_0px_rgba(255,255,255,0.2)] hover:shadow-[2px_2px_0px_rgba(255,255,255,1)] translate-x-[-2px] translate-y-[-2px] hover:translate-x-0 hover:translate-y-0"
+                  className="ggst-button border-white bg-black px-8 py-4 text-xl font-black tracking-widest text-white shadow-[6px_6px_0px_rgba(255,255,255,0.2)] transition-all hover:translate-x-0 hover:translate-y-0 hover:bg-white hover:text-black hover:shadow-[2px_2px_0px_rgba(255,255,255,1)]"
                   style={{ fontFamily: "var(--font-bebas)" }}
                 >
-                  [ 🔗 VIEW ON GITHUB ]
+                  {"\u67e5\u770b GITHUB"}
                 </a>
               </div>
             </div>
           </motion.div>
-
         </div>
       </AppLayout>
     </ProtectedRoute>

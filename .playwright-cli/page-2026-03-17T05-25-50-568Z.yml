@@ -1,0 +1,122 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e7]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e9]:
+        - link "ID 个人资料" [ref=e10] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e11]:
+            - generic [ref=e12]: ID
+            - generic [ref=e13]: 个人资料
+        - link "VS 赛事战局" [ref=e14] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e15]:
+            - generic [ref=e16]: VS
+            - generic [ref=e17]: 赛事战局
+        - link "BR 赛程 / 淘汰赛" [ref=e18] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e19]:
+            - generic [ref=e20]: BR
+            - generic [ref=e21]: 赛程 / 淘汰赛
+        - link "TOP 悬赏榜单" [ref=e22] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e23]:
+            - generic [ref=e24]: TOP
+            - generic [ref=e25]: 悬赏榜单
+        - link "BK 商店" [ref=e26] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e27]:
+            - generic [ref=e28]: BK
+            - generic [ref=e29]: 商店
+        - link "SYS 设置" [ref=e30] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e31]:
+            - generic [ref=e32]: SYS
+            - generic [ref=e33]: 设置
+        - link "DOC 文档" [ref=e34] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e35]:
+            - generic [ref=e36]: DOC
+            - generic [ref=e37]: 文档
+        - link "INF 关于" [ref=e38] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e39]:
+            - generic [ref=e40]: INF
+            - generic [ref=e41]: 关于
+        - link "ADM 管理" [ref=e42] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e43]:
+            - generic [ref=e44]: ADM
+            - generic [ref=e45]: 管理
+      - generic [ref=e46]:
+        - generic [ref=e47]: 当前斗士
+        - generic [ref=e48]: 斗士
+        - generic [ref=e50]: W$ 0
+    - main [ref=e51]:
+      - generic [ref=e53]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: TOURNAMENT BOARD
+            - heading "AWT FINALS (DEFAULT)" [level=1] [ref=e58]
+            - paragraph [ref=e59]: 当前阶段 / GROUP STAGE
+          - generic [ref=e60]:
+            - generic [ref=e61]: 赛程视图
+            - generic [ref=e62]:
+              - button "小组赛" [ref=e63]
+              - button "淘汰赛" [ref=e64]
+        - generic [ref=e65]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - generic [ref=e69]: AWT KOREA FORMAT
+              - generic [ref=e70]: 小组第一直进胜者组，小组第二进入附加赛，其余直接淘汰。
+            - generic [ref=e71]:
+              - generic [ref=e72]: 晋级胜者组
+              - generic [ref=e73]: 附加赛
+              - generic [ref=e74]: 淘汰
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e79]:
+                - heading "GROUP A" [level=2] [ref=e80]
+                - generic [ref=e81]: 小组进行中
+              - table [ref=e83]:
+                - rowgroup [ref=e84]:
+                  - row "选手 积分 去向" [ref=e85]:
+                    - columnheader "选手" [ref=e86]
+                    - columnheader "积分" [ref=e87]
+                    - columnheader "去向" [ref=e88]
+                - rowgroup [ref=e89]:
+                  - row "▲ KY KY A Ky 0 暂列胜者组" [ref=e90]:
+                    - cell "▲ KY KY A Ky" [ref=e91]:
+                      - generic [ref=e92]: ▲
+                      - generic [ref=e94]:
+                        - generic [ref=e95]: KY
+                        - generic [ref=e96]:
+                          - generic [ref=e101]: KY
+                          - generic [ref=e102]: A
+                      - generic [ref=e103]: Ky
+                    - cell "0" [ref=e104]
+                    - cell "暂列胜者组" [ref=e105]:
+                      - generic [ref=e106]: 暂列胜者组
+                  - row "● SOL SO A Sol 0 暂列附加赛" [ref=e107]:
+                    - cell "● SOL SO A Sol" [ref=e108]:
+                      - generic [ref=e109]: ●
+                      - generic [ref=e111]:
+                        - generic [ref=e112]: SOL
+                        - generic [ref=e113]:
+                          - generic [ref=e118]: SO
+                          - generic [ref=e119]: A
+                      - generic [ref=e120]: Sol
+                    - cell "0" [ref=e121]
+                    - cell "暂列附加赛" [ref=e122]:
+                      - generic [ref=e123]: 暂列附加赛
+            - generic [ref=e124]:
+              - heading "组内对局" [level=3] [ref=e125]
+              - generic [ref=e127]:
+                - generic [ref=e128]:
+                  - generic [ref=e129]: Sol
+                  - generic [ref=e130]: vs
+                  - generic [ref=e131]: Ky
+                - generic [ref=e132]: 可下注

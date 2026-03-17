@@ -1,0 +1,401 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e6]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e8]:
+        - link "ID 个人资料" [ref=e9] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e10]:
+            - generic [ref=e11]: ID
+            - generic [ref=e12]: 个人资料
+        - link "VS 赛事战局" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e14]:
+            - generic [ref=e15]: VS
+            - generic [ref=e16]: 赛事战局
+        - link "BR 赛程分组" [ref=e17] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e18]:
+            - generic [ref=e19]: BR
+            - generic [ref=e20]: 赛程分组
+        - link "TOP 悬赏榜单" [ref=e21] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e22]:
+            - generic [ref=e23]: TOP
+            - generic [ref=e24]: 悬赏榜单
+        - link "BK 商店" [ref=e25] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e26]:
+            - generic [ref=e27]: BK
+            - generic [ref=e28]: 商店
+        - link "SYS 设置" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e30]:
+            - generic [ref=e31]: SYS
+            - generic [ref=e32]: 设置
+        - link "DOC 文档" [ref=e33] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e34]:
+            - generic [ref=e35]: DOC
+            - generic [ref=e36]: 文档
+        - link "INF 关于" [ref=e37] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e38]:
+            - generic [ref=e39]: INF
+            - generic [ref=e40]: 关于
+        - link "ADM 管理" [ref=e41] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e42]:
+            - generic [ref=e43]: ADM
+            - generic [ref=e44]: 管理
+      - generic [ref=e45]:
+        - generic [ref=e46]: 当前斗士
+        - generic [ref=e47]: Challenger
+        - generic [ref=e49]: W$ 1,000
+    - main [ref=e50]:
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: 当前余额
+            - generic [ref=e59]: 1,000 W$
+          - generic [ref=e61]:
+            - button "开盘中" [pressed] [ref=e62]
+            - button "已结算" [ref=e63]
+            - button "全部" [ref=e64]
+          - generic [ref=e65]:
+            - button "\\u5237\\u65b0\\u5bf9\\u5c40" [disabled] [ref=e66]:
+              - generic [ref=e67]: R
+              - text: 刷新
+            - button "\\u67e5\\u770b\\u89c4\\u5219" [ref=e68]: 规则
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e73]:
+                - generic [ref=e74]:
+                  - generic [ref=e75]: A 池
+                  - strong [ref=e76]: 0 W$
+                - generic [ref=e77]:
+                  - generic [ref=e78]: 对局
+                  - strong [ref=e79]: 0 W$
+                  - generic [ref=e80]: 50% / 50%
+                - generic [ref=e81]:
+                  - generic [ref=e82]: B 池
+                  - strong [ref=e83]: 0 W$
+              - generic [ref=e89]:
+                - generic [ref=e90]:
+                  - generic [ref=e91]: 选手 A
+                  - img "TestA" [ref=e95]
+                  - heading "TestA" [level=3] [ref=e96]:
+                    - generic [ref=e97]: TestA
+                - generic [ref=e98]:
+                  - generic [ref=e99]: 对局
+                  - generic [ref=e100]: VS
+                - generic [ref=e101]:
+                  - generic [ref=e102]: 选手 B
+                  - img "TestB" [ref=e106]
+                  - heading "TestB" [level=3] [ref=e107]:
+                    - generic [ref=e108]: TestB
+            - generic [ref=e109]:
+              - generic [ref=e110]:
+                - generic [ref=e111]:
+                  - generic [ref=e112]:
+                    - generic [ref=e113]: 押注
+                    - generic [ref=e114]: 下注上限 500 W$
+                  - generic [ref=e115]:
+                    - button "快速押注 100 W$" [ref=e116]: "+100"
+                    - button "快速押注 500 W$" [ref=e117]: "+500"
+                    - button "最大押注" [ref=e118]
+                - generic [ref=e119]:
+                  - spinbutton "押注" [ref=e120]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e121]
+                - generic [ref=e122]:
+                  - button "押注 TestA" [disabled] [ref=e123]:
+                    - generic [ref=e124]: 押注
+                    - generic [ref=e125]: TestA
+                  - button "押注 TestB" [disabled] [ref=e126]:
+                    - generic [ref=e127]: 押注
+                    - generic [ref=e128]: TestB
+              - generic [ref=e129]:
+                - heading "战况动态" [level=4] [ref=e130]:
+                  - generic [ref=e131]: 战况动态
+                - generic [ref=e132]: "> [ 系统：暂无战况情报 ]_ ×"
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - generic [ref=e136]:
+                - generic [ref=e137]:
+                  - generic [ref=e138]: A 池
+                  - strong [ref=e139]: 0 W$
+                - generic [ref=e140]:
+                  - generic [ref=e141]: 分组
+                  - strong [ref=e142]: 0 W$
+                  - generic [ref=e143]: 50% / 50%
+                - generic [ref=e144]:
+                  - generic [ref=e145]: B 池
+                  - strong [ref=e146]: 0 W$
+              - generic [ref=e152]:
+                - generic [ref=e153]:
+                  - generic [ref=e154]: 选手 A
+                  - generic [ref=e157]:
+                    - generic [ref=e158]: SOL
+                    - img "Sol" [ref=e159]
+                  - heading "Sol" [level=3] [ref=e160]:
+                    - generic [ref=e161]: Sol
+                  - generic [ref=e162]: Sol
+                - generic [ref=e163]:
+                  - generic [ref=e164]: 分组
+                  - generic [ref=e165]: VS
+                - generic [ref=e166]:
+                  - generic [ref=e167]: 选手 B
+                  - generic [ref=e170]:
+                    - generic [ref=e171]: KY
+                    - img "Ky" [ref=e172]
+                  - heading "Ky" [level=3] [ref=e173]:
+                    - generic [ref=e174]: Ky
+                  - generic [ref=e175]: Ky
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]:
+                  - generic [ref=e179]:
+                    - generic [ref=e180]: 押注
+                    - generic [ref=e181]: 下注上限 300 W$
+                  - generic [ref=e182]:
+                    - button "快速押注 100 W$" [ref=e183]: "+100"
+                    - button "快速押注 500 W$" [ref=e184]: "+500"
+                    - button "最大押注" [ref=e185]
+                - generic [ref=e186]:
+                  - spinbutton "押注" [ref=e187]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e188]
+                - generic [ref=e189]:
+                  - button "押注 Sol" [disabled] [ref=e190]:
+                    - generic [ref=e191]: 押注
+                    - generic [ref=e192]: Sol
+                  - button "押注 Ky" [disabled] [ref=e193]:
+                    - generic [ref=e194]: 押注
+                    - generic [ref=e195]: Ky
+              - generic [ref=e196]:
+                - heading "战况动态" [level=4] [ref=e197]:
+                  - generic [ref=e198]: 战况动态
+                - generic [ref=e199]: "> [ 系统：暂无战况情报 ]_ ×"
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - generic [ref=e205]: A 池
+                  - strong [ref=e206]: 0 W$
+                - generic [ref=e207]:
+                  - generic [ref=e208]: 对局
+                  - strong [ref=e209]: 0 W$
+                  - generic [ref=e210]: 50% / 50%
+                - generic [ref=e211]:
+                  - generic [ref=e212]: B 池
+                  - strong [ref=e213]: 0 W$
+              - generic [ref=e219]:
+                - generic [ref=e220]:
+                  - generic [ref=e221]: 选手 A
+                  - img "Axl" [ref=e225]
+                  - heading "Axl" [level=3] [ref=e226]:
+                    - generic [ref=e227]: Axl
+                - generic [ref=e228]:
+                  - generic [ref=e229]: 对局
+                  - generic [ref=e230]: VS
+                - generic [ref=e231]:
+                  - generic [ref=e232]: 选手 B
+                  - img "Potemkin" [ref=e236]
+                  - heading "Potemkin" [level=3] [ref=e237]:
+                    - generic [ref=e238]: Potemkin
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - generic [ref=e241]:
+                  - generic [ref=e242]:
+                    - generic [ref=e243]: 押注
+                    - generic [ref=e244]: 下注上限 500 W$
+                  - generic [ref=e245]:
+                    - button "快速押注 100 W$" [ref=e246]: "+100"
+                    - button "快速押注 500 W$" [ref=e247]: "+500"
+                    - button "最大押注" [ref=e248]
+                - generic [ref=e249]:
+                  - spinbutton "押注" [ref=e250]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e251]
+                - generic [ref=e252]:
+                  - button "押注 Axl" [disabled] [ref=e253]:
+                    - generic [ref=e254]: 押注
+                    - generic [ref=e255]: Axl
+                  - button "押注 Potemkin" [disabled] [ref=e256]:
+                    - generic [ref=e257]: 押注
+                    - generic [ref=e258]: Potemkin
+              - generic [ref=e259]:
+                - heading "战况动态" [level=4] [ref=e260]:
+                  - generic [ref=e261]: 战况动态
+                - generic [ref=e262]: "> [ 系统：暂无战况情报 ]_ ×"
+          - generic [ref=e263]:
+            - generic [ref=e264]:
+              - generic [ref=e266]:
+                - generic [ref=e267]:
+                  - generic [ref=e268]: A 池
+                  - strong [ref=e269]: 0 W$
+                - generic [ref=e270]:
+                  - generic [ref=e271]: 对局
+                  - strong [ref=e272]: 0 W$
+                  - generic [ref=e273]: 50% / 50%
+                - generic [ref=e274]:
+                  - generic [ref=e275]: B 池
+                  - strong [ref=e276]: 0 W$
+              - generic [ref=e282]:
+                - generic [ref=e283]:
+                  - generic [ref=e284]: 选手 A
+                  - img "Leo" [ref=e288]
+                  - heading "Leo" [level=3] [ref=e289]:
+                    - generic [ref=e290]: Leo
+                - generic [ref=e291]:
+                  - generic [ref=e292]: 对局
+                  - generic [ref=e293]: VS
+                - generic [ref=e294]:
+                  - generic [ref=e295]: 选手 B
+                  - img "Giovanna" [ref=e299]
+                  - heading "Giovanna" [level=3] [ref=e300]:
+                    - generic [ref=e301]: Giovanna
+            - generic [ref=e302]:
+              - generic [ref=e303]:
+                - generic [ref=e304]:
+                  - generic [ref=e305]:
+                    - generic [ref=e306]: 押注
+                    - generic [ref=e307]: 下注上限 500 W$
+                  - generic [ref=e308]:
+                    - button "快速押注 100 W$" [ref=e309]: "+100"
+                    - button "快速押注 500 W$" [ref=e310]: "+500"
+                    - button "最大押注" [ref=e311]
+                - generic [ref=e312]:
+                  - spinbutton "押注" [ref=e313]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e314]
+                - generic [ref=e315]:
+                  - button "押注 Leo" [disabled] [ref=e316]:
+                    - generic [ref=e317]: 押注
+                    - generic [ref=e318]: Leo
+                  - button "押注 Giovanna" [disabled] [ref=e319]:
+                    - generic [ref=e320]: 押注
+                    - generic [ref=e321]: Giovanna
+              - generic [ref=e322]:
+                - heading "战况动态" [level=4] [ref=e323]:
+                  - generic [ref=e324]: 战况动态
+                - generic [ref=e325]: "> [ 系统：暂无战况情报 ]_ ×"
+          - generic [ref=e326]:
+            - generic [ref=e327]:
+              - generic [ref=e329]:
+                - generic [ref=e330]:
+                  - generic [ref=e331]: A 池
+                  - strong [ref=e332]: 0 W$
+                - generic [ref=e333]:
+                  - generic [ref=e334]: 对局
+                  - strong [ref=e335]: 0 W$
+                  - generic [ref=e336]: 50% / 50%
+                - generic [ref=e337]:
+                  - generic [ref=e338]: B 池
+                  - strong [ref=e339]: 0 W$
+              - generic [ref=e345]:
+                - generic [ref=e346]:
+                  - generic [ref=e347]: 选手 A
+                  - img "Baiken" [ref=e351]
+                  - heading "Baiken" [level=3] [ref=e352]:
+                    - generic [ref=e353]: Baiken
+                - generic [ref=e354]:
+                  - generic [ref=e355]: 对局
+                  - generic [ref=e356]: VS
+                - generic [ref=e357]:
+                  - generic [ref=e358]: 选手 B
+                  - img "Anji" [ref=e362]
+                  - heading "Anji" [level=3] [ref=e363]:
+                    - generic [ref=e364]: Anji
+            - generic [ref=e365]:
+              - generic [ref=e366]:
+                - generic [ref=e367]:
+                  - generic [ref=e368]:
+                    - generic [ref=e369]: 押注
+                    - generic [ref=e370]: 下注上限 500 W$
+                  - generic [ref=e371]:
+                    - button "快速押注 100 W$" [ref=e372]: "+100"
+                    - button "快速押注 500 W$" [ref=e373]: "+500"
+                    - button "最大押注" [ref=e374]
+                - generic [ref=e375]:
+                  - spinbutton "押注" [ref=e376]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e377]
+                - generic [ref=e378]:
+                  - button "押注 Baiken" [disabled] [ref=e379]:
+                    - generic [ref=e380]: 押注
+                    - generic [ref=e381]: Baiken
+                  - button "押注 Anji" [disabled] [ref=e382]:
+                    - generic [ref=e383]: 押注
+                    - generic [ref=e384]: Anji
+              - generic [ref=e385]:
+                - heading "战况动态" [level=4] [ref=e386]:
+                  - generic [ref=e387]: 战况动态
+                - generic [ref=e388]: "> [ 系统：暂无战况情报 ]_ ×"
+          - generic [ref=e389]:
+            - generic [ref=e390]:
+              - generic [ref=e392]:
+                - generic [ref=e393]:
+                  - generic [ref=e394]: A 池
+                  - strong [ref=e395]: 250 W$
+                - generic [ref=e396]:
+                  - generic [ref=e397]: 对局
+                  - strong [ref=e398]: 250 W$
+                  - generic [ref=e399]: 100% / 0%
+                - generic [ref=e400]:
+                  - generic [ref=e401]: B 池
+                  - strong [ref=e402]: 0 W$
+              - generic [ref=e407]:
+                - generic [ref=e408]:
+                  - generic [ref=e409]: 选手 A
+                  - img "Sol Badguy" [ref=e413]
+                  - heading "Sol Badguy" [level=3] [ref=e414]:
+                    - generic [ref=e415]: Sol Badguy
+                - generic [ref=e416]:
+                  - generic [ref=e417]: 对局
+                  - generic [ref=e418]: VS
+                - generic [ref=e419]:
+                  - generic [ref=e420]: 选手 B
+                  - img "Ky Kiske" [ref=e424]
+                  - heading "Ky Kiske" [level=3] [ref=e425]:
+                    - generic [ref=e426]: Ky Kiske
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - generic [ref=e429]:
+                  - generic [ref=e430]:
+                    - generic [ref=e431]: 押注
+                    - generic [ref=e432]: 下注上限 500 W$
+                  - generic [ref=e433]:
+                    - button "快速押注 100 W$" [ref=e434]: "+100"
+                    - button "快速押注 500 W$" [ref=e435]: "+500"
+                    - button "最大押注" [ref=e436]
+                - generic [ref=e437]:
+                  - spinbutton "押注" [ref=e438]
+                  - textbox "赛事分析 / 留言（可选）..." [ref=e439]
+                - generic [ref=e440]:
+                  - button "押注 Sol Badguy" [disabled] [ref=e441]:
+                    - generic [ref=e442]: 押注
+                    - generic [ref=e443]: Sol Badguy
+                  - button "押注 Ky Kiske" [disabled] [ref=e444]:
+                    - generic [ref=e445]: 押注
+                    - generic [ref=e446]: Ky Kiske
+              - generic [ref=e447]:
+                - heading "战况动态" [level=4] [ref=e448]:
+                  - generic [ref=e449]: 战况动态
+                - generic [ref=e450]:
+                  - generic [ref=e451]:
+                    - generic [ref=e452]:
+                      - generic [ref=e453]: Challenger
+                      - generic [ref=e454]: 投入
+                      - generic [ref=e455]: 150 W$
+                      - generic [ref=e456]: 支持
+                      - generic [ref=e457]: Sol Badguy
+                    - paragraph [ref=e459]: "\"Sol is just better!\""
+                  - generic [ref=e460]:
+                    - generic [ref=e461]:
+                      - generic [ref=e462]: Challenger
+                      - generic [ref=e463]: 投入
+                      - generic [ref=e464]: 100 W$
+                      - generic [ref=e465]: 支持
+                      - generic [ref=e466]: Sol Badguy
+                    - paragraph [ref=e468]: "\"Test comment for AI prediction!\""
+  - alert [ref=e470]

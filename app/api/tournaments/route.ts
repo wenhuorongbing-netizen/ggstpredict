@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< Updated upstream
+=======
+import { synchronizeCanonicalMatchData } from "@/lib/match-data-maintenance";
+import { resolveBracketDisplayMatches } from "@/lib/awt-korea-bracket";
+>>>>>>> Stashed changes
 
 export async function GET() {
   try {
@@ -19,7 +24,15 @@ export async function GET() {
       return NextResponse.json({ tournament: null }, { status: 200 });
     }
 
-    return NextResponse.json({ tournament }, { status: 200 });
+    return NextResponse.json(
+      {
+        tournament: {
+          ...tournament,
+          matches: resolveBracketDisplayMatches(tournament.matches),
+        },
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Failed to fetch tournament:", error);
     return NextResponse.json(

@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic: MANKIND KNEW THAT THEY CANNOT CHANGE SOCIETY
+    - generic [ref=e3]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e4]
+      - paragraph [ref=e5]: DUEL 1 - LET'S ROCK
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: 账号 (Account ID)
+          - textbox "账号 (Account ID)" [ref=e9]:
+            - /placeholder: Enter Account ID
+          - generic [ref=e10]: ">"
+        - generic [ref=e11]:
+          - generic [ref=e12]: 密码 (Password)
+          - textbox "密码 (Password)" [ref=e13]:
+            - /placeholder: ••••••••
+          - generic [ref=e14]: ">"
+        - generic [ref=e15]:
+          - generic [ref=e16]: 邀请码 (Invite Code - 仅新注册需要)
+          - textbox "邀请码 (Invite Code - 仅新注册需要)" [ref=e17]:
+            - /placeholder: Enter Invite Code
+          - generic [ref=e18]: ">"
+        - button "ENTER THE BATTLEFIELD" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: ENTER THE BATTLEFIELD
+    - link "[ 📖 查阅战地手册 / READ MANUALS ]" [ref=e23] [cursor=pointer]:
+      - /url: /docs
+  - alert [ref=e24]

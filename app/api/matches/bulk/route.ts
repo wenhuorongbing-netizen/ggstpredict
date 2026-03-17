@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< Updated upstream
+=======
+import { synchronizeCanonicalMatchData } from "@/lib/match-data-maintenance";
+import { buildCanonicalMaps, normalizeMatchEntry } from "@/lib/tournament-data";
+import { parseBettingCloseDate } from "@/lib/match-betting";
+>>>>>>> Stashed changes
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { matches, stageType, groupId, tournamentId } = body;
+    const { matches, stageType, groupId, tournamentId, bettingClosesAt } = body;
+    const parsedBettingClosesAt = parseBettingCloseDate(bettingClosesAt);
 
     if (!Array.isArray(matches) || matches.length === 0) {
       return NextResponse.json(
@@ -42,6 +49,7 @@ export async function POST(request: Request) {
         tournamentId: activeTournamentId,
         stageType: stageType || "GROUP",
         groupId: groupId || "A",
+        bettingClosesAt: parsedBettingClosesAt,
       };
     });
 

@@ -1,0 +1,91 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - heading "HEAVEN OR HELL" [level=1] [ref=e7]:
+        - text: HEAVEN
+        - text: OR HELL
+      - navigation [ref=e9]:
+        - link "个人资料" [ref=e10] [cursor=pointer]:
+          - /url: /profile
+          - generic [ref=e11]: 个人资料
+        - link "赛事战局" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e13]: 赛事战局
+        - link "赛程分组" [ref=e14] [cursor=pointer]:
+          - /url: /bracket
+          - generic [ref=e15]: 赛程分组
+        - link "悬赏榜单" [ref=e16] [cursor=pointer]:
+          - /url: /leaderboard
+          - generic [ref=e17]: 悬赏榜单
+        - link "商店" [ref=e18] [cursor=pointer]:
+          - /url: /shop
+          - generic [ref=e19]: 商店
+        - link "设置" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: 设置
+        - link "文档" [ref=e22] [cursor=pointer]:
+          - /url: /docs
+          - generic [ref=e23]: 文档
+        - link "关于" [ref=e24] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e25]: 关于
+        - link "管理" [ref=e26] [cursor=pointer]:
+          - /url: /admin
+          - generic [ref=e27]: 管理
+      - generic [ref=e28]:
+        - generic [ref=e29]: 当前斗士
+        - generic [ref=e30]: Challenger
+        - generic [ref=e31]:
+          - generic [ref=e32]: W$ 1,000
+          - generic [ref=e33]: 连胜 x2
+    - main [ref=e34]:
+      - generic [ref=e36]:
+        - generic [ref=e38]:
+          - heading "AWT FINALS (DEFAULT)" [level=1] [ref=e39]
+          - paragraph [ref=e40]: GROUP STAGE
+        - generic [ref=e41]:
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - generic [ref=e45]: AWT KOREA FORMAT
+              - generic [ref=e46]: 小组第一直进胜者组，小组第二进入附加赛，其余直接淘汰。
+            - generic [ref=e47]:
+              - generic [ref=e48]: 晋级胜者组
+              - generic [ref=e49]: 附加赛
+              - generic [ref=e50]: 淘汰
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e55]:
+                - heading "GROUP A" [level=2] [ref=e56]
+                - generic [ref=e57]: 小组进行中
+              - table [ref=e59]:
+                - rowgroup [ref=e60]:
+                  - row "FIGHTER POINTS STATUS" [ref=e61]:
+                    - columnheader "FIGHTER" [ref=e62]
+                    - columnheader "POINTS" [ref=e63]
+                    - columnheader "STATUS" [ref=e64]
+                - rowgroup [ref=e65]:
+                  - row "▲ K Ky 0 暂列胜者组" [ref=e66]:
+                    - cell "▲ K Ky" [ref=e67]:
+                      - generic [ref=e68]: ▲
+                      - generic [ref=e72]: K
+                      - generic [ref=e73]: Ky
+                    - cell "0" [ref=e74]
+                    - cell "暂列胜者组" [ref=e75]:
+                      - generic [ref=e76]: 暂列胜者组
+                  - row "● S Sol 0 暂列附加赛" [ref=e77]:
+                    - cell "● S Sol" [ref=e78]:
+                      - generic [ref=e79]: ●
+                      - generic [ref=e83]: S
+                      - generic [ref=e84]: Sol
+                    - cell "0" [ref=e85]
+                    - cell "暂列附加赛" [ref=e86]:
+                      - generic [ref=e87]: 暂列附加赛
+            - generic [ref=e88]:
+              - heading "GROUP MATCHES" [level=3] [ref=e89]
+              - generic [ref=e91]:
+                - generic [ref=e92]:
+                  - generic [ref=e93]: Sol
+                  - generic [ref=e94]: vs
+                  - generic [ref=e95]: Ky
+                - generic [ref=e96]: LET'S ROCK

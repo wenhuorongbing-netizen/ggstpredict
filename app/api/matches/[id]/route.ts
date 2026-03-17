@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-import { NextRequest } from "next/server";
+import { resolveBettingClosesAt } from "@/lib/match-betting";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: matchId } = await context.params;
@@ -23,19 +22,63 @@ export async function PATCH(
       return NextResponse.json({ match: updatedMatch }, { status: 200 });
     }
 
+    if (body.action === "SET_BETTING_CLOSE") {
+      const bettingClosesAt = resolveBettingClosesAt(
+        {
+          mode: body.mode,
+          delayMinutes: body.delayMinutes,
+          closeAt: body.closeAt,
+        },
+        new Date(),
+      );
+
+      const updatedMatch = await prisma.match.update({
+        where: { id: matchId },
+        data: { bettingClosesAt },
+      });
+
+      await prisma.adminLog.create({
+        data: {
+          action: "Set Betting Close",
+          details: `Match ${matchId} closes betting at ${bettingClosesAt.toISOString()}`,
+        },
+      });
+
+      return NextResponse.json({ match: updatedMatch }, { status: 200 });
+    }
+
+    if (body.action === "CLEAR_BETTING_CLOSE") {
+      const updatedMatch = await prisma.match.update({
+        where: { id: matchId },
+        data: { bettingClosesAt: null },
+      });
+
+      await prisma.adminLog.create({
+        data: {
+          action: "Clear Betting Close",
+          details: `Match ${matchId} betting close removed`,
+        },
+      });
+
+      return NextResponse.json({ match: updatedMatch }, { status: 200 });
+    }
+
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     console.error("Failed to update match:", error);
+    if (error instanceof Error && (error.message === "封盘分钟数必须大于 0" || error.message === "指定封盘时间无效")) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json(
       { error: "Failed to update match" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: matchId } = await context.params;
@@ -43,12 +86,11 @@ export async function DELETE(
     if (!matchId) {
       return NextResponse.json(
         { error: "Missing match ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await prisma.$transaction(async (tx) => {
-      // 1. Fetch the match and all its associated bets
       const match = await tx.match.findUnique({
         where: { id: matchId },
         include: { bets: true },
@@ -58,11 +100,7 @@ export async function DELETE(
         throw new Error("Match not found");
       }
 
-      // If it's settled, the points were already distributed, so hard deleting means
-      // we just wipe the records. Refunding a settled match is too complex and would cause inflation.
-      // So if NOT settled, refund. If SETTLED, just delete bets without refund.
       if (match.status !== "SETTLED") {
-        // 2. Refund all users who placed bets on this match
         for (const bet of match.bets) {
           await tx.user.update({
             where: { id: bet.userId },
@@ -71,12 +109,10 @@ export async function DELETE(
         }
       }
 
-      // 3. Delete all associated bets
       await tx.bet.deleteMany({
-        where: { matchId: matchId },
+        where: { matchId },
       });
 
-      // 4. Delete the match
       await tx.match.delete({
         where: { id: matchId },
       });
@@ -84,22 +120,21 @@ export async function DELETE(
       await tx.adminLog.create({
         data: {
           action: "Delete Match",
-          details: `Match ${matchId} hard deleted`
-        }
+          details: `Match ${matchId} hard deleted`,
+        },
       });
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const error = err as any;
+    const error = err as Error;
     console.error("Failed to delete match:", error);
     if (error.message === "Match not found" || error.message === "Cannot delete a settled match") {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
       { error: "Failed to delete match" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
