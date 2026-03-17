@@ -214,34 +214,34 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                       )}
                     </div>
 
-                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''} ${isPlayerAdvanced(match.playerA) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerA) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
                       {isPlayerAdvanced(match.playerA) && (
                         <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
                       )}
                       {isPlayerEliminated(match.playerA) && (
-                        <div className="absolute -top-6 text-red-800 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                        <div className="absolute -top-6 text-red-500 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
                       )}
-                      <div className="mb-3 w-16 h-16">
+                      <div className={`mb-3 w-16 h-16 ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`}>
                         <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
-                      <h3 className={`text-3xl font-black mb-1 text-white ${isPlayerAdvanced(match.playerA) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]'}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
-                      <p className="text-xs text-red-500 font-bold tracking-widest uppercase">Player A</p>
+                      <h3 className={`text-3xl font-black mb-1 ${isPlayerAdvanced(match.playerA) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]'} ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
+                      <p className={`text-xs text-red-500 font-bold tracking-widest uppercase ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`}>Player A</p>
                     </div>
 
                     <div className="w-16"></div> {/* Spacer for VS */}
 
-                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''} ${isPlayerAdvanced(match.playerB) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                    <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerB) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
                       {isPlayerAdvanced(match.playerB) && (
                         <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
                       )}
                       {isPlayerEliminated(match.playerB) && (
-                        <div className="absolute -top-6 text-red-800 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                        <div className="absolute -top-6 text-red-500 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
                       )}
-                      <div className="mb-3 w-16 h-16">
+                      <div className={`mb-3 w-16 h-16 ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`}>
                         <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
-                      <h3 className={`text-3xl font-black mb-1 text-white ${isPlayerAdvanced(match.playerB) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]'}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
-                      <p className="text-xs text-blue-500 font-bold tracking-widest uppercase">Player B</p>
+                      <h3 className={`text-3xl font-black mb-1 ${isPlayerAdvanced(match.playerB) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]'} ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
+                      <p className={`text-xs text-blue-500 font-bold tracking-widest uppercase ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`}>Player B</p>
                     </div>
                   </div>
 

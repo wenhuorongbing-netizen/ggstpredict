@@ -1,64 +1,55 @@
-import Link from "next/link";
-import PlayerAvatar from "./PlayerAvatar";
+import { Match } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
-interface BracketMatchNodeProps {
-  match: {
-    id: string;
-    playerA: string;
-    playerB: string;
-    charA?: string | null;
-    charB?: string | null;
-    scoreA?: number | null;
-    scoreB?: number | null;
-    status: string;
-    winner?: string | null;
-    roundName?: string | null;
-  };
-}
+export default function BracketMatchNode({ match, isWinnersBracket }: { match: Match, isWinnersBracket: boolean }) {
+  const router = useRouter();
 
-export default function BracketMatchNode({ match }: BracketMatchNodeProps) {
   const isSettled = match.status === "SETTLED";
-  const aWins = isSettled && match.winner === "A";
-  const bWins = isSettled && match.winner === "B";
+  const winnerA = isSettled && match.winner === "A";
+  const winnerB = isSettled && match.winner === "B";
 
-  const getContainerStyles = () => {
-    if (match.status === "OPEN") return "border-red-600 bg-[#1a1a1a]";
-    if (match.status === "LOCKED") return "border-neutral-700 bg-[#111111] opacity-75";
-    return "border-neutral-800 bg-[#1a1a1a]"; // CLOSED or SETTLED, strictly #1a1a1a as requested
-  };
-
-  const getRowStyles = (isWinner: boolean, isLoser: boolean) => {
-    if (!isSettled) return "text-white";
-    if (isWinner) return "text-yellow-400 font-bold border-yellow-500 bg-yellow-900/20"; // gold accent
-    if (isLoser) return "text-neutral-500 opacity-50 border-transparent";
-    return "text-white border-transparent";
+  const handleNodeClick = () => {
+    // Navigate to dashboard and scroll to match if open/locked
+    router.push(`/dashboard#match-${match.id}`);
   };
 
   return (
-    <Link href={`/dashboard#match-${match.id}`} className="block hover:scale-105 transition-transform">
-      <div className={`w-48 sm:w-56 p-1 border-2 shadow-lg overflow-hidden flex flex-col font-mono text-sm relative z-10 ${getContainerStyles()}`}>
-        {/* Player A Row */}
-        <div className={`flex items-center justify-between p-1 border-l-2 border-b border-b-neutral-800 ${getRowStyles(aWins, bWins)}`}>
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-5 h-5 flex-shrink-0">
-              <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
-            </div>
-            <span className="truncate">{match.playerA}</span>
-          </div>
-          <span className="font-black text-right ml-2">{typeof match.scoreA === 'number' ? match.scoreA : '-'}</span>
-        </div>
-
-        {/* Player B Row */}
-        <div className={`flex items-center justify-between p-1 border-l-2 ${getRowStyles(bWins, aWins)}`}>
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-5 h-5 flex-shrink-0">
-              <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
-            </div>
-            <span className="truncate">{match.playerB}</span>
-          </div>
-          <span className="font-black text-right ml-2">{typeof match.scoreB === 'number' ? match.scoreB : '-'}</span>
-        </div>
+    <div
+      onClick={handleNodeClick}
+      className={`
+        w-64 flex flex-col bg-[#1a1a1a] border-2 cursor-pointer transition-all hover:scale-[1.02] relative
+        ${isWinnersBracket ? 'border-red-900/50 hover:border-red-500 shadow-[2px_2px_0px_rgba(239,68,68,0.2)]' : 'border-blue-900/50 hover:border-blue-500 shadow-[2px_2px_0px_rgba(59,130,246,0.2)]'}
+      `}
+    >
+      {/* Status Header */}
+      <div className="flex justify-between items-center px-2 py-1 bg-black/80 border-b border-neutral-800 text-[10px] font-bold tracking-widest uppercase">
+        <span className="text-neutral-500 truncate mr-2" style={{ fontFamily: "var(--font-bebas)" }}>{match.roundName || "Match"}</span>
+        <span className={match.status === "OPEN" ? "text-green-500" : match.status === "LOCKED" ? "text-yellow-500" : "text-neutral-600"}>
+          {match.status}
+        </span>
       </div>
-    </Link>
+
+      {/* Player A */}
+      <div className={`flex justify-between items-center px-3 py-2 border-b border-neutral-800/50 ${winnerA ? 'bg-yellow-900/20' : ''} ${winnerB ? 'opacity-50 grayscale' : ''}`}>
+        <div className="flex items-center gap-2 truncate">
+           <div className={`w-1 h-4 ${winnerA ? 'bg-yellow-500' : 'bg-red-600'}`}></div>
+           <span className={`font-bold truncate ${winnerA ? 'text-yellow-400' : 'text-white'}`}>{match.playerA}</span>
+        </div>
+        <span className={`font-black ml-2 ${winnerA ? 'text-yellow-400' : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
+          {match.scoreA ?? "-"}
+        </span>
+      </div>
+
+      {/* Player B */}
+      <div className={`flex justify-between items-center px-3 py-2 ${winnerB ? 'bg-yellow-900/20' : ''} ${winnerA ? 'opacity-50 grayscale' : ''}`}>
+        <div className="flex items-center gap-2 truncate">
+           <div className={`w-1 h-4 ${winnerB ? 'bg-yellow-500' : 'bg-blue-600'}`}></div>
+           <span className={`font-bold truncate ${winnerB ? 'text-yellow-400' : 'text-white'}`}>{match.playerB}</span>
+        </div>
+        <span className={`font-black ml-2 ${winnerB ? 'text-yellow-400' : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}>
+          {match.scoreB ?? "-"}
+        </span>
+      </div>
+    </div>
   );
 }
