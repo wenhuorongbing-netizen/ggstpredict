@@ -17,28 +17,28 @@ interface ShopItem {
 const ITEMS: ShopItem[] = [
   {
     id: "ITEM_FD",
-    name: "绝对防御 (FD Shield)",
+    name: "完美防御",
     cost: 100,
     description: "购买后可获得一层护盾，未来使用可抵消一次预测失败的扣分。",
     icon: "🛡️",
   },
   {
     id: "ITEM_FATAL",
-    name: "致命打康 (Fatal Counter)",
+    name: "致命打康",
     cost: 300,
     description: "购买后获得打康标记，未来使用可让某场比赛的收益翻倍。",
     icon: "⚡",
   },
   {
     id: "ITEM_HEX",
-    name: "紫色的罗比印记 (Robbie's Hex)",
+    name: "紫色的罗比印记",
     cost: 1500,
     description: "顶级的社交嘲讽。购买后给当前赛事的指定选手贴上永久的耻辱/毒奶印记，全服可见！",
     icon: "☠️",
   },
   {
     id: "ITEM_MEGAPHONE",
-    name: "高频扩音器 (Salt Megaphone)",
+    name: "高频扩音器",
     cost: 100,
     description: "廉价的弹幕骑脸工具。输入一段垃圾话，在首页大厅顶部强制滚动播放 120 分钟！",
     icon: "📣",
@@ -83,7 +83,7 @@ export default function ShopPage() {
     setSuccessMsg(null);
 
     if (points < item.cost) {
-      setError("余额不足，无法购买 (INSUFFICIENT FUNDS)");
+      setError("余额不足，无法购买");
       return;
     }
 
@@ -160,16 +160,16 @@ export default function ShopPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 relative z-10 transform skew-x-2 gap-4">
             <div>
               <h1 className="text-4xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                THE BLACK MARKET
+                黑市交易
               </h1>
               <p className="text-red-500 font-bold uppercase tracking-widest text-sm">
-                地下交易终端 (Bounty Sinks)
+                地下交易终端
               </p>
             </div>
 
             <div className="flex gap-4 bg-black/80 border-2 border-neutral-700 p-3 shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transform -skew-x-2 w-full sm:w-auto">
               <div className="flex flex-col border-r border-neutral-800 pr-4">
-                <span className="text-[10px] text-neutral-500 font-bold tracking-widest">W$ 余额 (FUNDS)</span>
+                <span className="text-[10px] text-neutral-500 font-bold tracking-widest">W$ 余额</span>
                 <span className="text-xl font-black text-yellow-400 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "var(--font-bebas)" }}>{points.toLocaleString()}</span>
               </div>
               <div className="flex flex-col border-r border-neutral-800 pr-4">
@@ -247,7 +247,7 @@ export default function ShopPage() {
                     className="w-full py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
                     style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
                   >
-                    {isPurchasing === item.id ? "PROCESSING..." : "[ 购买 (PURCHASE) ]"}
+                    {isPurchasing === item.id ? "处理中..." : "[ 购买 ]"}
                   </button>
                 </div>
               </motion.div>

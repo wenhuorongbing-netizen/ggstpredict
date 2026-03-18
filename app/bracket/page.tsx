@@ -100,16 +100,16 @@ export default function BracketPage() {
              <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待淘汰赛数据 (NO BRACKET MATCHES FOUND)</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-12 overflow-x-auto whitespace-nowrap bg-neutral-950 p-10 relative shadow-[inset_0_0_100px_rgba(0,0,0,1)] border-4 border-neutral-900 mx-4 custom-scrollbar pb-24 min-h-[600px]">
+          <div className="flex flex-col gap-12 overflow-x-auto whitespace-normal break-words sm:whitespace-nowrap bg-neutral-950 p-4 sm:p-10 relative shadow-[inset_0_0_100px_rgba(0,0,0,1)] border-4 border-neutral-900 mx-2 sm:mx-4 custom-scrollbar pb-24 min-h-[600px]">
 
             {/* Winners Bracket Row */}
             {winnersRounds.length > 0 && (
-              <div className="flex gap-16 relative w-fit min-w-full">
+              <div className="flex gap-8 sm:gap-16 relative w-fit min-w-full">
                 <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
                   WINNERS
                 </div>
                 {winnersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col gap-8 flex-shrink-0 relative z-10 w-64 pt-8">
+                  <div key={round.roundName} className="flex flex-col gap-6 flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
                     {/* Visual connection spacer line to next round */}
                     {colIndex < winnersRounds.length - 1 && (
                        <div className="absolute -right-16 top-16 bottom-16 w-16 border-r-2 border-y-2 border-red-900/30 rounded-r opacity-50 pointer-events-none"></div>
@@ -133,12 +133,12 @@ export default function BracketPage() {
 
             {/* Losers Bracket Row */}
             {losersRounds.length > 0 && (
-              <div className="flex gap-16 relative mt-16 border-t-2 border-dashed border-neutral-800/50 pt-16 w-fit min-w-full">
+              <div className="flex gap-8 sm:gap-16 relative mt-16 border-t-2 border-dashed border-neutral-800/50 pt-16 w-fit min-w-full">
                 <div className="absolute -left-2 top-[60%] -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
                   LOSERS
                 </div>
                 {losersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col gap-6 flex-shrink-0 relative z-10 w-64 pt-8">
+                  <div key={round.roundName} className="flex flex-col gap-6 flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
                     {colIndex < losersRounds.length - 1 && (
                        <div className="absolute -right-16 top-16 bottom-16 w-16 border-r-2 border-y-2 border-blue-900/30 rounded-r opacity-50 pointer-events-none"></div>
                     )}
@@ -159,8 +159,8 @@ export default function BracketPage() {
 
             {/* Other Bracket Row (If any unclassified bracket matches exist) */}
             {otherMatches.length > 0 && (
-              <div className="flex gap-16 relative mt-12 border-t border-neutral-800/50 pt-12">
-                 <div className="flex flex-col gap-6 flex-shrink-0 relative w-64 pt-8">
+              <div className="flex gap-8 sm:gap-16 relative mt-12 border-t border-neutral-800/50 pt-12">
+                 <div className="flex flex-col gap-6 flex-shrink-0 relative w-56 sm:w-64 pt-8">
                    <h3 className="absolute top-0 left-0 right-0 text-neutral-500 font-bold text-sm tracking-widest text-center bg-neutral-900/50 py-1 mb-2 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
                      OTHER MATCHES
                    </h3>

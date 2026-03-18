@@ -264,6 +264,11 @@ export function canonicalizePlayerName(
     return "";
   }
 
+  // Hardcode alias deduplication
+  if (normalized.toLowerCase() === "churara") {
+    return "TyuRaRa";
+  }
+
   return canonicalMap?.get(buildCaseInsensitiveKey(normalized)) ?? normalized;
 }
 

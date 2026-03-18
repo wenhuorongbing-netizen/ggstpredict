@@ -365,19 +365,19 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                         <div className="flex flex-col gap-2">
                           <label className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
                             <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500" />
-                            <span className="text-sm text-neutral-300 font-medium">不使用装备 (Barehands)</span>
+                            <span className="text-sm text-neutral-300 font-medium">不使用装备</span>
                           </label>
                           <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
                             <div className="flex items-center gap-2">
                               <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500" />
-                              <span className="text-sm text-blue-300 font-medium">🛡️ FD 完美防御 (抵消扣分)</span>
+                              <span className="text-sm text-blue-300 font-medium">🛡️ 完美防御</span>
                             </div>
                             <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fdShields}</span>
                           </label>
                           <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
                             <div className="flex items-center gap-2">
                               <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500" />
-                              <span className="text-sm text-red-300 font-medium">⚡ 致命打康 (猜对分收益 x1.5)</span>
+                              <span className="text-sm text-red-300 font-medium">⚡ 致命打康</span>
                             </div>
                             <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fatalCounters}</span>
                           </label>
@@ -508,6 +508,7 @@ export default function DashboardPage() {
   const [showRules, setShowRules] = useState(false);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
+  const [stageFilter, setStageFilter] = useState<"GROUP" | "BRACKET">("GROUP");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [fdShields, setFdShields] = useState<number>(0);
@@ -765,9 +766,13 @@ export default function DashboardPage() {
   };
 
   const filteredMatches = useMemo(() => {
-    if (filter === "ALL") return matches;
-    return matches.filter(m => m.status === filter);
-  }, [matches, filter]);
+    let result = matches;
+    if (stageFilter) {
+      result = result.filter(m => m.stageType === stageFilter);
+    }
+    if (filter === "ALL") return result;
+    return result.filter(m => m.status === filter);
+  }, [matches, filter, stageFilter]);
 
   return (
     <ProtectedRoute>
@@ -933,6 +938,34 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Stage Filter Tabs */}
+        <div className="flex justify-center mb-8 relative z-10">
+          <div className="flex gap-2 bg-[#000000] p-1.5 border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2">
+            <button
+              onClick={() => setStageFilter("GROUP")}
+              className={`px-8 py-3 font-bold tracking-widest transition-all focus-visible:outline-none flex items-center gap-2 ${
+                stageFilter === "GROUP"
+                  ? "bg-green-600 text-white shadow-[2px_2px_0px_rgba(22,163,74,0.5)] transform translate-x-[1px] translate-y-[1px]"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+              }`}
+              style={{ fontSize: "1.1rem" }}
+            >
+              🟢 小组赛 (Group Stage)
+            </button>
+            <button
+              onClick={() => setStageFilter("BRACKET")}
+              className={`px-8 py-3 font-bold tracking-widest transition-all focus-visible:outline-none flex items-center gap-2 ${
+                stageFilter === "BRACKET"
+                  ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+              }`}
+              style={{ fontSize: "1.1rem" }}
+            >
+              🔴 淘汰赛 (Knockout Stage)
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
           {/* Main Matches Area (Left) */}
           <div className="lg:col-span-2">
@@ -950,7 +983,7 @@ export default function DashboardPage() {
                   onClick={() => setFilter(f)}
                   className={`px-6 py-2 font-bold tracking-widest transition-all focus-visible:outline-none ${
                     filter === f
-                      ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
+                      ? "bg-blue-600 text-white shadow-[2px_2px_0px_rgba(37,99,235,0.5)] transform translate-x-[1px] translate-y-[1px]"
                       : "text-neutral-400 hover:text-white hover:bg-neutral-900"
                   }`}
                   style={{ fontFamily: "var(--font-bebas)", fontSize: "1.2rem" }}

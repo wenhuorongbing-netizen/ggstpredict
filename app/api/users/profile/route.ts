@@ -36,6 +36,8 @@ export async function GET(request: Request) {
       nameColor: user.nameColor,
       points: user.points,
       winStreak: user.winStreak,
+      fdShields: user.fdShields ?? 0,
+      fatalCounters: user.fatalCounters ?? 0,
       bets: user.bets,
     };
 

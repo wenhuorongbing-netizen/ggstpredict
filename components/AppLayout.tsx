@@ -53,18 +53,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   const navLinks = [
-    { name: "👤 猎人档案", href: "/profile" },
-    { name: "⚔️ 赛事战局", href: "/dashboard" },
-    { name: "🏆 比赛赛程", href: "/bracket" },
-    { name: "👑 排行榜", href: "/leaderboard" },
-    { name: "🛒 黑市交易", href: "/shop" },
-    { name: "⚙️ 账户设置", href: "/settings" },
-    { name: "📖 用户手册", href: "/docs" },
-    { name: "ℹ️ 关于 (ABOUT)", href: "/about" },
+    { name: "赛事大厅", href: "/dashboard" },
+    { name: "淘汰赛", href: "/bracket" },
+    { name: "积分排行", href: "/leaderboard" },
+    { name: "黑市", href: "/shop" },
+    { name: "个人中心", href: "/profile" },
+    { name: "设置", href: "/settings" },
+    { name: "用户手册", href: "/docs" },
+    { name: "关于", href: "/about" },
   ];
 
   if (role === "ADMIN") {
-    navLinks.push({ name: "🚨 管理员面板", href: "/admin" });
+    navLinks.push({ name: "管理员面板", href: "/admin" });
   }
 
   const maxTension = 20000;
@@ -139,7 +139,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         <div className="mt-auto pt-8 border-t-2 border-neutral-800 flex flex-col gap-2 transform -skew-x-2">
-          <div className="text-xs text-neutral-500 font-bold tracking-widest">当前玩家 (ACTIVE FIGHTER):</div>
+          <div className="text-xs text-neutral-500 font-bold tracking-widest">当前玩家:</div>
           <div className="text-xl text-white font-black truncate">{displayName}</div>
           <div className="text-sm font-mono font-bold text-yellow-500 flex items-center gap-2">
             <span>₩ {Number(points).toLocaleString()}</span>

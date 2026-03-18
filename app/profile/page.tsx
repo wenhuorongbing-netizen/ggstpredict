@@ -31,6 +31,8 @@ interface UserProfile {
   nameColor: string;
   points: number;
   winStreak: number;
+  fdShields: number;
+  fatalCounters: number;
   bets: Bet[];
 }
 
@@ -97,48 +99,117 @@ export default function ProfilePage() {
 
           {/* Top Section */}
           <motion.div
-            className="bg-black/80 border-2 border-neutral-700 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] p-6 transform -skew-x-2 relative"
+            className="bg-black/80 border-2 border-neutral-700 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] p-6 transform -skew-x-12 relative"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-600 pointer-events-none z-20"></div>
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-red-600 pointer-events-none z-20"></div>
 
-            <div className="flex flex-col md:flex-row items-center gap-8 transform skew-x-2 relative z-10">
+            <div className="flex flex-col md:flex-row items-center gap-8 transform skew-x-12 relative z-10">
               <div className="w-32 h-32 flex-shrink-0">
                 <PlayerAvatar playerName={profile.displayName} playerType="A" />
               </div>
 
-              <div className="flex-1 text-center md:text-left">
+              <div className="flex-1 text-center md:text-left flex flex-col justify-center h-full">
+                <div className="text-neutral-500 font-bold tracking-widest text-xs uppercase mb-1" style={{ fontFamily: "var(--font-bebas)" }}>
+                  HUNTER ID: {profile.id}
+                </div>
                 <h1
-                  className="text-5xl font-black text-white tracking-widest mb-2 uppercase"
+                  className="text-6xl font-black text-white tracking-widest mb-4 uppercase leading-none drop-shadow-[4px_4px_0px_rgba(217,22,22,1)]"
                   style={{
                     fontFamily: "var(--font-bebas)",
                     color: profile.nameColor,
                     textShadow: profile.nameColor !== "#ffffff"
                       ? `0 0 10px ${profile.nameColor}80, 0 0 20px ${profile.nameColor}40`
-                      : "2px 2px 0px rgba(239,68,68,1)"
+                      : "4px 4px 0px rgba(217,22,22,1)"
                   }}
                 >
                   {profile.displayName}
                 </h1>
-                <div className="text-neutral-400 font-bold tracking-widest text-sm uppercase mb-4" style={{ fontFamily: "var(--font-bebas)" }}>
-                  HUNTER ID: {profile.id}
-                </div>
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <div className="bg-neutral-900 border border-neutral-700 p-3 rounded flex items-center gap-3">
-                    <span className="text-neutral-500 font-bold text-xs tracking-widest">积分 (W$)</span>
-                    <span className="text-yellow-500 font-black text-2xl tracking-widest">{profile.points.toLocaleString()}</span>
+                  {/* W$ Asset Block */}
+                  <div className="bg-neutral-900 border-2 border-neutral-700 px-6 py-3 flex items-center gap-4 transform -skew-x-12 shadow-[4px_4px_0px_rgba(0,0,0,0.8)]">
+                    <div className="transform skew-x-12 flex items-baseline gap-3">
+                      <span className="text-neutral-500 font-bold text-sm tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>资产</span>
+                      <span className="text-[#39FF14] font-black text-4xl tracking-widest drop-shadow-[0_0_8px_rgba(57,255,20,0.6)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                        {profile.points.toLocaleString()} W$
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="bg-neutral-900 border border-neutral-700 p-3 rounded flex items-center gap-3">
-                    <span className="text-neutral-500 font-bold text-xs tracking-widest">连胜 (STREAK)</span>
-                    <span className="text-red-500 font-black text-2xl tracking-widest flex items-center gap-2">
-                      {profile.winStreak}
-                      {profile.winStreak > 0 && <span className="animate-pulse">🔥</span>}
-                    </span>
+                  {/* Win Streak Block */}
+                  <div className={`bg-neutral-900 border-2 ${profile.winStreak >= 3 ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-neutral-700'} px-6 py-3 flex items-center gap-4 transform -skew-x-12 shadow-[4px_4px_0px_rgba(0,0,0,0.8)]`}>
+                    <div className="transform skew-x-12 flex items-baseline gap-3">
+                      <span className="text-neutral-500 font-bold text-sm tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>连胜悬赏</span>
+                      <span className={`font-black text-4xl tracking-widest flex items-baseline gap-2 ${profile.winStreak >= 3 ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'text-white'}`} style={{ fontFamily: "var(--font-bebas)" }}>
+                        {profile.winStreak}
+                        {profile.winStreak >= 3 && (
+                          <span className="text-lg animate-pulse text-red-500 ml-1" style={{ textShadow: "0 0 10px red" }}>🔥 ON FIRE!</span>
+                        )}
+                      </span>
+                    </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Tactical Inventory Section */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {/* Background Text */}
+            <div className="absolute -top-6 left-0 text-neutral-800 text-6xl font-black opacity-30 select-none z-0 tracking-tighter" style={{ fontFamily: "var(--font-bebas)" }}>
+              TACTICAL GEAR
+            </div>
+
+            <div className="relative z-10">
+              <h2 className="text-3xl font-black text-white tracking-widest mb-6 drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                战术背包
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 完美防御 Card */}
+                <div className={`bg-neutral-950 border-2 ${profile.fdShields > 0 ? 'border-[#00ffff] shadow-[0_0_15px_rgba(0,255,255,0.4)] hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,255,255,0.6)]' : 'border-neutral-800 grayscale opacity-50'} transition-all duration-300 p-6 flex flex-col relative overflow-hidden`} style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="text-4xl">🛡️</div>
+                    <div className={`font-black text-3xl tracking-widest ${profile.fdShields > 0 ? 'text-[#00ffff]' : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)" }}>
+                      x {profile.fdShields}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2 tracking-widest">完美防御</h3>
+                  <p className="text-neutral-400 text-sm flex-1">
+                    可以抵消一次预测失败的扣分。保持你的连胜不断。
+                  </p>
+                  {profile.fdShields === 0 && (
+                    <div className="absolute bottom-4 right-4 text-neutral-600 font-bold tracking-widest uppercase border border-neutral-700 px-2 py-1 bg-neutral-900" style={{ fontFamily: "var(--font-bebas)" }}>
+                      EMPTY
+                    </div>
+                  )}
+                </div>
+
+                {/* 致命打康 Card */}
+                <div className={`bg-neutral-950 border-2 ${profile.fatalCounters > 0 ? 'border-[#ffea00] shadow-[0_0_15px_rgba(255,234,0,0.4)] hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(255,234,0,0.6)]' : 'border-neutral-800 grayscale opacity-50'} transition-all duration-300 p-6 flex flex-col relative overflow-hidden`} style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)" }}>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="text-4xl">⚡</div>
+                    <div className={`font-black text-3xl tracking-widest ${profile.fatalCounters > 0 ? 'text-[#ffea00]' : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)" }}>
+                      x {profile.fatalCounters}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2 tracking-widest">致命打康</h3>
+                  <p className="text-neutral-400 text-sm flex-1">
+                    使用后可让某场比赛的收益翻倍。高风险高回报的终极手段。
+                  </p>
+                  {profile.fatalCounters === 0 && (
+                    <div className="absolute bottom-4 right-4 text-neutral-600 font-bold tracking-widest uppercase border border-neutral-700 px-2 py-1 bg-neutral-900" style={{ fontFamily: "var(--font-bebas)" }}>
+                      EMPTY
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

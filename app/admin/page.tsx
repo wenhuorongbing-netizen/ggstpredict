@@ -712,6 +712,24 @@ export default function AdminPage() {
              新建赛事 (DEPLOYMENT)
           </h2>
           <div className="flex flex-col gap-4 mb-6 relative z-10 transform skew-x-2">
+
+            {/* Tournament Selector */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border-2 border-yellow-900/50 shadow-[4px_4px_0px_rgba(234,179,8,0.2)]">
+              <div className="flex-1 w-full">
+                <label htmlFor="tournamentSelect" className="block text-sm text-yellow-400 mb-1 font-bold tracking-widest flex items-center gap-2">
+                  <span className="text-yellow-500 text-lg">🏆</span> 选择锦标赛赛事群 (TOURNAMENT)
+                </label>
+                <select
+                  id="tournamentSelect"
+                  className="w-full bg-[#0a0a0a] border border-yellow-900/50 p-2 text-white focus:outline-none focus:border-yellow-500 transition-colors font-mono text-sm"
+                  defaultValue="AWT 2026 Korea"
+                >
+                  <option value="AWT 2026 Korea">AWT 2026 Korea</option>
+                  <option value="Other">其他赛事...</option>
+                </select>
+              </div>
+            </div>
+
             {/* Start.gg Native GraphQL Section */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border-2 border-blue-900/50 shadow-[4px_4px_0px_rgba(59,130,246,0.2)]">
               <div className="flex-1 w-full">
@@ -1246,21 +1264,29 @@ export default function AdminPage() {
                           </button>
                         </div>
 
-                        <div className="relative group ml-1">
+                        <div className="relative group ml-1" style={{ zIndex: 10 }}>
                            <button className="px-1.5 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 hover:text-white text-[10px] font-bold">
                              ...
                            </button>
-                           <div className="absolute right-0 top-full mt-1 hidden group-hover:flex flex-col bg-black border border-neutral-700 shadow-xl z-50 min-w-[100px]">
+                           {/* Invisible hover bridge to prevent menu from disappearing */}
+                           <div className="absolute top-full right-0 w-full h-2 hidden group-hover:block" />
+                           <div className="absolute right-0 top-[calc(100%+0.5rem)] hidden group-hover:flex flex-col bg-black border border-neutral-700 shadow-xl z-[100] min-w-[120px]">
+                             <button
+                               onClick={() => handleLockMatch(match.id, "IMMEDIATE")}
+                               className="px-3 py-2 text-left text-[11px] font-bold text-yellow-500 hover:bg-yellow-900/30 hover:text-yellow-300 border-b border-neutral-800"
+                             >
+                               🔒 LOCK
+                             </button>
                              <button
                                onClick={() => setInjectMatchId(match.id)}
-                               className="px-2 py-1.5 text-left text-[10px] text-purple-400 hover:bg-purple-900/30 hover:text-purple-200 border-b border-neutral-800"
+                               className="px-3 py-2 text-left text-[11px] font-bold text-purple-400 hover:bg-purple-900/30 hover:text-purple-200 border-b border-neutral-800"
                              >
                                💉 INJECT
                              </button>
                              <button
                                onClick={() => handleDeleteMatch(match.id)}
                                disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                               className="px-2 py-1.5 text-left text-[10px] text-red-500 hover:bg-red-900/30 hover:text-red-200"
+                               className="px-3 py-2 text-left text-[11px] font-bold text-red-500 hover:bg-red-900/30 hover:text-red-200"
                              >
                                {deletingMatchId === match.id ? "..." : `🗑️ VOID`}
                              </button>
