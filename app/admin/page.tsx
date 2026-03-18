@@ -631,12 +631,24 @@ export default function AdminPage() {
 
   const activeMatches = matches.filter(m => m.status !== "SETTLED");
   const settledMatches = matches.filter(m => m.status === "SETTLED");
+
+  // 1. 预设 AWT 2026 Korea 核心参赛选手库池 (硬核格斗游戏常客/种子选手)
+  const AWT_KOREA_PLAYERS = [
+    "UMISHO", "TempestNYC", "Leffen", "Zando", "TigerPop", "Verix",
+    "Daru_I-No", "Gobou", "TY", "Mocchi", "Slash", "Sanakan", "TATUMA",
+    "NBN", "Daze", "Jack", "Nitro", "SushixHL", "Dejojo", "IBUSHIGIN",
+    "Score", "Churara", "Rion", "Garu", "Poka"
+  ];
+
+  // 2. 终极整合：AWT 选手 + 数据库已有选手 + 静态资源头像文件名 + 缓存记录
   const playerSuggestions = normalizePlayerRoster([
-    ...playerRoster,
-    ...recentPlayers,
-    ...matches.flatMap((match) => [match.playerA, match.playerB]),
-    ...assetCatalog.players.choices.map((choice) => choice.label),
+    ...AWT_KOREA_PLAYERS,                                          // AWT 2026 Korea 名单
+    ...matches.flatMap((match) => [match.playerA, match.playerB]), // 数据库历史交战选手
+    ...assetCatalog.players.choices.map((choice) => choice.label), // public/asset/players 下的文件名
+    ...playerRoster,                                               // Admin 侧边栏手动保存的 16 人名单
+    ...recentPlayers,                                              // 本地浏览器缓存的最近录入
   ]);
+
   const characterSuggestionMap = new Map<string, string>();
   for (const characterName of [...OFFICIAL_CHARACTER_NAMES, ...assetCatalog.characters.choices.map((choice) => choice.label)]) {
     const normalizedCharacter = normalizeCharacterName(characterName);
