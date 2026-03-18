@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    const { userId, matchId, choice, amount, comment } = await request.json();
+    const { userId, matchId, choice, amount, comment, usedItem, predictedScore } = await request.json();
 
     if (!userId || !matchId || !choice || !amount) {
       return NextResponse.json(
@@ -85,10 +85,27 @@ export async function POST(request: Request) {
         }
       }
 
-      // 4. Deduct points
+      // 4. Deduct points and Items
+      const updateData: any = { points: { decrement: amount } };
+
+      if (usedItem === "ITEM_FD") {
+        if (user.fdShields <= 0) {
+          throw new Error("你没有足够的 FD 完美防御护盾！");
+        }
+        updateData.fdShields = { decrement: 1 };
+      } else if (usedItem === "ITEM_FATAL") {
+        if (user.fatalCounters <= 0) {
+          throw new Error("你没有足够的致命打康标记！");
+        }
+        if (!predictedScore) {
+          throw new Error("使用致命打康必须预测小分！");
+        }
+        updateData.fatalCounters = { decrement: 1 };
+      }
+
       const updatedUser = await tx.user.update({
         where: { id: userId },
-        data: { points: { decrement: amount } },
+        data: updateData,
       });
 
       // 5. Create Bet
@@ -99,6 +116,8 @@ export async function POST(request: Request) {
           amount,
           choice,
           comment,
+          usedItem: usedItem || null,
+          predictedScore: usedItem === "ITEM_FATAL" ? predictedScore : null,
         },
       });
 
@@ -136,7 +155,9 @@ export async function POST(request: Request) {
       error.message === "User not found" ||
       error.message === "积分不足" ||
       error.message === "Match not found" ||
-      error.message.includes("最大下注额")
+      error.message.includes("最大下注额") ||
+      error.message.includes("FD 完美防御") ||
+      error.message.includes("致命打康")
     ) {
         return NextResponse.json({ error: error.message }, { status: 400 });
     }

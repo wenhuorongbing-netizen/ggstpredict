@@ -44,9 +44,11 @@ interface LeaderboardEntry {
 }
 
 
-function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchMatches, setError, setPoints, setWelfareMsg }: any) {
+function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSettings, fetchUserPoints, fetchMatches, setError, setPoints, setWelfareMsg }: any) {
   const [betAmount, setBetAmount] = useState<number | "">("");
   const [betComment, setBetComment] = useState("");
+  const [usedItem, setUsedItem] = useState<string>("NONE");
+  const [predictedScore, setPredictedScore] = useState("");
   const [isBetting, setIsBetting] = useState(false);
 
   const handleBet = async (choice: "A" | "B") => {
@@ -57,6 +59,10 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
     if (amount <= 0) return setError("下注金额必须大于0");
     if (amount > points) return setError("积分不足，请重新输入");
 
+    if (usedItem === "ITEM_FATAL" && !predictedScore) {
+      return setError("致命打康启动失败：必须输入比分预测 (如 3-1)");
+    }
+
     const previousPoints = points;
     setPoints((prev: number) => prev - amount);
     setIsBetting(true);
@@ -65,7 +71,15 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
       const res = await fetch("/api/bets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, matchId: match.id, choice, amount, comment }),
+        body: JSON.stringify({
+          userId,
+          matchId: match.id,
+          choice,
+          amount,
+          comment,
+          usedItem: usedItem !== "NONE" ? usedItem : null,
+          predictedScore: usedItem === "ITEM_FATAL" ? predictedScore : null
+        }),
       });
 
       const data = await res.json();
@@ -333,6 +347,54 @@ function MatchCard({ match, userId, points, sysSettings, fetchUserPoints, fetchM
                         className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
                       />
 
+                      {/* Tactical Gear Selection */}
+                      <div className="mb-4 bg-neutral-900/30 p-3 rounded-xl border border-neutral-800">
+                        <h4 className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-2 flex items-center gap-2">
+                          <span className="text-yellow-500">⚙️</span> 战术装备 (Tactical Gear)
+                        </h4>
+                        <div className="flex flex-col gap-2">
+                          <label className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
+                            <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500" />
+                            <span className="text-sm text-neutral-300 font-medium">不使用装备 (Barehands)</span>
+                          </label>
+                          <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                            <div className="flex items-center gap-2">
+                              <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500" />
+                              <span className="text-sm text-blue-300 font-medium">🛡️ FD 完美防御 (抵消扣分)</span>
+                            </div>
+                            <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fdShields}</span>
+                          </label>
+                          <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                            <div className="flex items-center gap-2">
+                              <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500" />
+                              <span className="text-sm text-red-300 font-medium">⚡ 致命打康 (猜对分收益 x1.5)</span>
+                            </div>
+                            <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fatalCounters}</span>
+                          </label>
+
+                          {/* Fatal Counter Prediction Input */}
+                          <AnimatePresence>
+                            {usedItem === "ITEM_FATAL" && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden mt-1 ml-6"
+                              >
+                                <input
+                                  type="text"
+                                  value={predictedScore}
+                                  onChange={(e) => setPredictedScore(e.target.value)}
+                                  placeholder="输入预测小分 (例如: 3-1)"
+                                  className="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2 text-red-200 text-sm focus:outline-none focus:border-red-500 font-mono"
+                                />
+                                <p className="text-[10px] text-red-500/70 mt-1">* 格式必须为 [胜方分-败方分]</p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+
                       <div className="flex gap-3">
                         <button
                           onClick={() => handleBet("A")}
@@ -438,6 +500,8 @@ export default function DashboardPage() {
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [fdShields, setFdShields] = useState<number>(0);
+  const [fatalCounters, setFatalCounters] = useState<number>(0);
 
   const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[] }>({
     GROUP_MAX: 300,
@@ -536,6 +600,8 @@ export default function DashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setPoints(data.points);
+        setFdShields(data.fdShields || 0);
+        setFatalCounters(data.fatalCounters || 0);
         if (typeof window !== "undefined") localStorage.setItem("points", data.points.toString());
         if (typeof window !== "undefined" && data.winStreak !== undefined) localStorage.setItem("winStreak", data.winStreak.toString());
       }
@@ -840,6 +906,8 @@ export default function DashboardPage() {
                   match={match}
                   userId={userId}
                   points={points}
+                  fdShields={fdShields}
+                  fatalCounters={fatalCounters}
                   sysSettings={sysSettings}
                   fetchUserPoints={fetchUserPoints}
                   fetchMatches={fetchMatches}

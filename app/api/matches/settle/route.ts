@@ -50,6 +50,11 @@ export async function POST(request: Request) {
       // Process losers: Reset winStreak
       const losingBets = match.bets.filter((bet) => bet.choice === loserChoice);
       for (const bet of losingBets) {
+        // Intercept: FD Shield prevents winStreak reset
+        if (bet.usedItem === "ITEM_FD") {
+          continue; // Preserve winStreak
+        }
+
         await tx.user.update({
           where: { id: bet.userId },
           data: { winStreak: 0 },
@@ -64,11 +69,33 @@ export async function POST(request: Request) {
       }
 
       // 3. Distribute rewards to winners
+      const matchScoreA = typeof scoreA === 'number' ? scoreA : null;
+      const matchScoreB = typeof scoreB === 'number' ? scoreB : null;
+      let actualScoreString = "";
+      if (matchScoreA !== null && matchScoreB !== null) {
+        // Score strings are usually "WinnerScore-LoserScore" based on the user's prediction format.
+        // Or "PlayerAScore-PlayerBScore". We need to check what the UI expects.
+        // Assuming the UI expects "WinnerScore-LoserScore":
+        if (winner === "A") {
+          actualScoreString = `${matchScoreA}-${matchScoreB}`;
+        } else if (winner === "B") {
+          actualScoreString = `${matchScoreB}-${matchScoreA}`;
+        }
+      }
+
       if (userWinningPool > 0 && losingPool > 0) {
         const winningBets = match.bets.filter((bet) => bet.choice === winner);
         for (const bet of winningBets) {
           const their_share = bet.amount / userWinningPool;
-          const profit = their_share * losingPool;
+          let profit = their_share * losingPool;
+
+          // Intercept: Fatal Counter
+          if (bet.usedItem === "ITEM_FATAL" && bet.predictedScore && actualScoreString) {
+             if (bet.predictedScore === actualScoreString) {
+                // Guessed correctly, multiply profit by 1.5
+                profit = Math.floor(profit * 1.5);
+             }
+          }
 
           // Increment streak and get new streak length
           const user = await tx.user.update({
