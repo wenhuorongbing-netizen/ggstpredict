@@ -13,6 +13,11 @@ export async function GET(request: Request) {
     const validPage = isNaN(page) ? 1 : page;
     const skip = (validPage - 1) * validTake;
 
+    const hexedSetting = await prisma.systemSetting.findUnique({
+      where: { key: "HEXED_PLAYERS" }
+    });
+    const hexedPlayers = hexedSetting ? hexedSetting.value.split(',').filter(Boolean).map(p => p.toLowerCase()) : [];
+
     const [topUsers, totalCount] = await Promise.all([
       prisma.user.findMany({
         orderBy: { points: 'desc' },
@@ -28,10 +33,15 @@ export async function GET(request: Request) {
       prisma.user.count()
     ]);
 
+    const usersWithHex = topUsers.map(user => ({
+      ...user,
+      isHexed: hexedPlayers.includes(user.displayName.toLowerCase())
+    }));
+
     const totalPages = Math.ceil(totalCount / validTake);
 
     return NextResponse.json({
-        users: topUsers,
+        users: usersWithHex,
         totalPages: totalPages,
         currentPage: validPage
     }, { status: 200 });

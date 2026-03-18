@@ -6,7 +6,7 @@ import { buildCanonicalMaps, normalizeMatchEntry } from "@/lib/tournament-data";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { matches, stageType, groupId, tournamentId } = body;
+    const { matches, stageType, groupId, tournamentId, groupName } = body;
 
     if (!Array.isArray(matches) || matches.length === 0) {
       return NextResponse.json(
@@ -58,6 +58,7 @@ export async function POST(request: Request) {
         tournamentId: activeTournamentId,
         stageType: stageType || "GROUP",
         groupId: groupId || "A",
+        groupName: stageType === "GROUP" ? (groupName || groupId || "A") : null,
       };
     });
 

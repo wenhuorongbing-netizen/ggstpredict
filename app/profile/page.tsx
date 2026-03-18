@@ -33,6 +33,7 @@ interface UserProfile {
   winStreak: number;
   fdShields: number;
   fatalCounters: number;
+  isHexed?: boolean;
   bets: Bet[];
 }
 
@@ -126,6 +127,7 @@ export default function ProfilePage() {
                   }}
                 >
                   {profile.displayName}
+                  {profile.isHexed && <span title="被诅咒的用户 (Hexed)" className="ml-4 px-3 py-1 bg-[#4c1d95] text-[#d8b4fe] border-2 border-[#a855f7] text-3xl align-middle animate-pulse shadow-[0_0_20px_rgba(168,85,247,0.8)]" style={{ fontFamily: "var(--font-bebas)" }}>[ 罗比! ]</span>}
                 </h1>
 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start">

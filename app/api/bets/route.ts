@@ -135,6 +135,17 @@ export async function POST(request: Request) {
         create: { key: "GLOBAL_TENSION", value: String(newTension) },
       });
 
+      const targetName = choice === "A" ? match.playerA : match.playerB;
+      const logDetails = `押注 ${amount} W$ -> ${targetName} ${usedItem ? '(打康)' : ''}`;
+
+      await tx.actionLog.create({
+        data: {
+          actionType: "BET",
+          userId: user.id,
+          details: logDetails
+        }
+      });
+
       return { bet, updatedUser };
     });
 

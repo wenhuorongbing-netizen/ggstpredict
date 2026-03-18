@@ -130,6 +130,20 @@ export async function POST(req: Request) {
         },
       });
 
+      const friendlyName = item.includes("金色") ? "金色传说ID" :
+                           item === "ITEM_FD" ? "FD气盾" :
+                           item === "ITEM_FATAL" ? "打康标记" :
+                           item === "ITEM_HEX" ? "罗比印记" :
+                           item === "ITEM_MEGAPHONE" ? "高频扩音器" : item;
+
+      await tx.actionLog.create({
+        data: {
+          actionType: "SHOP",
+          userId: user.id,
+          details: `花费 ${costNum} W$ 购买了 ${friendlyName}`
+        }
+      });
+
       return { purchase, updatedUser };
     });
 

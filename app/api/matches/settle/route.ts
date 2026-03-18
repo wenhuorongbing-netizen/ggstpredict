@@ -193,6 +193,14 @@ export async function POST(request: Request) {
         }
       });
 
+      const winnerName = winner === "A" ? match.playerA : match.playerB;
+      await tx.actionLog.create({
+        data: {
+          actionType: "ADMIN_SETTLE",
+          details: `[赛事播报] 比赛结算！【 ${match.playerA} vs ${match.playerB} 】 的获胜者是 ${winnerName}`
+        }
+      });
+
       return updatedMatch;
     });
 

@@ -29,6 +29,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const hexedSetting = await prisma.systemSetting.findUnique({
+      where: { key: "HEXED_PLAYERS" }
+    });
+
+    const hexedPlayers = hexedSetting ? hexedSetting.value.split(',').filter(Boolean).map(p => p.toLowerCase()) : [];
+    const isHexed = hexedPlayers.includes(user.displayName.toLowerCase());
+
     // Omit sensitive data
     const safeUser = {
       id: user.id,
@@ -38,6 +45,7 @@ export async function GET(request: Request) {
       winStreak: user.winStreak,
       fdShields: user.fdShields ?? 0,
       fatalCounters: user.fatalCounters ?? 0,
+      isHexed,
       bets: user.bets,
     };
 

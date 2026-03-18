@@ -80,9 +80,11 @@ export default function AdminPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [stageType, setStageType] = useState<"GROUP" | "BRACKET">("GROUP");
   const [groupId, setGroupId] = useState("A");
+  const [groupName, setGroupName] = useState("Group A");
   const [tournamentId, setTournamentId] = useState("");
   const [tournaments, setTournaments] = useState<{id: string, name: string}[]>([]);
   const [playerRoster, setPlayerRoster] = useState<string[]>(() => buildDefaultPlayerRoster());
+  const [actionLogs, setActionLogs] = useState<any[]>([]);
   const [selectedPlayerA, setSelectedPlayerA] = useState("");
   const [selectedPlayerB, setSelectedPlayerB] = useState("");
   const [selectedCharA, setSelectedCharA] = useState("");
@@ -143,6 +145,16 @@ export default function AdminPage() {
     } catch (err) {}
   };
 
+  const fetchActionLogs = async () => {
+    try {
+      const userId = localStorage.getItem("userId") || "";
+      const res = await fetch("/api/admin/action-logs", {
+        headers: { "x-user-id": userId }
+      });
+      if (res.ok) setActionLogs(await res.json());
+    } catch (err) {}
+  };
+
   useEffect(() => {
     fetchMatches();
     fetchInvites();
@@ -150,6 +162,7 @@ export default function AdminPage() {
     fetchUsers();
     fetchSettings();
     fetchAdminLogs();
+    fetchActionLogs();
     fetchPendingPurchases();
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("recentPlayers");
@@ -436,7 +449,7 @@ export default function AdminPage() {
       const res = await fetch("/api/matches/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matches: newMatches, stageType, groupId, tournamentId }),
+        body: JSON.stringify({ matches: newMatches, stageType, groupId, tournamentId, groupName }),
       });
 
       if (!res.ok) {
@@ -804,16 +817,28 @@ export default function AdminPage() {
                 </select>
               </div>
               {stageType === "GROUP" && (
-                <div className="flex-1">
-                  <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">分组 (GROUP ID)</label>
-                  <select
-                    value={groupId}
-                    onChange={(e) => setGroupId(e.target.value)}
-                    className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
-                  >
-                    {["A", "B", "C", "D"].map(g => <option key={g} value={g}>Group {g}</option>)}
-                  </select>
-                </div>
+                <>
+                  <div className="flex-1">
+                    <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">分组 ID</label>
+                    <select
+                      value={groupId}
+                      onChange={(e) => setGroupId(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                    >
+                      {["A", "B", "C", "D"].map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">显示组名 (GROUP NAME)</label>
+                    <input
+                      type="text"
+                      value={groupName}
+                      onChange={(e) => setGroupName(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                      placeholder="e.g. Group A"
+                    />
+                  </div>
+                </>
               )}
             </div>
 
@@ -1264,33 +1289,29 @@ export default function AdminPage() {
                           </button>
                         </div>
 
-                        <div className="relative group ml-1" style={{ zIndex: 10 }}>
-                           <button className="px-1.5 py-0.5 bg-neutral-900 border border-neutral-700 text-neutral-400 hover:text-white text-[10px] font-bold">
-                             ...
+                        <div className="flex items-center ml-1 border border-neutral-700 divide-x divide-neutral-700">
+                           <button
+                             onClick={() => handleLockMatch(match.id, "IMMEDIATE")}
+                             className="px-2 py-0.5 bg-neutral-900 text-yellow-500 hover:bg-yellow-900/50 hover:text-yellow-300 text-[10px] font-bold transition-colors"
+                             title="立即锁盘 (LOCKED)"
+                           >
+                             🔒 LOCK
                            </button>
-                           {/* Invisible hover bridge to prevent menu from disappearing */}
-                           <div className="absolute top-full right-0 w-full h-2 hidden group-hover:block" />
-                           <div className="absolute right-0 top-[calc(100%+0.5rem)] hidden group-hover:flex flex-col bg-black border border-neutral-700 shadow-xl z-[100] min-w-[120px]">
-                             <button
-                               onClick={() => handleLockMatch(match.id, "IMMEDIATE")}
-                               className="px-3 py-2 text-left text-[11px] font-bold text-yellow-500 hover:bg-yellow-900/30 hover:text-yellow-300 border-b border-neutral-800"
-                             >
-                               🔒 LOCK
-                             </button>
-                             <button
-                               onClick={() => setInjectMatchId(match.id)}
-                               className="px-3 py-2 text-left text-[11px] font-bold text-purple-400 hover:bg-purple-900/30 hover:text-purple-200 border-b border-neutral-800"
-                             >
-                               💉 INJECT
-                             </button>
-                             <button
-                               onClick={() => handleDeleteMatch(match.id)}
-                               disabled={settlingMatchId === match.id || deletingMatchId === match.id}
-                               className="px-3 py-2 text-left text-[11px] font-bold text-red-500 hover:bg-red-900/30 hover:text-red-200"
-                             >
-                               {deletingMatchId === match.id ? "..." : `🗑️ VOID`}
-                             </button>
-                           </div>
+                           <button
+                             onClick={() => setInjectMatchId(match.id)}
+                             className="px-2 py-0.5 bg-neutral-900 text-purple-400 hover:bg-purple-900/50 hover:text-purple-200 text-[10px] font-bold transition-colors"
+                             title="注入资金 (INJECT)"
+                           >
+                             💉 INJECT
+                           </button>
+                           <button
+                             onClick={() => handleDeleteMatch(match.id)}
+                             disabled={settlingMatchId === match.id || deletingMatchId === match.id}
+                             className="px-2 py-0.5 bg-neutral-900 text-red-500 hover:bg-red-900/50 hover:text-red-200 text-[10px] font-bold transition-colors"
+                             title="删除比赛 (VOID)"
+                           >
+                             {deletingMatchId === match.id ? "..." : `🗑️ VOID`}
+                           </button>
                         </div>
                       </>
                     )}
@@ -1473,7 +1494,20 @@ export default function AdminPage() {
                         <h4 className="text-lg font-bold text-yellow-500 mb-4 border-b border-yellow-900/50 pb-2">AWT 赛制状态 (Stage Status)</h4>
                         <div className="space-y-4">
                           <div className="bg-black/50 p-3 border border-yellow-900/30">
-                            <label className="block text-yellow-400 font-mono mb-2">✨ 晋级名单 (AWT_ADVANCED_PLAYERS)</label>
+                            <div className="flex justify-between items-center mb-2">
+                              <label className="text-yellow-400 font-mono font-bold">✨ 晋级名单 (AWT_ADVANCED_PLAYERS)</label>
+                              <button
+                                onClick={async () => {
+                                  if (confirm("⚠️ 确定要清除晋级名单吗？")) {
+                                    (document.getElementById('input-AWT_ADVANCED_PLAYERS') as HTMLInputElement).value = "";
+                                    await handleUpdateSetting("AWT_ADVANCED_PLAYERS", "");
+                                  }
+                                }}
+                                className="px-2 py-1 bg-neutral-900 hover:bg-red-900 text-red-400 border border-red-500 text-xs font-bold transition-colors shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                              >
+                                [ 🧹 CLEAR / 清除 ]
+                              </button>
+                            </div>
                             <input
                               type="text"
                               id="input-AWT_ADVANCED_PLAYERS"
@@ -1485,13 +1519,51 @@ export default function AdminPage() {
                           </div>
 
                           <div className="bg-black/50 p-3 border border-red-900/30">
-                            <label className="block text-red-400 font-mono mb-2">💀 淘汰名单 (AWT_ELIMINATED_PLAYERS)</label>
+                            <div className="flex justify-between items-center mb-2">
+                              <label className="text-red-400 font-mono font-bold">💀 淘汰名单 (AWT_ELIMINATED_PLAYERS)</label>
+                              <button
+                                onClick={async () => {
+                                  if (confirm("⚠️ 确定要清除淘汰名单吗？")) {
+                                    (document.getElementById('input-AWT_ELIMINATED_PLAYERS') as HTMLInputElement).value = "";
+                                    await handleUpdateSetting("AWT_ELIMINATED_PLAYERS", "");
+                                  }
+                                }}
+                                className="px-2 py-1 bg-neutral-900 hover:bg-red-900 text-red-400 border border-red-500 text-xs font-bold transition-colors shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                              >
+                                [ 🧹 CLEAR / 清除 ]
+                              </button>
+                            </div>
                             <input
                               type="text"
                               id="input-AWT_ELIMINATED_PLAYERS"
                               defaultValue={settings.find(s => s.key === "AWT_ELIMINATED_PLAYERS")?.value || ""}
                               placeholder="e.g. Zando, Leffen"
                               className="w-full bg-black border border-red-900/50 px-3 py-2 text-red-100 font-mono focus:outline-none focus:border-red-500"
+                            />
+                            <p className="text-neutral-500 text-xs mt-1">输入用逗号分隔的选手名字</p>
+                          </div>
+
+                          <div className="bg-black/50 p-3 border border-purple-900/30">
+                            <div className="flex justify-between items-center mb-2">
+                              <label className="text-purple-400 font-mono font-bold">☠️ Hex 名单 (HEXED_PLAYERS)</label>
+                              <button
+                                onClick={async () => {
+                                  if (confirm("⚠️ 确定要清除 Hex 罗比印记名单吗？")) {
+                                    (document.getElementById('input-HEXED_PLAYERS') as HTMLInputElement).value = "";
+                                    await handleUpdateSetting("HEXED_PLAYERS", "");
+                                  }
+                                }}
+                                className="px-2 py-1 bg-neutral-900 hover:bg-red-900 text-red-400 border border-red-500 text-xs font-bold transition-colors shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                              >
+                                [ 🧹 CLEAR / 清除 ]
+                              </button>
+                            </div>
+                            <input
+                              type="text"
+                              id="input-HEXED_PLAYERS"
+                              defaultValue={settings.find(s => s.key === "HEXED_PLAYERS")?.value || ""}
+                              placeholder="e.g. Zando, Leffen"
+                              className="w-full bg-black border border-purple-900/50 px-3 py-2 text-purple-100 font-mono focus:outline-none focus:border-purple-500"
                             />
                             <p className="text-neutral-500 text-xs mt-1">输入用逗号分隔的选手名字</p>
                           </div>
@@ -1507,6 +1579,19 @@ export default function AdminPage() {
                             }}
                           >
                             💾 保存状态名单
+                          </button>
+
+                          <button
+                            className="w-full mt-4 py-2 bg-purple-900/50 text-purple-200 border border-purple-500 font-bold text-sm hover:bg-purple-800 rounded transition-all shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+                            onClick={async () => {
+                              if (confirm("⚠️ 确定要清除所有全局标签 (扩音器/印记) 吗？")) {
+                                await handleUpdateSetting("HEXED_PLAYERS", "");
+                                await handleUpdateSetting("MEGAPHONE_MESSAGES", "[]");
+                                alert("全局标签已清除！");
+                              }
+                            }}
+                          >
+                            🧹 格式化全局标签 (清除诅咒印记/全服广播)
                           </button>
                         </div>
                       </div>
@@ -1577,6 +1662,41 @@ export default function AdminPage() {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* System Action Logs Panel */}
+              <div className="bg-black border-2 border-neutral-700 p-6 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mt-10 relative overflow-hidden transform -skew-x-2">
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-600 pointer-events-none z-20"></div>
+                <h3 className="text-2xl font-bold mb-4 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+                  <span className="text-blue-500">📡</span> System Action Logs (THE PULSE)
+                </h3>
+                <div className="space-y-2 transform skew-x-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  {actionLogs.length === 0 ? (
+                    <p className="text-neutral-500 font-mono text-sm">No action logs found.</p>
+                  ) : (
+                    actionLogs.map(log => (
+                      <div key={log.id} className={`text-xs font-mono p-2 border-l-2 bg-neutral-900/50 ${
+                          log.actionType === 'BET' ? 'border-red-500 text-red-100' :
+                          log.actionType === 'SHOP' ? 'border-yellow-500 text-yellow-100' :
+                          log.actionType === 'ADMIN_SETTLE' ? 'border-blue-500 text-blue-100' :
+                          'border-neutral-500 text-neutral-300'
+                        }`}>
+                        <span className="text-neutral-500 mr-2">
+                          [{new Date(log.createdAt).toLocaleString()}]
+                        </span>
+                        {log.user ? (
+                          <span
+                            className="font-bold mr-2"
+                            style={log.user.nameColor && log.user.nameColor !== "#ffffff" ? { color: log.user.nameColor, textShadow: "0 0 5px currentColor" } : {}}
+                          >
+                            {log.user.displayName}:
+                          </span>
+                        ) : null}
+                        <span>{log.details}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </motion.div>

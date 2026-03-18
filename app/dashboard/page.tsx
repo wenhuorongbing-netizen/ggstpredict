@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import GroupStandings from "@/components/GroupStandings";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import confetti from "canvas-confetti";
 import AppLayout from "@/components/AppLayout";
@@ -512,6 +513,7 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [fdShields, setFdShields] = useState<number>(0);
+  const [actionLogs, setActionLogs] = useState<any[]>([]);
   const [fatalCounters, setFatalCounters] = useState<number>(0);
 
   const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[], HEXED_PLAYERS: string[], MEGAPHONE_MESSAGES: any[] }>({
@@ -968,7 +970,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
           {/* Main Matches Area (Left) */}
-          <div className="lg:col-span-2">
+          <div className={stageFilter === "GROUP" ? "lg:col-span-3 flex flex-col gap-6" : "lg:col-span-2 flex flex-col gap-6"}>
             {/* Balance Display & Filters */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="bg-black/80 border-2 border-yellow-500 p-3 transform -skew-x-2 shadow-[4px_4px_0px_rgba(234,179,8,1)]">
@@ -995,8 +997,12 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Match List */}
-            {filteredMatches.length === 0 ? (
+            {/* Main Content Area */}
+            {stageFilter === "GROUP" ? (
+              <div className="w-full">
+                <GroupStandings />
+              </div>
+            ) : filteredMatches.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1006,29 +1012,30 @@ export default function DashboardPage() {
               </motion.div>
             ) : (
               <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
-            <AnimatePresence>
-              {filteredMatches.map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  userId={userId}
-                  points={points}
-                  fdShields={fdShields}
-                  fatalCounters={fatalCounters}
-                  sysSettings={sysSettings}
-                  fetchUserPoints={fetchUserPoints}
-                  fetchMatches={fetchMatches}
-                  setError={setError}
-                  setPoints={setPoints}
-                  setWelfareMsg={setWelfareMsg}
-                />
-              ))}
-            </AnimatePresence>
-          </motion.div>
-          )}
+                <AnimatePresence>
+                  {filteredMatches.map((match) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      userId={userId}
+                      points={points}
+                      fdShields={fdShields}
+                      fatalCounters={fatalCounters}
+                      sysSettings={sysSettings}
+                      fetchUserPoints={fetchUserPoints}
+                      fetchMatches={fetchMatches}
+                      setError={setError}
+                      setPoints={setPoints}
+                      setWelfareMsg={setWelfareMsg}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            )}
           </div>
 
           {/* Right Column: Leaderboard / Live Intel */}
+          {stageFilter !== "GROUP" && (
           <div className="lg:col-span-1 flex flex-col gap-6">
             {!isInitialLoad && (
               <div className="bg-black/80 border-4 border-red-600 p-6 shadow-[0_0_15px_rgba(239,68,68,0.6)] transform -skew-x-2 relative overflow-hidden">
@@ -1084,7 +1091,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+
           </div>
+          )}
         </div>
         </div>
       </AppLayout>

@@ -33,14 +33,14 @@ const ITEMS: ShopItem[] = [
     id: "ITEM_HEX",
     name: "紫色的罗比印记",
     cost: 1500,
-    description: "顶级的社交嘲讽。购买后给当前赛事的指定选手贴上永久的耻辱/毒奶印记，全服可见！",
+    description: "顶级的社交嘲讽。购买后给当前赛事的指定选手或全站用户贴上永久的耻辱/毒奶印记，全服可见！",
     icon: "☠️",
   },
   {
     id: "ITEM_MEGAPHONE",
     name: "高频扩音器",
     cost: 100,
-    description: "廉价的弹幕骑脸工具。输入一段垃圾话，在首页大厅顶部强制滚动播放 120 分钟！",
+    description: "【赛事应援广播】为你支持的选手大声呐喊，或者在爆冷时发布全服惊叹！你的声音将在大厅顶部醒目滚动播放 120 分钟。",
     icon: "📣",
   }
 ];
@@ -91,7 +91,7 @@ export default function ShopPage() {
     let megaphoneText: string | null = null;
 
     if (item.id === "ITEM_HEX") {
-      targetPlayer = window.prompt("👾请输入你要制裁的选手名字 (注意拼写)：\n\n这将在他/她每场比赛的头像上留下永久印记！");
+      targetPlayer = window.prompt("👾请输入你要制裁的选手/用户名字 (注意拼写)：\n\n这将在他/她每场比赛的头像或排行榜上留下永久印记！");
       if (!targetPlayer) return;
     } else if (item.id === "ITEM_MEGAPHONE") {
       megaphoneText = window.prompt("📣请输入你要发送的全服广播 (最多50个字符)：\n\n这条信息将在大厅顶部滚动播放120分钟！");

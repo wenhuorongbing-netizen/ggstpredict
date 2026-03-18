@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,109 +7,110 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. 用户表
 model User {
   id            String     @id @default(cuid())
   username      String     @unique
   displayName   String     @default("Challenger")
-  password      String? // 极简校验，实际生产环境应加密，这里为了快速部署保持简单
-  points        Int        @default(1000) // 初始赠送 1000 积分
-  role          String     @default("USER") // 角色区分："USER" 或 "ADMIN"
+  password      String?
+  points        Int        @default(1000)
+  role          String     @default("USER")
   nameColor     String     @default("#ffffff")
   winStreak     Int        @default(0)
-  fdShields     Int        @default(0) // FD 完美防御护盾数
-  fatalCounters Int        @default(0) // 致命打康标记数
-  bets          Bet[] // 关联：一个用户可以有多次下注
-  purchases     Purchase[]
-  lastWelfareAt DateTime? // 记录上次领取救济金的时间
+  fdShields     Int        @default(0)
+  fatalCounters Int        @default(0)
+  lastWelfareAt DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  bets          Bet[]
+  purchases     Purchase[]
 }
 
-// 2. 黑市交易记录
 model Purchase {
   id        String   @id @default(cuid())
   userId    String
   item      String
   cost      Int
-  status    String   @default("PENDING") // "PENDING", "FULFILLED"
-  user      User     @relation(fields: [userId], references: [id])
+  status    String   @default("PENDING")
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// 3. 锦标赛表
 model Tournament {
   id        String   @id @default(cuid())
   name      String
-  status    String   @default("GROUP_STAGE") // "GROUP_STAGE" or "BRACKET" etc
-  matches   Match[]
+  status    String   @default("GROUP_STAGE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  matches   Match[]
 }
 
-// 3. 赛事表
 model Match {
   id                String      @id @default(cuid())
-  playerA           String // 选手A名字
-  playerB           String // 选手B名字
-  charA             String? // 选手A角色
-  charB             String? // 选手B角色
-  status            String      @default("OPEN") // 状态："OPEN"(可下注), "LOCKED"(未开盘), "CLOSED"(比赛中/停止下注), "SETTLED"(已结算)
-  winner            String? // 获胜方："A" 或 "B"，结算前为 null
+  playerA           String
+  playerB           String
+  charA             String?
+  charB             String?
+  status            String      @default("OPEN")
+  winner            String?
   tournamentId      String?
-  tournament        Tournament? @relation(fields: [tournamentId], references: [id])
-  stageType         String? // "GROUP" or "BRACKET"
-  groupId           String? // e.g., "A", "B"
+  stageType         String?
+  groupId           String?
   roundName         String?
   nextWinnerMatchId String?
   nextLoserMatchId  String?
-  poolInjectA       Int         @default(0) // Admin injected funds for A
-  poolInjectB       Int         @default(0) // Admin injected funds for B
-  scoreA            Int? // 选手A得分
-  scoreB            Int? // 选手B得分
-  lockAt            DateTime? // 定时封盘时间
-  bets              Bet[] // 关联：一场比赛可以有多个下注
+  poolInjectA       Int         @default(0)
+  poolInjectB       Int         @default(0)
+  scoreA            Int?
+  scoreB            Int?
+  lockAt            DateTime?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+  groupName         String?
+  bets              Bet[]
+  tournament        Tournament? @relation(fields: [tournamentId], references: [id])
 }
 
-// 4. 下注记录表
 model Bet {
-  id        String   @id @default(cuid())
-  userId    String
-  matchId   String
-  amount    Int // 下注积分数量
-  choice    String // 选择支持哪一方："A" 或 "B"
-  comment   String? // 用户的下注留言分析
-  usedItem       String?   // 记录使用的道具，例如 "ITEM_FD" 或 "ITEM_FATAL"
-  predictedScore String?   // 如果使用了致命打康，记录玩家预测的小分，例如 "3-1"
-  user      User     @relation(fields: [userId], references: [id])
-  match     Match    @relation(fields: [matchId], references: [id])
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  matchId        String
+  amount         Int
+  choice         String
+  comment        String?
+  createdAt      DateTime @default(now())
+  predictedScore String?
+  usedItem       String?
+  match          Match    @relation(fields: [matchId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
 }
 
-// 5. 邀请码系统
 model InviteCode {
   id        String   @id @default(cuid())
   code      String   @unique
   used      Boolean  @default(false)
-  usedBy    String? // 记录使用者（如记录 userId 或 username）
+  usedBy    String?
   createdAt DateTime @default(now())
 }
 
-// 6. 系统全局设置
 model SystemSetting {
   id        String   @id @default(cuid())
-  key       String   @unique // e.g., "GROUP_STAGE_LIMIT", "KNOCKOUT_PERCENT"
-  value     String // "300", "50"
+  key       String   @unique
+  value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// 7. 管理员操作日志
 model AdminLog {
   id        String   @id @default(cuid())
   action    String
   details   String
+  createdAt DateTime @default(now())
+}
+
+model ActionLog {
+  id        String   @id @default(cuid())
+  actionType String   // e.g., "BET", "SHOP", "ADMIN_SETTLE"
+  userId    String?  // Optional, if tied to a user
+  details   String   // The content to display
   createdAt DateTime @default(now())
 }

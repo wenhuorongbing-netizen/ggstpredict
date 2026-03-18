@@ -16,6 +16,7 @@ export async function GET(
       select: {
         id: true,
         username: true,
+        displayName: true,
         points: true,
         role: true,
         winStreak: true,
@@ -26,7 +27,14 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    const hexedSetting = await prisma.systemSetting.findUnique({
+      where: { key: "HEXED_PLAYERS" }
+    });
+
+    const hexedPlayers = hexedSetting ? hexedSetting.value.split(',').filter(Boolean).map(p => p.toLowerCase()) : [];
+    const isHexed = hexedPlayers.includes((user.displayName || user.username).toLowerCase());
+
+    return NextResponse.json({ ...user, isHexed });
   } catch (error) {
     console.error("Failed to fetch user:", error);
     return NextResponse.json(

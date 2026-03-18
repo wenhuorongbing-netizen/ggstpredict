@@ -10,6 +10,7 @@ interface LeaderboardUser {
   displayName: string;
   nameColor?: string;
   points: number;
+  isHexed?: boolean;
 }
 
 export default function LeaderboardPage() {
@@ -100,7 +101,7 @@ export default function LeaderboardPage() {
                             index < 3 && page === 1 ? "text-2xl text-gray-100" :
                             "text-xl text-neutral-300"
                           }`} style={{ fontFamily: "var(--font-bebas)", color: user.nameColor && user.nameColor !== "#ffffff" ? user.nameColor : undefined, textShadow: user.nameColor && user.nameColor !== "#ffffff" ? "0 0 8px currentColor" : undefined }}>
-                            {user.displayName}
+                            {user.displayName} {user.isHexed && <span title="被诅咒的用户 (Hexed)" className="ml-3 px-2 py-0.5 bg-[#4c1d95] text-[#d8b4fe] border border-[#a855f7] text-sm md:text-base align-middle animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.6)]" style={{ fontFamily: "var(--font-bebas)" }}>[ 罗比! ]</span>}
                           </div>
                         </div>
                         <div className="flex flex-col items-end">

@@ -47,7 +47,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { playerA, playerB, charA, charB } = await request.json();
+    const { playerA, playerB, charA, charB, stageType, groupName } = await request.json();
 
     if (!playerA || !playerB) {
       return NextResponse.json(
@@ -79,6 +79,8 @@ export async function POST(request: Request) {
         playerB: normalizedMatch.playerB,
         charA: normalizedMatch.charA,
         charB: normalizedMatch.charB,
+        stageType: stageType || "MATCH",
+        groupName: stageType === "GROUP" ? groupName : null,
       },
     });
 

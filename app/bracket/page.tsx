@@ -109,19 +109,21 @@ export default function BracketPage() {
                   WINNERS
                 </div>
                 {winnersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col gap-6 flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
+                  <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
                     {/* Visual connection spacer line to next round */}
                     {colIndex < winnersRounds.length - 1 && (
-                       <div className="absolute -right-16 top-16 bottom-16 w-16 border-r-2 border-y-2 border-red-900/30 rounded-r opacity-50 pointer-events-none"></div>
+                       <svg className="absolute -right-16 top-12 bottom-0 w-16 h-full pointer-events-none" style={{ zIndex: -1 }}>
+                          <path d="M 0 50 C 30 50, 30 100, 64 100" fill="transparent" stroke="rgba(220, 38, 38, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
+                       </svg>
                     )}
 
                     <h3 className="absolute top-0 left-0 right-0 text-red-500 font-bold text-sm tracking-widest text-center bg-red-950/30 py-1 mb-2 border border-red-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
                       {round.roundName}
                     </h3>
 
-                    <div className="flex flex-col gap-6 justify-around h-full">
+                    <div className="flex flex-col gap-6 justify-around h-full py-4">
                       {round.matches.map(m => (
-                        <div key={m.id} className="relative z-10">
+                        <div key={m.id} className="relative z-10 bracket-node">
                           <BracketMatchNode match={m} isWinnersBracket={true} />
                         </div>
                       ))}
@@ -138,16 +140,18 @@ export default function BracketPage() {
                   LOSERS
                 </div>
                 {losersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col gap-6 flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
+                  <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
                     {colIndex < losersRounds.length - 1 && (
-                       <div className="absolute -right-16 top-16 bottom-16 w-16 border-r-2 border-y-2 border-blue-900/30 rounded-r opacity-50 pointer-events-none"></div>
+                       <svg className="absolute -right-16 top-12 bottom-0 w-16 h-full pointer-events-none" style={{ zIndex: -1 }}>
+                          <path d="M 0 50 C 30 50, 30 100, 64 100" fill="transparent" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
+                       </svg>
                     )}
                     <h3 className="absolute top-0 left-0 right-0 text-blue-500 font-bold text-sm tracking-widest text-center bg-blue-950/30 py-1 mb-2 border border-blue-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
                       {round.roundName}
                     </h3>
-                    <div className="flex flex-col gap-6 justify-around h-full">
+                    <div className="flex flex-col gap-6 justify-around h-full py-4">
                       {round.matches.map(m => (
-                        <div key={m.id} className="relative z-10">
+                        <div key={m.id} className="relative z-10 bracket-node">
                           <BracketMatchNode match={m} isWinnersBracket={false} />
                         </div>
                       ))}
