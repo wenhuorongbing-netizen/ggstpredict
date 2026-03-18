@@ -23,13 +23,16 @@ export async function POST(req: Request) {
 
     // Wrap in a transaction to ensure atomic operations
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Find the match and verify it's OPEN
+      // 1. Find the match and verify it's OPEN and not locked
       const match = await tx.match.findUnique({
         where: { id: matchId },
       });
 
       if (!match) throw new Error("Match not found");
-      if (match.status !== "OPEN") throw new Error("Cannot cancel bet for a match that is not OPEN");
+
+      if (match.status !== "OPEN" || (match.lockAt && new Date() >= new Date(match.lockAt))) {
+        throw new Error("比赛已封盘，无法再进行 Roman Cancel");
+      }
 
       // 2. Find the user's bet for this match
       const bet = await tx.bet.findFirst({
@@ -62,6 +65,9 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Cancel bet error:", error);
+    if (error.message === "比赛已封盘，无法再进行 Roman Cancel") {
+       return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     return NextResponse.json({ error: error.message || "Failed to cancel bet" }, { status: 500 });
   }
 }

@@ -513,13 +513,14 @@ export default function DashboardPage() {
   const [fdShields, setFdShields] = useState<number>(0);
   const [fatalCounters, setFatalCounters] = useState<number>(0);
 
-  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[], HEXED_PLAYERS: string[] }>({
+  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[], HEXED_PLAYERS: string[], MEGAPHONE_MESSAGES: any[] }>({
     GROUP_MAX: 300,
     KO_PERCENT: 50,
     KO_MIN: 200,
     AWT_ADVANCED_PLAYERS: [],
     AWT_ELIMINATED_PLAYERS: [],
-    HEXED_PLAYERS: []
+    HEXED_PLAYERS: [],
+    MEGAPHONE_MESSAGES: []
   });
 
   const fetchSettings = async () => {
@@ -533,7 +534,8 @@ export default function DashboardPage() {
           KO_MIN: 200,
           AWT_ADVANCED_PLAYERS: [] as string[],
           AWT_ELIMINATED_PLAYERS: [] as string[],
-          HEXED_PLAYERS: [] as string[]
+          HEXED_PLAYERS: [] as string[],
+          MEGAPHONE_MESSAGES: [] as any[]
         };
         data.forEach((s: any) => {
           if (s.key === "GROUP_MAX") newSettings.GROUP_MAX = parseInt(s.value, 10);
@@ -547,6 +549,16 @@ export default function DashboardPage() {
           }
           if (s.key === "HEXED_PLAYERS" && s.value) {
             newSettings.HEXED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+          }
+          if (s.key === "MEGAPHONE_MESSAGES" && s.value) {
+            try {
+              const parsed = JSON.parse(s.value);
+              if (Array.isArray(parsed)) {
+                newSettings.MEGAPHONE_MESSAGES = parsed.filter(m => m.expiresAt > Date.now());
+              }
+            } catch (e) {
+              console.error("Failed to parse MEGAPHONE_MESSAGES");
+            }
           }
         });
         setSysSettings(newSettings);
@@ -873,6 +885,53 @@ export default function DashboardPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SALT MEGAPHONE TICKER */}
+        {sysSettings.MEGAPHONE_MESSAGES && sysSettings.MEGAPHONE_MESSAGES.length > 0 && (
+          <div className="mb-8 w-full overflow-hidden bg-black border-y-4 border-yellow-500 relative transform -skew-x-6 shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
+
+            {/* Warning Tape Stripes bg */}
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, #000 0, #000 10px, #eab308 10px, #eab308 20px)'
+              }}
+            ></div>
+
+            <div className="absolute left-0 top-0 bottom-0 bg-yellow-500 text-black px-4 flex items-center z-20 font-black italic shadow-[4px_0_0_rgba(0,0,0,1)]">
+              <span className="animate-pulse flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)", fontSize: "1.5rem" }}>
+                <span className="text-xl">📢</span> BROADCAST
+              </span>
+            </div>
+
+            <div className="flex whitespace-nowrap overflow-hidden py-3">
+              <motion.div
+                className="flex items-center gap-16 font-mono text-xl text-yellow-400 pl-48"
+                animate={{ x: ["0%", "-100%"] }}
+                transition={{
+                  repeat: Infinity,
+                  ease: "linear",
+                  duration: Math.max(20, sysSettings.MEGAPHONE_MESSAGES.length * 10),
+                }}
+              >
+                {/* Double the messages array to create a seamless loop */}
+                {[...sysSettings.MEGAPHONE_MESSAGES, ...sysSettings.MEGAPHONE_MESSAGES].map((msg, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-white bg-red-600 px-2 py-0.5 rounded-sm font-bold text-sm shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                      {msg.author}
+                    </span>
+                    <span className="font-bold tracking-widest drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+                      &quot;{msg.text}&quot;
+                    </span>
+                    <span className="text-red-500 mx-4">♦</span>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
           {/* Main Matches Area (Left) */}

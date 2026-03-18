@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { item, targetPlayer } = await req.json();
+    const { item, targetPlayer, text } = await req.json();
     const userId = req.headers.get("x-user-id");
 
     if (!userId) {
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       "ITEM_FD": 100,
       "ITEM_FATAL": 300,
       "ITEM_HEX": 1500,
+      "ITEM_MEGAPHONE": 100,
     };
 
     const costNum = SHOP_PRICES[item];
@@ -32,6 +33,10 @@ export async function POST(req: Request) {
 
     if (item === "ITEM_HEX" && !targetPlayer) {
       return NextResponse.json({ error: "Missing targetPlayer for ITEM_HEX" }, { status: 400 });
+    }
+
+    if (item === "ITEM_MEGAPHONE" && !text) {
+      return NextResponse.json({ error: "Missing text for ITEM_MEGAPHONE" }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -75,6 +80,36 @@ export async function POST(req: Request) {
              update: { value: newHexedStr }
            });
         }
+      } else if (item === "ITEM_MEGAPHONE") {
+        purchaseStatus = "FULFILLED";
+
+        const setting = await tx.systemSetting.findUnique({
+          where: { key: "MEGAPHONE_MESSAGES" }
+        });
+
+        let messages: any[] = [];
+        if (setting && setting.value) {
+          try {
+            messages = JSON.parse(setting.value);
+            if (!Array.isArray(messages)) messages = [];
+          } catch(e) {
+            messages = [];
+          }
+        }
+
+        messages.push({
+          text: text.substring(0, 50),
+          expiresAt: Date.now() + 120 * 60 * 1000,
+          author: user.displayName || user.username
+        });
+
+        const newMessagesStr = JSON.stringify(messages);
+
+        await tx.systemSetting.upsert({
+          where: { key: "MEGAPHONE_MESSAGES" },
+          create: { key: "MEGAPHONE_MESSAGES", value: newMessagesStr },
+          update: { value: newMessagesStr }
+        });
       }
 
       const updatedUser = await tx.user.update({
@@ -82,10 +117,14 @@ export async function POST(req: Request) {
         data: updateData,
       });
 
+      let finalItemName = item;
+      if (item === "ITEM_HEX") finalItemName = `ITEM_HEX (${targetPlayer})`;
+      if (item === "ITEM_MEGAPHONE") finalItemName = `ITEM_MEGAPHONE (${text.substring(0, 20)}...)`;
+
       const purchase = await tx.purchase.create({
         data: {
           userId,
-          item: item === "ITEM_HEX" ? `ITEM_HEX (${targetPlayer})` : item,
+          item: finalItemName,
           cost: costNum,
           status: purchaseStatus,
         },
