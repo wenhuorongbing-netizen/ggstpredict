@@ -637,17 +637,31 @@ export default function AdminPage() {
     "UMISHO", "TempestNYC", "Leffen", "Zando", "TigerPop", "Verix",
     "Daru_I-No", "Gobou", "TY", "Mocchi", "Slash", "Sanakan", "TATUMA",
     "NBN", "Daze", "Jack", "Nitro", "SushixHL", "Dejojo", "IBUSHIGIN",
-    "Score", "Churara", "Rion", "Garu", "Poka"
+    "Score", "Churara", "Rion", "Garu", "Poka", "TyuRaRa"
   ];
 
-  // 2. 终极整合：AWT 选手 + 数据库已有选手 + 静态资源头像文件名 + 缓存记录
-  const playerSuggestions = normalizePlayerRoster([
-    ...AWT_KOREA_PLAYERS,                                          // AWT 2026 Korea 名单
-    ...matches.flatMap((match) => [match.playerA, match.playerB]), // 数据库历史交战选手
-    ...assetCatalog.players.choices.map((choice) => choice.label), // public/asset/players 下的文件名
-    ...playerRoster,                                               // Admin 侧边栏手动保存的 16 人名单
-    ...recentPlayers,                                              // 本地浏览器缓存的最近录入
-  ]);
+  // 2. 收集所有可能的来源 (优先级从高到低排列，确保正确的大小写被优先记录)
+  const rawSuggestions = [
+    ...AWT_KOREA_PLAYERS,                                          // AWT 预设名单
+    ...assetCatalog.players.choices.map((choice) => choice.label), // public 头像正确文件名
+    ...matches.flatMap((match) => [match.playerA, match.playerB]), // 数据库历史记录
+    ...playerRoster,                                               // Admin 手动缓存名单
+    ...recentPlayers,                                              // 浏览器本地输入记录
+  ].filter(Boolean); // 过滤掉潜在的空值
+
+  // 3. 严格去重 (Case-Insensitive Deduplication)
+  const uniquePlayerMap = new Map<string, string>();
+  rawSuggestions.forEach(name => {
+    const cleanName = name.trim();
+    const lowerKey = cleanName.toLowerCase();
+    // 只有当这个小写 key 不存在时才存入，这样能保留最高优先级的原版大小写
+    if (lowerKey && !uniquePlayerMap.has(lowerKey)) {
+      uniquePlayerMap.set(lowerKey, cleanName);
+    }
+  });
+
+  // 4. 转换为数组并按首字母排序
+  const playerSuggestions = Array.from(uniquePlayerMap.values()).sort((a, b) => a.localeCompare(b));
 
   const characterSuggestionMap = new Map<string, string>();
   for (const characterName of [...OFFICIAL_CHARACTER_NAMES, ...assetCatalog.characters.choices.map((choice) => choice.label)]) {
