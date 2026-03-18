@@ -83,6 +83,8 @@ model Bet {
   amount    Int // 下注积分数量
   choice    String // 选择支持哪一方："A" 或 "B"
   comment   String? // 用户的下注留言分析
+  usedItem       String?   // 记录使用的道具，例如 "ITEM_FD" 或 "ITEM_FATAL"
+  predictedScore String?   // 如果使用了致命打康，记录玩家预测的小分，例如 "3-1"
   user      User     @relation(fields: [userId], references: [id])
   match     Match    @relation(fields: [matchId], references: [id])
   createdAt DateTime @default(now())

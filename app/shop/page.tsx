@@ -17,16 +17,16 @@ interface ShopItem {
 const ITEMS: ShopItem[] = [
   {
     id: "ITEM_FD",
-    name: "ITEM_FD",
+    name: "绝对防御 (FD Shield)",
     cost: 100,
-    description: "绝对防御 (FD Shield) - 购买后可获得一层护盾，未来使用可抵消一次预测失败的扣分。",
+    description: "购买后可获得一层护盾，未来使用可抵消一次预测失败的扣分。",
     icon: "🛡️",
   },
   {
     id: "ITEM_FATAL",
-    name: "ITEM_FATAL",
+    name: "致命打康 (Fatal Counter)",
     cost: 300,
-    description: "致命打康 (Fatal Counter) - 购买后获得打康标记，未来使用可让某场比赛的收益翻倍。",
+    description: "购买后获得打康标记，未来使用可让某场比赛的收益翻倍。",
     icon: "⚡",
   },
 ];
@@ -91,7 +91,7 @@ export default function ShopPage() {
           "Content-Type": "application/json",
           "x-user-id": userId
         },
-        body: JSON.stringify({ item: item.name }),
+        body: JSON.stringify({ item: item.id }),
       });
 
       const data = await res.json();
@@ -217,7 +217,7 @@ export default function ShopPage() {
           </div>
 
           <div className="mt-12 p-6 bg-[#0a0a0a] border border-neutral-800 border-dashed text-neutral-500 text-sm font-mono relative z-10 transform skew-x-2">
-            * 所有的黑市交易均为人工 (Admin) 处理。购买后，订单状态将变更为 PENDING，管理员会在处理完成后标记为 FULFILLED。
+            * 购买道具后会立即加入您的个人资产中，供之后下注使用。
           </div>
 
         </div>
