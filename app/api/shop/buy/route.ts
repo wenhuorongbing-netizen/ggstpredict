@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const { item } = await req.json();
+    const { item, targetPlayer } = await req.json();
     const userId = req.headers.get("x-user-id");
 
     if (!userId) {
@@ -21,12 +21,17 @@ export async function POST(req: Request) {
       "金色传说ID (Gold Name)": 10000,
       "ITEM_FD": 100,
       "ITEM_FATAL": 300,
+      "ITEM_HEX": 1500,
     };
 
     const costNum = SHOP_PRICES[item];
 
     if (costNum === undefined || costNum <= 0) {
       return NextResponse.json({ error: "Invalid item or price" }, { status: 400 });
+    }
+
+    if (item === "ITEM_HEX" && !targetPlayer) {
+      return NextResponse.json({ error: "Missing targetPlayer for ITEM_HEX" }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -50,6 +55,26 @@ export async function POST(req: Request) {
       } else if (item === "ITEM_FATAL") {
         updateData.fatalCounters = { increment: 1 };
         purchaseStatus = "FULFILLED"; // Consumables auto-fulfill instantly
+      } else if (item === "ITEM_HEX") {
+        purchaseStatus = "FULFILLED";
+
+        const setting = await tx.systemSetting.findUnique({
+          where: { key: "HEXED_PLAYERS" }
+        });
+
+        const currentHexed = setting ? setting.value.split(',').filter(Boolean) : [];
+        const cleanTarget = targetPlayer.trim();
+
+        // Only append if not already hexed (case-insensitive check)
+        if (!currentHexed.some(p => p.toLowerCase() === cleanTarget.toLowerCase())) {
+           currentHexed.push(cleanTarget);
+           const newHexedStr = currentHexed.join(',');
+           await tx.systemSetting.upsert({
+             where: { key: "HEXED_PLAYERS" },
+             create: { key: "HEXED_PLAYERS", value: newHexedStr },
+             update: { value: newHexedStr }
+           });
+        }
       }
 
       const updatedUser = await tx.user.update({
@@ -60,7 +85,7 @@ export async function POST(req: Request) {
       const purchase = await tx.purchase.create({
         data: {
           userId,
-          item,
+          item: item === "ITEM_HEX" ? `ITEM_HEX (${targetPlayer})` : item,
           cost: costNum,
           status: purchaseStatus,
         },

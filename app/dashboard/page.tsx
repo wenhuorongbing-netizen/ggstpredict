@@ -145,6 +145,10 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
     return sysSettings.AWT_ELIMINATED_PLAYERS?.includes(playerName.trim().toLowerCase());
   };
 
+  const isPlayerHexed = (playerName: string) => {
+    return sysSettings.HEXED_PLAYERS?.includes(playerName.trim().toLowerCase());
+  };
+
   return (
 <motion.div
 
@@ -229,6 +233,9 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                     </div>
 
                     <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerA) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                      {isPlayerHexed(match.playerA) && (
+                        <div className="absolute -top-4 -right-4 bg-purple-900 text-purple-200 font-bold text-[10px] px-2 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
+                      )}
                       {isPlayerAdvanced(match.playerA) && (
                         <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
                       )}
@@ -245,6 +252,9 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                     <div className="w-16"></div> {/* Spacer for VS */}
 
                     <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerB) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
+                      {isPlayerHexed(match.playerB) && (
+                        <div className="absolute -top-4 -right-4 bg-purple-900 text-purple-200 font-bold text-[10px] px-2 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
+                      )}
                       {isPlayerAdvanced(match.playerB) && (
                         <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
                       )}
@@ -503,12 +513,13 @@ export default function DashboardPage() {
   const [fdShields, setFdShields] = useState<number>(0);
   const [fatalCounters, setFatalCounters] = useState<number>(0);
 
-  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[] }>({
+  const [sysSettings, setSysSettings] = useState<{ GROUP_MAX: number, KO_PERCENT: number, KO_MIN: number, AWT_ADVANCED_PLAYERS: string[], AWT_ELIMINATED_PLAYERS: string[], HEXED_PLAYERS: string[] }>({
     GROUP_MAX: 300,
     KO_PERCENT: 50,
     KO_MIN: 200,
     AWT_ADVANCED_PLAYERS: [],
-    AWT_ELIMINATED_PLAYERS: []
+    AWT_ELIMINATED_PLAYERS: [],
+    HEXED_PLAYERS: []
   });
 
   const fetchSettings = async () => {
@@ -521,7 +532,8 @@ export default function DashboardPage() {
           KO_PERCENT: 50,
           KO_MIN: 200,
           AWT_ADVANCED_PLAYERS: [] as string[],
-          AWT_ELIMINATED_PLAYERS: [] as string[]
+          AWT_ELIMINATED_PLAYERS: [] as string[],
+          HEXED_PLAYERS: [] as string[]
         };
         data.forEach((s: any) => {
           if (s.key === "GROUP_MAX") newSettings.GROUP_MAX = parseInt(s.value, 10);
@@ -532,6 +544,9 @@ export default function DashboardPage() {
           }
           if (s.key === "AWT_ELIMINATED_PLAYERS" && s.value) {
             newSettings.AWT_ELIMINATED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+          }
+          if (s.key === "HEXED_PLAYERS" && s.value) {
+            newSettings.HEXED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
           }
         });
         setSysSettings(newSettings);

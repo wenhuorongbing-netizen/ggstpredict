@@ -29,6 +29,13 @@ const ITEMS: ShopItem[] = [
     description: "购买后获得打康标记，未来使用可让某场比赛的收益翻倍。",
     icon: "⚡",
   },
+  {
+    id: "ITEM_HEX",
+    name: "紫色的罗比印记 (Robbie's Hex)",
+    cost: 1500,
+    description: "顶级的社交嘲讽。购买后给当前赛事的指定选手贴上永久的耻辱/毒奶印记，全服可见！",
+    icon: "☠️",
+  },
 ];
 
 export default function ShopPage() {
@@ -73,8 +80,14 @@ export default function ShopPage() {
       return;
     }
 
-    if (!confirm(`⚠️ 危险交易：确定要花费 ${item.cost} 积分购买 [ ${item.name} ] 吗？`)) {
-      return;
+    let targetPlayer: string | null = null;
+    if (item.id === "ITEM_HEX") {
+      targetPlayer = window.prompt("👾请输入你要制裁的选手名字 (注意拼写)：\n\n这将在他/她每场比赛的头像上留下永久印记！");
+      if (!targetPlayer) return;
+    } else {
+      if (!confirm(`⚠️ 危险交易：确定要花费 ${item.cost} 积分购买 [ ${item.name} ] 吗？`)) {
+        return;
+      }
     }
 
     setIsPurchasing(item.id);
@@ -85,13 +98,19 @@ export default function ShopPage() {
         setIsPurchasing(null);
         return;
       }
+
+      const payload: any = { item: item.id };
+      if (targetPlayer) {
+        payload.targetPlayer = targetPlayer;
+      }
+
       const res = await fetch("/api/shop/buy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-user-id": userId
         },
-        body: JSON.stringify({ item: item.id }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
