@@ -273,160 +273,171 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                   {/* Betting Area */}
                   {match.status === "OPEN" && (!match.lockAt || new Date() < new Date(match.lockAt)) ? (
                     <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
-
-                      {/* Roman Cancel (Cancel Bet) */}
-                      {match.bets?.some((b: any) => b.userId === userId) && (
-                        <div className="mb-4">
-                          <button
-                            onClick={() => {
-                              const userBet = match.bets?.find((b: any) => b.userId === userId);
-                              if (userBet) handleCancelBet(userBet.amount);
-                            }}
-                            className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
-                            style={{ fontFamily: "var(--font-bebas)" }}
-                          >
-                            [ 🔄 RC取消 (扣5%) ]
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center mb-3">
-                        <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score) <span className="text-yellow-500 ml-2">
-                            {(() => {
-                              if (match.stageType === "GROUP") return `(下注限额: ${sysSettings.GROUP_MAX} W$)`;
-                              if (match.stageType === "BRACKET") {
-                                const currentLimit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
-                                return `(下注限额: ${currentLimit} W$ (资产的 ${sysSettings.KO_PERCENT}%, 保底 ${sysSettings.KO_MIN}))`;
-                              }
-                              return "";
-                            })()}
-                          </span>
-                        </label>
-                        <div className="flex gap-2">
-                          {[100, 500].map(amt => (
-                            <button
-                              key={amt}
-                              onClick={() => setQuickAmount(amt)}
-                              className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
-                              aria-label={`快捷下注 ${amt} 积分`}
-                            >
-                              +{amt}
-                            </button>
-                          ))}
-                          <button
-                            onClick={() => setQuickAmount("ALL")}
-                            className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
-                            aria-label="全押"
-                          >
-                            最大押注 (MAX)
-                          </button>
-                        </div>
-                      </div>
-
-                      <input
-                        id={`bet-amount-${match.id}`}
-                        type="number"
-                        min="0"
-                        max={(() => {
-                          if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_MAX);
-                          if (match.stageType === "BRACKET") return Math.min(points, Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100))));
-                          return Math.min(points, 500);
-                        })()}
-                        value={betAmount}
-                        onChange={(e) => {
-                          let val = parseInt(e.target.value) || 0;
-                          let limit = 500;
-                          if (match.stageType === "GROUP") limit = sysSettings.GROUP_MAX;
-                          else if (match.stageType === "BRACKET") limit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
-                          if (val > limit) val = limit;
-                          setBetAmount(val === 0 ? "" : val);
-                        }}
-                        placeholder={(() => {
-                          if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_MAX})`;
-                          if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
-                          return "输入注额... (最大 500)";
-                        })()}
-                        className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
-                      />
-
-                      <input
-                        type="text"
-                        value={betComment}
-                        onChange={(e) => setBetComment(e.target.value)}
-                        placeholder="赛事分析 / 留言 (Optional Comment)..."
-                        maxLength={50}
-                        className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
-                      />
-
-                      {/* Tactical Gear Selection */}
-                      <div className="mb-4 bg-neutral-900/30 p-3 rounded-xl border border-neutral-800">
-                        <h4 className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-2 flex items-center gap-2">
-                          <span className="text-yellow-500">⚙️</span> 战术装备 (Tactical Gear)
-                        </h4>
-                        <div className="flex flex-col gap-2">
-                          <label className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
-                            <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500" />
-                            <span className="text-sm text-neutral-300 font-medium">不使用装备</span>
-                          </label>
-                          <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
-                            <div className="flex items-center gap-2">
-                              <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500" />
-                              <span className="text-sm text-blue-300 font-medium">🛡️ 完美防御</span>
-                            </div>
-                            <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fdShields}</span>
-                          </label>
-                          <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
-                            <div className="flex items-center gap-2">
-                              <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500" />
-                              <span className="text-sm text-red-300 font-medium">⚡ 致命打康</span>
-                            </div>
-                            <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fatalCounters}</span>
-                          </label>
-
-                          {/* Fatal Counter Prediction Input */}
-                          <AnimatePresence>
-                            {usedItem === "ITEM_FATAL" && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden mt-1 ml-6"
+                      {!userId ? (
+                        <button
+                          onClick={() => window.location.href = "/"}
+                          className="w-full py-4 ggst-button border-neutral-500 hover:bg-neutral-800 focus-visible:outline-none"
+                          style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)", fontSize: "1.2rem" }}
+                        >
+                          [ 🔑 连入终端 (LOGIN TO BET) ]
+                        </button>
+                      ) : (
+                        <>
+                          {/* Roman Cancel (Cancel Bet) */}
+                          {match.bets?.some((b: any) => b.userId === userId) && (
+                            <div className="mb-4">
+                              <button
+                                onClick={() => {
+                                  const userBet = match.bets?.find((b: any) => b.userId === userId);
+                                  if (userBet) handleCancelBet(userBet.amount);
+                                }}
+                                className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
+                                style={{ fontFamily: "var(--font-bebas)" }}
                               >
-                                <input
-                                  type="text"
-                                  value={predictedScore}
-                                  onChange={(e) => setPredictedScore(e.target.value)}
-                                  placeholder="输入预测小分 (例如: 3-1)"
-                                  className="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2 text-red-200 text-sm focus:outline-none focus:border-red-500 font-mono"
-                                />
-                                <p className="text-[10px] text-red-500/70 mt-1">* 格式必须为 [胜方分-败方分]</p>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
+                                [ 🔄 RC取消 (扣5%) ]
+                              </button>
+                            </div>
+                          )}
 
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => handleBet("A")}
-                          disabled={isBetting || !betAmount}
-                          className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
-                          aria-label={`押注选手 A: ${match.playerA}`}
-                        >
-                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 A")}
-                        </button>
+                          <div className="flex justify-between items-center mb-3">
+                            <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score) <span className="text-yellow-500 ml-2">
+                                {(() => {
+                                  if (match.stageType === "GROUP") return `(下注限额: ${sysSettings.GROUP_MAX} W$)`;
+                                  if (match.stageType === "BRACKET") {
+                                    const currentLimit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
+                                    return `(下注限额: ${currentLimit} W$ (资产的 ${sysSettings.KO_PERCENT}%, 保底 ${sysSettings.KO_MIN}))`;
+                                  }
+                                  return "";
+                                })()}
+                              </span>
+                            </label>
+                            <div className="flex gap-2">
+                              {[100, 500].map(amt => (
+                                <button
+                                  key={amt}
+                                  onClick={() => setQuickAmount(amt)}
+                                  className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
+                                  aria-label={`快捷下注 ${amt} 积分`}
+                                >
+                                  +{amt}
+                                </button>
+                              ))}
+                              <button
+                                onClick={() => setQuickAmount("ALL")}
+                                className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
+                                aria-label="全押"
+                              >
+                                最大押注 (MAX)
+                              </button>
+                            </div>
+                          </div>
 
-                        <button
-                          onClick={() => handleBet("B")}
-                          disabled={isBetting || !betAmount}
-                          className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
-                          aria-label={`押注选手 B: ${match.playerB}`}
-                        >
-                          {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 B")}
-                        </button>
-                      </div>
+                          <input
+                            id={`bet-amount-${match.id}`}
+                            type="number"
+                            min="0"
+                            max={(() => {
+                              if (match.stageType === "GROUP") return Math.min(points, sysSettings.GROUP_MAX);
+                              if (match.stageType === "BRACKET") return Math.min(points, Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100))));
+                              return Math.min(points, 500);
+                            })()}
+                            value={betAmount}
+                            onChange={(e) => {
+                              let val = parseInt(e.target.value) || 0;
+                              let limit = 500;
+                              if (match.stageType === "GROUP") limit = sysSettings.GROUP_MAX;
+                              else if (match.stageType === "BRACKET") limit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
+                              if (val > limit) val = limit;
+                              setBetAmount(val === 0 ? "" : val);
+                            }}
+                            placeholder={(() => {
+                              if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_MAX})`;
+                              if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
+                              return "输入注额... (最大 500)";
+                            })()}
+                            className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
+                          />
+
+                          <input
+                            type="text"
+                            value={betComment}
+                            onChange={(e) => setBetComment(e.target.value)}
+                            placeholder="赛事分析 / 留言 (Optional Comment)..."
+                            maxLength={50}
+                            className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
+                          />
+
+                          {/* Tactical Gear Selection */}
+                          <div className="mb-4 bg-neutral-900/30 p-3 rounded-xl border border-neutral-800">
+                            <h4 className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-2 flex items-center gap-2">
+                              <span className="text-yellow-500">⚙️</span> 战术装备 (Tactical Gear)
+                            </h4>
+                            <div className="flex flex-col gap-2">
+                              <label className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
+                                <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500" />
+                                <span className="text-sm text-neutral-300 font-medium">不使用装备</span>
+                              </label>
+                              <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                                <div className="flex items-center gap-2">
+                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500" />
+                                  <span className="text-sm text-blue-300 font-medium">🛡️ 完美防御</span>
+                                </div>
+                                <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fdShields}</span>
+                              </label>
+                              <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                                <div className="flex items-center gap-2">
+                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500" />
+                                  <span className="text-sm text-red-300 font-medium">⚡ 致命打康</span>
+                                </div>
+                                <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fatalCounters}</span>
+                              </label>
+
+                              {/* Fatal Counter Prediction Input */}
+                              <AnimatePresence>
+                                {usedItem === "ITEM_FATAL" && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden mt-1 ml-6"
+                                  >
+                                    <input
+                                      type="text"
+                                      value={predictedScore}
+                                      onChange={(e) => setPredictedScore(e.target.value)}
+                                      placeholder="输入预测小分 (例如: 3-1)"
+                                      className="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2 text-red-200 text-sm focus:outline-none focus:border-red-500 font-mono"
+                                    />
+                                    <p className="text-[10px] text-red-500/70 mt-1">* 格式必须为 [胜方分-败方分]</p>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleBet("A")}
+                              disabled={isBetting || !betAmount}
+                              className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
+                              style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
+                              aria-label={`押注选手 A: ${match.playerA}`}
+                            >
+                              {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 A")}
+                            </button>
+
+                            <button
+                              onClick={() => handleBet("B")}
+                              disabled={isBetting || !betAmount}
+                              className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
+                              style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
+                              aria-label={`押注选手 B: ${match.playerB}`}
+                            >
+                              {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 B")}
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : match.status !== "SETTLED" ? (
                     <div className="bg-neutral-900/80 rounded-2xl py-6 px-4 border border-neutral-800 flex flex-col items-center justify-center min-h-[160px] relative z-20">
@@ -577,18 +588,31 @@ export default function DashboardPage() {
       const storedUsername = localStorage.getItem("username");
       const storedDisplayName = localStorage.getItem("displayName");
 
-      if (!storedUserId) {
-        router.push("/");
-        return;
+      if (storedUserId) {
+        setUserId(storedUserId);
+        setUsername(storedUsername || "Unknown");
+        setDisplayName(storedDisplayName || storedUsername || "Unknown");
+        setNewName(storedDisplayName || storedUsername || "Unknown");
+      } else {
+        setUserId(""); // Ensure it's clear
       }
 
-      setUserId(storedUserId);
-      setUsername(storedUsername || "Unknown");
-      setDisplayName(storedDisplayName || storedUsername || "Unknown");
-      setNewName(storedDisplayName || storedUsername || "Unknown");
-
       const initFetch = async () => {
-        await fetchData(storedUserId);
+        if (storedUserId) {
+          await fetchData(storedUserId);
+        } else {
+          // Unauthenticated users still need to fetch matches and settings
+          await fetchMatches();
+          const resSetting = await fetch("/api/settings");
+          if (resSetting.ok) {
+            const dataSetting = await resSetting.json();
+            const newSettings = { ...sysSettings };
+            dataSetting.forEach((s: any) => {
+              newSettings[s.key as keyof typeof sysSettings] = s.value;
+            });
+            setSysSettings(newSettings);
+          }
+        }
         await fetchSettings();
         setIsInitialLoad(false);
       };
@@ -597,7 +621,7 @@ export default function DashboardPage() {
 
       const intervalId = setInterval(() => {
         fetchMatches();
-        fetchUserPoints(storedUserId);
+        if (storedUserId) fetchUserPoints(storedUserId);
         fetchLeaderboard();
         fetchSettings();
       }, 15000);
@@ -608,7 +632,11 @@ export default function DashboardPage() {
 
   const fetchData = async (id: string = userId) => {
     setIsRefreshing(true);
-    await Promise.all([fetchUserPoints(id), fetchMatches(), fetchLeaderboard()]);
+    if (id) {
+        await Promise.all([fetchUserPoints(id), fetchMatches(), fetchLeaderboard()]);
+    } else {
+        await Promise.all([fetchMatches(), fetchLeaderboard()]);
+    }
     setTimeout(() => setIsRefreshing(false), 500); // Minimum animation time
   };
 
@@ -777,9 +805,22 @@ export default function DashboardPage() {
   }, [matches, filter, stageFilter]);
 
   return (
-    <ProtectedRoute>
       <AppLayout>
         <div className="max-w-5xl mx-auto p-4 sm:p-8 relative">
+
+        <div className="mb-12 border-b-4 border-red-600 pb-4 text-center transform -skew-x-2">
+          <h1 className="text-5xl md:text-6xl font-black text-white tracking-widest drop-shadow-[4px_4px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+            AWT 2026 KOREA <span className="text-red-500">-</span> GLOBAL BETTING HUB
+          </h1>
+          <p className="text-neutral-400 mt-2 font-mono tracking-widest font-bold uppercase">The Pulse of the FGC</p>
+          {!userId && (
+            <div className="mt-6">
+              <a href="/" className="ggst-button bg-red-600 hover:bg-red-500 text-white text-xl py-3 px-8 shadow-[4px_4px_0px_rgba(0,0,0,1)] inline-block transform skew-x-2">
+                [ 🔑 连入终端 (LOGIN TO BET) ]
+              </a>
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-between items-center mb-8 relative z-10 transform skew-x-2 min-h-[40px]">
           <div className="flex gap-4 items-center">
@@ -1132,6 +1173,5 @@ export default function DashboardPage() {
         </div>
         </div>
       </AppLayout>
-    </ProtectedRoute>
   );
 }

@@ -3,6 +3,34 @@ const BULK_VERSUS_REGEX = /^(.*?)\s+vs\.?\s+(.*?)$/i;
 
 type NullableString = string | null | undefined;
 
+export const PLAYER_ALIASES: Record<string, string> = {
+  // AWT 2026 Korea Roster Map
+  "leo.": "Leo.",
+  "leo": "Leo.",
+  "daru": "Daru_I-No",
+  "daru_i-no": "Daru_I-No",
+  "daru_ino": "Daru_I-No",
+  "verix": "Verix",
+  "gobou": "Gobou",
+  "tatuma": "Tatuma",
+  "sanakan": "Sanakan",
+  "poka": "Poka",
+  "haimera": "Haimera",
+  "gg": "GG",
+  "g.g": "GG",
+  "danny": "Danny",
+  "rookies_gb": "Rookies_GB",
+  "rookiesgb": "Rookies_GB",
+  "saunic": "Saunic",
+  "nemo": "Nemo",
+  "alioune": "Alioune",
+  "baccpack": "Baccpack",
+  "kyuniku": "Kyuniku",
+  "tsurugi": "Tsurugi",
+  "churara": "TyuRaRa",
+  "tyurara": "TyuRaRa"
+};
+
 export interface MatchIdentityInput {
   id?: string;
   playerA: string;
@@ -116,7 +144,18 @@ export function buildLooseKey(value: NullableString): string {
 }
 
 export function normalizePlayerName(value: NullableString): string {
-  return normalizeWhitespace(value);
+  const normalizedWS = normalizeWhitespace(value);
+  if (!normalizedWS) return "";
+
+  const lower = normalizedWS.toLowerCase();
+  if (PLAYER_ALIASES[lower]) {
+    return PLAYER_ALIASES[lower];
+  }
+
+  // Capitalize first letter of each word if not in alias dictionary
+  return normalizedWS.split(' ').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  ).join(' ');
 }
 
 function normalizeCharacterInput(value: NullableString): string {
@@ -262,11 +301,6 @@ export function canonicalizePlayerName(
   const normalized = normalizePlayerName(value);
   if (!normalized) {
     return "";
-  }
-
-  // Hardcode alias deduplication
-  if (normalized.toLowerCase() === "churara") {
-    return "TyuRaRa";
   }
 
   return canonicalMap?.get(buildCaseInsensitiveKey(normalized)) ?? normalized;

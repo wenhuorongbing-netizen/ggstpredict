@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { calculateGroupStandings } from "@/lib/standings";
+import { normalizePlayerName } from "@/lib/tournament-data";
 
 export async function POST(request: Request) {
   try {
@@ -49,8 +50,8 @@ export async function POST(request: Request) {
       // 提取小组第一和第二
       const sortedGroup = groupObj.standings;
       // In PlayerStanding, the property is 'playerName', and character is not guaranteed but we can map character empty.
-      top8Players.push({ group, rank: 1, name: sortedGroup[0].playerName, character: "" });
-      top8Players.push({ group, rank: 2, name: sortedGroup[1].playerName, character: "" });
+      top8Players.push({ group, rank: 1, name: normalizePlayerName(sortedGroup[0].playerName), character: "" });
+      top8Players.push({ group, rank: 2, name: normalizePlayerName(sortedGroup[1].playerName), character: "" });
     }
 
     // 3. 构建交叉对阵表 (Seed Matches)
