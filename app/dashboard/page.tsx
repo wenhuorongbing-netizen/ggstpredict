@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import GroupStandings from "@/components/GroupStandings";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import confetti from "canvas-confetti";
 import AppLayout from "@/components/AppLayout";
@@ -32,6 +31,7 @@ interface Match {
   scoreA?: number | null;
   scoreB?: number | null;
   stageType?: string | null;
+  groupName?: string | null;
   bets?: Bet[];
   poolA: number;
   poolB: number;
@@ -998,11 +998,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Main Content Area */}
-            {stageFilter === "GROUP" ? (
-              <div className="w-full">
-                <GroupStandings />
-              </div>
-            ) : filteredMatches.length === 0 ? (
+            {filteredMatches.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -1010,6 +1006,45 @@ export default function DashboardPage() {
               >
                 <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
               </motion.div>
+            ) : stageFilter === "GROUP" ? (
+              <div className="w-full flex flex-col gap-12">
+                {Object.entries(
+                  filteredMatches.reduce((acc, match) => {
+                    const group = match.groupName || "UNASSIGNED GROUP";
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(match);
+                    return acc;
+                  }, {} as Record<string, typeof filteredMatches>)
+                )
+                  .sort(([groupA], [groupB]) => groupA.localeCompare(groupB))
+                  .map(([groupName, groupMatches]) => (
+                    <div key={groupName} className="w-full">
+                      <h3 className="text-3xl font-black text-white mb-6 border-b-4 border-red-600 pb-2 inline-block transform skew-x-2 tracking-widest uppercase drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                        [ {groupName} ]
+                      </h3>
+                      <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
+                        <AnimatePresence>
+                          {groupMatches.map((match) => (
+                            <MatchCard
+                              key={match.id}
+                              match={match}
+                              userId={userId}
+                              points={points}
+                              fdShields={fdShields}
+                              fatalCounters={fatalCounters}
+                              sysSettings={sysSettings}
+                              fetchUserPoints={fetchUserPoints}
+                              fetchMatches={fetchMatches}
+                              setError={setError}
+                              setPoints={setPoints}
+                              setWelfareMsg={setWelfareMsg}
+                            />
+                          ))}
+                        </AnimatePresence>
+                      </motion.div>
+                    </div>
+                  ))}
+              </div>
             ) : (
               <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
                 <AnimatePresence>

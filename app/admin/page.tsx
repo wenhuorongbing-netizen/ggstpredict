@@ -787,54 +787,6 @@ export default function AdminPage() {
                 </select>
               </div>
             </div>
-
-            {/* Start.gg Native GraphQL Section */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border-2 border-blue-900/50 shadow-[4px_4px_0px_rgba(59,130,246,0.2)]">
-              <div className="flex-1 w-full">
-                <label htmlFor="startggGroupId" className="block text-sm text-blue-400 mb-1 font-bold tracking-widest flex items-center gap-2">
-                  <span className="text-yellow-500 text-lg">⚡</span> Start.gg 官方 API 直连 (Phase Group ID)
-                </label>
-                <input
-                  id="startggGroupId"
-                  type="text"
-                  value={startggGroupId}
-                  onChange={(e) => setStartggGroupId(e.target.value)}
-                  placeholder="输入 Start.gg Phase Group ID (如: 2541323)..."
-                  className="w-full bg-[#0a0a0a] border border-blue-900/50 p-2 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono text-sm"
-                  disabled={isStartggFetching}
-                />
-              </div>
-              <button
-                onClick={handleStartggFetch}
-                disabled={isStartggFetching}
-                className="ggst-button border-blue-500 hover:bg-blue-600 bg-blue-900/30 px-6 py-2 text-sm shadow-[2px_2px_0px_rgba(59,130,246,0.8)] w-full sm:w-auto h-[42px] font-bold tracking-widest text-blue-100"
-              >
-                {isStartggFetching ? "FETCHING..." : "[ ⚡ Start.gg 官方闪电抓取 ]"}
-              </button>
-            </div>
-
-            {/* Python Scraper Section */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-end p-4 bg-[#1a1a1a] border border-neutral-700">
-              <div className="flex-1 w-full">
-                <label htmlFor="crawlUrl" className="block text-sm text-purple-400 mb-1 font-bold tracking-widest">🔗 备用：AI 神谕抓取 (URL)</label>
-                <input
-                  id="crawlUrl"
-                  type="url"
-                  value={crawlUrl}
-                  onChange={(e) => setCrawlUrl(e.target.value)}
-                  placeholder="输入 Start.gg / Liquipedia 赛程链接..."
-                  className="w-full bg-[#0a0a0a] border border-neutral-700 p-2 text-white focus:outline-none focus:border-purple-500 transition-colors font-mono text-sm"
-                  disabled={isCrawling}
-                />
-              </div>
-              <button
-                onClick={handleCrawlAWT}
-                disabled={isCrawling}
-                className="ggst-button border-purple-500 hover:bg-purple-600 px-4 py-2 text-sm shadow-[2px_2px_0px_rgba(168,85,247,0.8)] w-full sm:w-auto h-[42px]"
-              >
-                {isCrawling ? "CRAWLING..." : "🕷️ 备用抓取"}
-              </button>
-            </div>
           </div>
 
           <form onSubmit={handleCreateMatch} className="flex flex-col gap-4 relative z-10 transform skew-x-2">
