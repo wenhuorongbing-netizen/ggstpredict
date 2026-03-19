@@ -432,6 +432,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleGenerateTop8Bracket = async () => {
+    if (!confirm("⚠️ 警告：这将根据当前所有已结算的小组赛积分，自动生成8强淘汰赛！此操作将直接写入数据库。继续吗？")) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/tournaments/generate-bracket", {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("生成失败: " + (data.error || "未知错误"));
+      } else {
+        alert("✅ 成功生成8强淘汰赛！请去 Bracket 页面查看。");
+        fetchMatches(); // refresh the current list
+      }
+    } catch (err) {
+      alert("网络错误，无法生成");
+    }
+  };
+
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -717,6 +739,29 @@ export default function AdminPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Tournament Auto-Transition Engine */}
+        <div className="bg-black/90 border-2 border-fuchsia-600 p-6 shadow-[0_0_20px_rgba(192,38,211,0.5)] mb-10 relative overflow-hidden transform skew-x-2">
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-fuchsia-500 pointer-events-none z-20"></div>
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-fuchsia-500 pointer-events-none z-20"></div>
+
+          <div className="flex flex-col md:flex-row justify-between items-center transform -skew-x-2 relative z-10 gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(192,38,211,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                 赛事自动流转引擎 (AUTO-TRANSITION)
+              </h2>
+              <p className="text-fuchsia-400 text-sm font-mono mt-1">一键结算所有小组赛积分，并基于标准交叉规则自动生成8强对决。</p>
+            </div>
+
+            <button
+              onClick={handleGenerateTop8Bracket}
+              className="ggst-button border-fuchsia-500 hover:bg-fuchsia-600 bg-fuchsia-900/40 px-8 py-4 text-xl shadow-[4px_4px_0px_rgba(192,38,211,0.8)] font-black tracking-widest text-fuchsia-100 flex items-center gap-3 w-full md:w-auto"
+              style={{ fontFamily: "var(--font-bebas)" }}
+            >
+              <span className="animate-pulse">🚀</span> GENERATE TOP 8 BRACKET
+            </button>
+          </div>
+        </div>
 
         {/* Create Match Module */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">

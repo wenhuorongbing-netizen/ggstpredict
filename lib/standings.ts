@@ -82,12 +82,13 @@ export function calculateGroupStandings(matches: MatchForStandings[]): GroupStan
       p.gameDiff = p.gameWins - p.gameLosses;
     }
 
-    // Sort: Match Wins desc -> Match Losses asc -> Game Diff desc -> Game Wins desc
+    // Sort: Match Wins desc -> Match Losses asc -> Game Diff desc -> Game Wins desc -> Name asc
     standings.sort((a, b) => {
       if (a.matchWins !== b.matchWins) return b.matchWins - a.matchWins;
       if (a.matchLosses !== b.matchLosses) return a.matchLosses - b.matchLosses;
       if (a.gameDiff !== b.gameDiff) return b.gameDiff - a.gameDiff;
-      return b.gameWins - a.gameWins;
+      if (a.gameWins !== b.gameWins) return b.gameWins - a.gameWins;
+      return a.playerName.localeCompare(b.playerName);
     });
 
     result.push({
