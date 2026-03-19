@@ -28,7 +28,24 @@ export const PLAYER_ALIASES: Record<string, string> = {
   "kyuniku": "Kyuniku",
   "tsurugi": "Tsurugi",
   "churara": "TyuRaRa",
-  "tyurara": "TyuRaRa"
+  "tyurara": "TyuRaRa",
+  "tyurara ": "TyuRaRa",
+  "umisho": "UMISHO",
+  "umisho ": "UMISHO",
+  "umısho": "UMISHO",
+  "slash": "Slash",
+  "latif": "Latif",
+  "skyll": "Skyll",
+  "tempest": "TempestNYC",
+  "tempestnyc": "TempestNYC",
+  "peppery": "PepperySplash",
+  "pepperysplash": "PepperySplash",
+  "apology": "ApologyMan",
+  "apologyman": "ApologyMan",
+  "nitro": "Nitro",
+  "ibushigin": "Ibushigin",
+  "supernoon": "Supernoon",
+  "razzo": "Razzo"
 };
 
 export interface MatchIdentityInput {
