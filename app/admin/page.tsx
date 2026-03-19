@@ -377,59 +377,11 @@ export default function AdminPage() {
   };
 
   const handleCrawlAWT = async () => {
-    if (!crawlUrl.trim()) {
-      setError("请输入赛事源地址 URL");
-      return;
-    }
-    setError(null);
-    setIsCrawling(true);
-    try {
-      const res = await fetch("/api/admin/matches/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: crawlUrl })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "抓取失败");
-      } else if (data.matches && Array.isArray(data.matches)) {
-        // Append crawled matches to textarea
-        const newMatchesStr = data.matches.join("\n");
-        setBulkInput(prev => prev + (prev.trim() === "" ? "" : "\n") + newMatchesStr);
-      }
-    } catch (err) {
-      setError("网络错误，无法连接抓取服务");
-    } finally {
-      setIsCrawling(false);
-    }
+    alert("Scraping has been deprecated per manual override instruction. Please manually add matches.");
   };
 
   const handleStartggFetch = async () => {
-    if (!startggGroupId.trim()) {
-      setError("请输入 Start.gg Phase Group ID");
-      return;
-    }
-    setError(null);
-    setIsStartggFetching(true);
-    try {
-      const res = await fetch("/api/admin/matches/startgg", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phaseGroupId: startggGroupId.trim() })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Start.gg 抓取失败");
-      } else if (data.matches && Array.isArray(data.matches)) {
-        const newMatchesStr = data.matches.join("\n");
-        setBulkInput(prev => prev + (prev.trim() === "" ? "" : "\n") + newMatchesStr);
-        alert(`成功抓取 ${data.matches.length} 场比赛！`);
-      }
-    } catch (err) {
-      setError("网络错误，无法连接抓取服务");
-    } finally {
-      setIsStartggFetching(false);
-    }
+    alert("Scraping has been deprecated per manual override instruction. Please manually add matches.");
   };
 
   const handleGenerateTop8Bracket = async () => {

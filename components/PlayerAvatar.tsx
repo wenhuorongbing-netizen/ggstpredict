@@ -35,7 +35,7 @@ export default function PlayerAvatar({ playerName, charName, playerType }: Playe
     };
   }, []);
 
-  const playerUrl = resolveAssetUrl(catalog.players.urls, playerName) ?? `/assets/players/${buildLooseKey(playerName)}.jpg`;
+  const playerUrl = resolveAssetUrl(catalog.players.urls, playerName) ?? `/assets/players/${buildLooseKey(playerName)}.png`;
   const charUrl = charName
     ? resolveAssetUrl(catalog.characters.urls, charName) ?? `/assets/characters/${buildLooseKey(charName)}.png`
     : null;

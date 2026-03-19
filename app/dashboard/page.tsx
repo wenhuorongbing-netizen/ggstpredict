@@ -213,20 +213,20 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                   </div>
 
                   {/* Players Info */}
-                  <div className="flex justify-between items-center mb-6 mt-6 relative px-6 transform skew-x-2">
+                  <div className="flex justify-between items-center mb-3 mt-3 relative px-4 transform skew-x-2">
                     {/* VS Divider */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center select-none pointer-events-none z-10">
                       {match.status === "SETTLED" && typeof match.scoreA === 'number' && typeof match.scoreB === 'number' ? (
                         <span
-                          className="text-yellow-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3.5rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
+                          className="text-yellow-500 font-black italic my-1 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "2rem", textShadow: "0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4)" }}
                         >
                           {match.scoreA} - {match.scoreB}
                         </span>
                       ) : (
                         <span
-                          className="text-red-500 font-black italic my-2 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-                          style={{ fontFamily: "var(--font-bebas)", fontSize: "3rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
+                          className="text-red-500 font-black italic my-1 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                          style={{ fontFamily: "var(--font-bebas)", fontSize: "1.5rem", textShadow: "0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(239, 68, 68, 0.4)" }}
                         >
                           VS
                         </span>
@@ -235,63 +235,61 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
 
                     <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerA) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
                       {isPlayerHexed(match.playerA) && (
-                        <div className="absolute -top-4 -right-4 bg-purple-900 text-purple-200 font-bold text-[10px] px-2 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
+                        <div className="absolute -top-3 -right-3 bg-purple-900 text-purple-200 font-bold text-[8px] px-1 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
                       )}
                       {isPlayerAdvanced(match.playerA) && (
-                        <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
+                        <div className="absolute -top-4 text-yellow-400 font-black text-[10px] tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADV ]</div>
                       )}
                       {isPlayerEliminated(match.playerA) && (
-                        <div className="absolute -top-6 text-red-500 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                        <div className="absolute -top-4 text-red-500 font-black text-[10px] tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIM ]</div>
                       )}
-                      <div className={`mb-3 w-16 h-16 ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`}>
+                      <div className={`mb-1 w-12 h-12 ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`}>
                         <PlayerAvatar playerName={match.playerA} charName={match.charA} playerType="A" />
                       </div>
-                      <h3 className={`text-3xl font-black mb-1 ${isPlayerAdvanced(match.playerA) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[3px_3px_0px_rgba(239,68,68,0.8)]'} ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
-                      <p className={`text-xs text-red-500 font-bold tracking-widest uppercase ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`}>Player A</p>
+                      <h3 className={`text-xl font-black mb-0 ${isPlayerAdvanced(match.playerA) ? 'text-yellow-400 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[2px_2px_0px_rgba(239,68,68,0.8)]'} ${isPlayerEliminated(match.playerA) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerA}</h3>
                     </div>
 
-                    <div className="w-16"></div> {/* Spacer for VS */}
+                    <div className="w-12"></div> {/* Spacer for VS */}
 
                     <div className={`flex-1 flex flex-col items-center text-center relative z-10 transition-all ${isPlayerAdvanced(match.playerB) ? 'drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]' : ''}`}>
                       {isPlayerHexed(match.playerB) && (
-                        <div className="absolute -top-4 -right-4 bg-purple-900 text-purple-200 font-bold text-[10px] px-2 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
+                        <div className="absolute -top-3 -right-3 bg-purple-900 text-purple-200 font-bold text-[8px] px-1 border-2 border-purple-500 transform -skew-x-12 z-30 shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse" style={{ fontFamily: "var(--font-bebas)" }}>[ ROBBIE! ]</div>
                       )}
                       {isPlayerAdvanced(match.playerB) && (
-                        <div className="absolute -top-6 text-yellow-400 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADVANCED ]</div>
+                        <div className="absolute -top-4 text-yellow-400 font-black text-[10px] tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ ✨ ADV ]</div>
                       )}
                       {isPlayerEliminated(match.playerB) && (
-                        <div className="absolute -top-6 text-red-500 font-black text-xs tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIMINATED ]</div>
+                        <div className="absolute -top-4 text-red-500 font-black text-[10px] tracking-widest z-20" style={{ fontFamily: "var(--font-bebas)" }}>[ 💀 ELIM ]</div>
                       )}
-                      <div className={`mb-3 w-16 h-16 ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`}>
+                      <div className={`mb-1 w-12 h-12 ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`}>
                         <PlayerAvatar playerName={match.playerB} charName={match.charB} playerType="B" />
                       </div>
-                      <h3 className={`text-3xl font-black mb-1 ${isPlayerAdvanced(match.playerB) ? 'text-yellow-400 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[3px_3px_0px_rgba(59,130,246,0.8)]'} ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
-                      <p className={`text-xs text-blue-500 font-bold tracking-widest uppercase ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`}>Player B</p>
+                      <h3 className={`text-xl font-black mb-0 ${isPlayerAdvanced(match.playerB) ? 'text-yellow-400 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' : 'text-white drop-shadow-[2px_2px_0px_rgba(59,130,246,0.8)]'} ${isPlayerEliminated(match.playerB) ? 'grayscale opacity-50' : ''}`} style={{ fontFamily: "var(--font-bebas)" }}>{match.playerB}</h3>
                     </div>
                   </div>
 
                   {/* Betting Area */}
                   {match.status === "OPEN" && (!match.lockAt || new Date() < new Date(match.lockAt)) ? (
-                    <div className="bg-neutral-950/60 rounded-2xl p-4 border border-neutral-800/50 relative z-20">
+                    <div className="bg-neutral-950/60 rounded p-3 border border-neutral-800/50 relative z-20">
                       {!userId ? (
                         <button
                           onClick={() => window.location.href = "/"}
-                          className="w-full py-4 ggst-button border-neutral-500 hover:bg-neutral-800 focus-visible:outline-none"
-                          style={{ boxShadow: "4px 4px 0px 0px rgba(115, 115, 115, 0.8)", fontSize: "1.2rem" }}
+                          className="w-full py-2 ggst-button border-neutral-500 hover:bg-neutral-800 focus-visible:outline-none"
+                          style={{ boxShadow: "2px 2px 0px 0px rgba(115, 115, 115, 0.8)", fontSize: "1rem" }}
                         >
-                          [ 🔑 连入终端 (LOGIN TO BET) ]
+                          [ 🔑 连入终端 (LOGIN) ]
                         </button>
                       ) : (
                         <>
                           {/* Roman Cancel (Cancel Bet) */}
                           {match.bets?.some((b: any) => b.userId === userId) && (
-                            <div className="mb-4">
+                            <div className="mb-2">
                               <button
                                 onClick={() => {
                                   const userBet = match.bets?.find((b: any) => b.userId === userId);
                                   if (userBet) handleCancelBet(userBet.amount);
                                 }}
-                                className="w-full py-2 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded"
+                                className="w-full py-1 bg-yellow-900/40 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-800/60 hover:text-yellow-400 font-bold tracking-widest transition-all rounded text-sm"
                                 style={{ fontFamily: "var(--font-bebas)" }}
                               >
                                 [ 🔄 RC取消 (扣5%) ]
@@ -299,24 +297,24 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                             </div>
                           )}
 
-                          <div className="flex justify-between items-center mb-3">
-                            <label htmlFor={`bet-amount-${match.id}`} className="text-xs text-neutral-400 font-bold tracking-widest uppercase">投入分数 (Score) <span className="text-yellow-500 ml-2">
+                          <div className="flex justify-between items-center mb-2">
+                            <label htmlFor={`bet-amount-${match.id}`} className="text-[10px] text-neutral-400 font-bold tracking-widest uppercase truncate">投入分数 <span className="text-yellow-500 ml-1">
                                 {(() => {
-                                  if (match.stageType === "GROUP") return `(下注限额: ${sysSettings.GROUP_MAX} W$)`;
+                                  if (match.stageType === "GROUP") return `(Max ${sysSettings.GROUP_MAX})`;
                                   if (match.stageType === "BRACKET") {
                                     const currentLimit = Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)));
-                                    return `(下注限额: ${currentLimit} W$ (资产的 ${sysSettings.KO_PERCENT}%, 保底 ${sysSettings.KO_MIN}))`;
+                                    return `(Max ${currentLimit})`;
                                   }
                                   return "";
                                 })()}
                               </span>
                             </label>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 shrink-0">
                               {[100, 500].map(amt => (
                                 <button
                                   key={amt}
                                   onClick={() => setQuickAmount(amt)}
-                                  className="text-xs bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-2 py-1 rounded transition-colors border border-neutral-700"
+                                  className="text-[10px] bg-neutral-800 hover:bg-neutral-700 focus-visible:ring-1 focus-visible:ring-neutral-500 focus-visible:outline-none text-neutral-300 px-1.5 py-0.5 rounded transition-colors border border-neutral-700"
                                   aria-label={`快捷下注 ${amt} 积分`}
                                 >
                                   +{amt}
@@ -324,10 +322,10 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                               ))}
                               <button
                                 onClick={() => setQuickAmount("ALL")}
-                                className="text-xs bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-2 py-1 rounded transition-colors border border-red-900/50 font-bold"
+                                className="text-[10px] bg-red-900/40 hover:bg-red-800/60 focus-visible:ring-1 focus-visible:ring-red-500 focus-visible:outline-none text-red-400 px-1.5 py-0.5 rounded transition-colors border border-red-900/50 font-bold"
                                 aria-label="全押"
                               >
-                                最大押注 (MAX)
+                                MAX
                               </button>
                             </div>
                           </div>
@@ -351,45 +349,45 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                               setBetAmount(val === 0 ? "" : val);
                             }}
                             placeholder={(() => {
-                              if (match.stageType === "GROUP") return `输入注额... (最大 ${sysSettings.GROUP_MAX})`;
-                              if (match.stageType === "BRACKET") return `输入注额... (最大 ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
-                              return "输入注额... (最大 500)";
+                              if (match.stageType === "GROUP") return `输入注额... (Max ${sysSettings.GROUP_MAX})`;
+                              if (match.stageType === "BRACKET") return `输入注额... (Max ${Math.max(sysSettings.KO_MIN, Math.floor(points * (sysSettings.KO_PERCENT / 100)))})`;
+                              return "输入注额... (Max 500)";
                             })()}
-                            className="w-full bg-neutral-900 border border-neutral-700/50 rounded-xl p-3 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-lg mb-4 transition-all"
+                            className="w-full bg-neutral-900 border border-neutral-700/50 rounded p-2 text-white focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 font-mono text-center text-sm mb-2 transition-all"
                           />
 
                           <input
                             type="text"
                             value={betComment}
                             onChange={(e) => setBetComment(e.target.value)}
-                            placeholder="赛事分析 / 留言 (Optional Comment)..."
+                            placeholder="留言 (Optional Comment)..."
                             maxLength={50}
-                            className="w-full bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 text-neutral-300 text-sm focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-4 transition-all placeholder:text-neutral-600"
+                            className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-neutral-300 text-xs focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 mb-2 transition-all placeholder:text-neutral-600"
                           />
 
                           {/* Tactical Gear Selection */}
-                          <div className="mb-4 bg-neutral-900/30 p-3 rounded-xl border border-neutral-800">
-                            <h4 className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-2 flex items-center gap-2">
-                              <span className="text-yellow-500">⚙️</span> 战术装备 (Tactical Gear)
+                          <div className="mb-3 bg-neutral-900/30 p-2 rounded border border-neutral-800">
+                            <h4 className="text-[10px] text-neutral-500 font-bold tracking-widest uppercase mb-1 flex items-center gap-1">
+                              <span className="text-yellow-500">⚙️</span> TACTICAL GEAR
                             </h4>
-                            <div className="flex flex-col gap-2">
-                              <label className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
-                                <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500" />
-                                <span className="text-sm text-neutral-300 font-medium">不使用装备</span>
+                            <div className="flex flex-col gap-1">
+                              <label className={`flex items-center gap-1 p-1 rounded cursor-pointer transition-colors ${usedItem === "NONE" ? "bg-neutral-800/80 border border-neutral-600" : "hover:bg-neutral-800/50 border border-transparent"}`}>
+                                <input type="radio" name={`gear-${match.id}`} value="NONE" checked={usedItem === "NONE"} onChange={() => setUsedItem("NONE")} className="accent-neutral-500 w-3 h-3" />
+                                <span className="text-xs text-neutral-300 font-medium">无装备</span>
                               </label>
-                              <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
-                                <div className="flex items-center gap-2">
-                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500" />
-                                  <span className="text-sm text-blue-300 font-medium">🛡️ 完美防御</span>
+                              <label className={`flex items-center justify-between p-1 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FD" ? "bg-blue-900/30 border border-blue-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fdShields <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                                <div className="flex items-center gap-1">
+                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FD" checked={usedItem === "ITEM_FD"} disabled={fdShields <= 0} onChange={() => setUsedItem("ITEM_FD")} className="accent-blue-500 w-3 h-3" />
+                                  <span className="text-xs text-blue-300 font-medium">🛡️ 完美防御</span>
                                 </div>
-                                <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fdShields}</span>
+                                <span className="text-[10px] font-mono text-neutral-400 bg-neutral-950 px-1 py-0.5 rounded">{fdShields}</span>
                               </label>
-                              <label className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
-                                <div className="flex items-center gap-2">
-                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500" />
-                                  <span className="text-sm text-red-300 font-medium">⚡ 致命打康</span>
+                              <label className={`flex items-center justify-between p-1 rounded cursor-pointer transition-colors ${usedItem === "ITEM_FATAL" ? "bg-red-900/30 border border-red-500/50" : "hover:bg-neutral-800/50 border border-transparent"} ${fatalCounters <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                                <div className="flex items-center gap-1">
+                                  <input type="radio" name={`gear-${match.id}`} value="ITEM_FATAL" checked={usedItem === "ITEM_FATAL"} disabled={fatalCounters <= 0} onChange={() => setUsedItem("ITEM_FATAL")} className="accent-red-500 w-3 h-3" />
+                                  <span className="text-xs text-red-300 font-medium">⚡ 致命打康</span>
                                 </div>
-                                <span className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded">库存: {fatalCounters}</span>
+                                <span className="text-[10px] font-mono text-neutral-400 bg-neutral-950 px-1 py-0.5 rounded">{fatalCounters}</span>
                               </label>
 
                               {/* Fatal Counter Prediction Input */}
@@ -399,67 +397,67 @@ function MatchCard({ match, userId, points, fdShields, fatalCounters, sysSetting
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="overflow-hidden mt-1 ml-6"
+                                    className="overflow-hidden mt-1 ml-4"
                                   >
                                     <input
                                       type="text"
                                       value={predictedScore}
                                       onChange={(e) => setPredictedScore(e.target.value)}
-                                      placeholder="输入预测小分 (例如: 3-1)"
-                                      className="w-full bg-red-950/20 border border-red-900/50 rounded-lg p-2 text-red-200 text-sm focus:outline-none focus:border-red-500 font-mono"
+                                      placeholder="比分预测 (例: 3-1)"
+                                      className="w-full bg-red-950/20 border border-red-900/50 rounded p-1 text-red-200 text-xs focus:outline-none focus:border-red-500 font-mono"
                                     />
-                                    <p className="text-[10px] text-red-500/70 mt-1">* 格式必须为 [胜方分-败方分]</p>
+                                    <p className="text-[9px] text-red-500/70 mt-0.5">* 胜方分-败方分</p>
                                   </motion.div>
                                 )}
                               </AnimatePresence>
                             </div>
                           </div>
 
-                          <div className="flex gap-3">
+                          <div className="flex gap-2">
                             <button
                               onClick={() => handleBet("A")}
                               disabled={isBetting || !betAmount}
-                              className="flex-1 py-3 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none"
-                              style={{ boxShadow: "4px 4px 0px 0px rgba(239, 68, 68, 0.8)", fontSize: "1.2rem" }}
+                              className="flex-1 py-2 ggst-button border-red-500 hover:bg-red-600 focus-visible:outline-none text-sm"
+                              style={{ boxShadow: "2px 2px 0px 0px rgba(239, 68, 68, 0.8)" }}
                               aria-label={`押注选手 A: ${match.playerA}`}
                             >
-                              {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 A")}
+                              {isBetting ? "..." : (!betAmount ? "输入分数" : "押注 A")}
                             </button>
 
                             <button
                               onClick={() => handleBet("B")}
                               disabled={isBetting || !betAmount}
-                              className="flex-1 py-3 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none"
-                              style={{ boxShadow: "4px 4px 0px 0px rgba(59, 130, 246, 0.8)", fontSize: "1.2rem" }}
+                              className="flex-1 py-2 ggst-button border-blue-500 hover:bg-blue-600 focus-visible:outline-none text-sm"
+                              style={{ boxShadow: "2px 2px 0px 0px rgba(59, 130, 246, 0.8)" }}
                               aria-label={`押注选手 B: ${match.playerB}`}
                             >
-                              {isBetting ? "..." : (!betAmount ? "请输入分数 (Enter Score)" : "押注 B")}
+                              {isBetting ? "..." : (!betAmount ? "输入分数" : "押注 B")}
                             </button>
                           </div>
                         </>
                       )}
                     </div>
                   ) : match.status !== "SETTLED" ? (
-                    <div className="bg-neutral-900/80 rounded-2xl py-6 px-4 border border-neutral-800 flex flex-col items-center justify-center min-h-[160px] relative z-20">
-                      <div className="text-yellow-500/50 text-4xl mb-2">🔒</div>
-                      <div className="text-yellow-500 font-bold tracking-widest text-xl mb-1" style={{ fontFamily: "var(--font-bebas)" }}>已封盘 (LOCKED)</div>
-                      <div className="text-neutral-500 text-sm">当前比赛已停止下注</div>
+                    <div className="bg-neutral-900/80 rounded py-4 px-3 border border-neutral-800 flex flex-col items-center justify-center min-h-[100px] relative z-20">
+                      <div className="text-yellow-500/50 text-2xl mb-1">🔒</div>
+                      <div className="text-yellow-500 font-bold tracking-widest text-lg mb-0.5" style={{ fontFamily: "var(--font-bebas)" }}>已封盘 (LOCKED)</div>
+                      <div className="text-neutral-500 text-[10px]">当前比赛已停止下注</div>
                     </div>
                   ) : null}
 
                   {/* Comments & Bets Feed */}
-                  <div className="mt-6 pt-4 border-t border-neutral-800/50">
-                    <h4 className="text-xs font-bold text-neutral-500 tracking-widest uppercase mb-3 flex items-center gap-2">
-                      <span>📡 弹幕 / 战况情报 (Intel Feed)</span>
+                  <div className="mt-4 pt-3 border-t border-neutral-800/50">
+                    <h4 className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase mb-2 flex items-center gap-1">
+                      <span>📡 INTEL FEED</span>
                     </h4>
 
                     {(!match.bets || match.bets.length === 0) ? (
-                      <div className="py-6 text-center text-xs text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded-xl bg-neutral-900/20">
-                        No intel yet. Be the first to analyze this matchup.
+                      <div className="py-4 text-center text-[10px] text-neutral-600 font-mono border border-dashed border-neutral-800/50 rounded bg-neutral-900/20">
+                        No intel yet.
                       </div>
                     ) : (
                       <div
-                        className="space-y-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+                        className="space-y-2 max-h-32 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
                         style={{ maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)" }}
                       >
                         {match.bets.map((bet: any) => {
@@ -520,7 +518,7 @@ export default function DashboardPage() {
   const [showRules, setShowRules] = useState(false);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
-  const [stageFilter, setStageFilter] = useState<"ALL">("ALL");
+  const [stageFilter, setStageFilter] = useState<"ALL" | "GROUP" | "BRACKET">("ALL");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [fdShields, setFdShields] = useState<number>(0);
@@ -1017,26 +1015,48 @@ export default function DashboardPage() {
                 <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
               </motion.div>
             ) : (
-              <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
-                <AnimatePresence>
-                  {filteredMatches.map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      userId={userId}
-                      points={points}
-                      fdShields={fdShields}
-                      fatalCounters={fatalCounters}
-                      sysSettings={sysSettings}
-                      fetchUserPoints={fetchUserPoints}
-                      fetchMatches={fetchMatches}
-                      setError={setError}
-                      setPoints={setPoints}
-                      setWelfareMsg={setWelfareMsg}
-                    />
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+              <div className="flex flex-col gap-6">
+                {Object.entries(
+                  filteredMatches.reduce((acc, match) => {
+                    const group = match.groupName || "UNASSIGNED";
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(match);
+                    return acc;
+                  }, {} as Record<string, Match[]>)
+                )
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([groupName, groupMatches]) => (
+                  <div key={groupName} className="flex flex-col gap-2">
+                    {groupName !== "UNASSIGNED" && (
+                      <div className="border-l-4 border-blue-500 bg-gray-900/50 py-1 px-3 mt-4 mb-2 w-fit transform -skew-x-2">
+                         <h2 className="text-xl font-bold text-white tracking-widest uppercase drop-shadow-[1px_1px_0px_rgba(59,130,246,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                           {groupName}
+                         </h2>
+                      </div>
+                    )}
+                    <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 relative z-10 w-full" layout>
+                      <AnimatePresence>
+                        {groupMatches.map((match) => (
+                           <MatchCard
+                             key={match.id}
+                             match={match}
+                             userId={userId}
+                             points={points}
+                             fdShields={fdShields}
+                             fatalCounters={fatalCounters}
+                             sysSettings={sysSettings}
+                             fetchUserPoints={fetchUserPoints}
+                             fetchMatches={fetchMatches}
+                             setError={setError}
+                             setPoints={setPoints}
+                             setWelfareMsg={setWelfareMsg}
+                           />
+                        ))}
+                      </AnimatePresence>
+                    </motion.div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
