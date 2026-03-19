@@ -520,7 +520,7 @@ export default function DashboardPage() {
   const [showRules, setShowRules] = useState(false);
   const [isBetting, setIsBetting] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState<"OPEN" | "ALL" | "SETTLED">("OPEN");
-  const [stageFilter, setStageFilter] = useState<"GROUP" | "BRACKET">("GROUP");
+  const [stageFilter, setStageFilter] = useState<"ALL">("ALL");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [fdShields, setFdShields] = useState<number>(0);
@@ -797,12 +797,9 @@ export default function DashboardPage() {
 
   const filteredMatches = useMemo(() => {
     let result = matches;
-    if (stageFilter) {
-      result = result.filter(m => m.stageType === stageFilter);
-    }
     if (filter === "ALL") return result;
     return result.filter(m => m.status === filter);
-  }, [matches, filter, stageFilter]);
+  }, [matches, filter]);
 
   return (
       <AppLayout>
@@ -981,37 +978,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stage Filter Tabs */}
-        <div className="flex justify-center mb-8 relative z-10">
-          <div className="flex gap-2 bg-[#000000] p-1.5 border-2 border-neutral-800 shadow-[4px_4px_0px_rgba(38,38,38,1)] transform -skew-x-2">
-            <button
-              onClick={() => setStageFilter("GROUP")}
-              className={`px-8 py-3 font-bold tracking-widest transition-all focus-visible:outline-none flex items-center gap-2 ${
-                stageFilter === "GROUP"
-                  ? "bg-green-600 text-white shadow-[2px_2px_0px_rgba(22,163,74,0.5)] transform translate-x-[1px] translate-y-[1px]"
-                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-              }`}
-              style={{ fontSize: "1.1rem" }}
-            >
-              🟢 小组赛 (Group Stage)
-            </button>
-            <button
-              onClick={() => setStageFilter("BRACKET")}
-              className={`px-8 py-3 font-bold tracking-widest transition-all focus-visible:outline-none flex items-center gap-2 ${
-                stageFilter === "BRACKET"
-                  ? "bg-red-600 text-white shadow-[2px_2px_0px_rgba(239,68,68,0.5)] transform translate-x-[1px] translate-y-[1px]"
-                  : "text-neutral-400 hover:text-white hover:bg-neutral-900"
-              }`}
-              style={{ fontSize: "1.1rem" }}
-            >
-              🔴 淘汰赛 (Knockout Stage)
-            </button>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
           {/* Main Matches Area (Left) */}
-          <div className={stageFilter === "GROUP" ? "lg:col-span-3 flex flex-col gap-6" : "lg:col-span-2 flex flex-col gap-6"}>
+          <div className="lg:col-span-2 flex flex-col gap-6">
             {/* Balance Display & Filters */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="bg-black/80 border-2 border-yellow-500 p-3 transform -skew-x-2 shadow-[4px_4px_0px_rgba(234,179,8,1)]">
@@ -1047,45 +1016,6 @@ export default function DashboardPage() {
               >
                 <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待玩家投币挑战 (INSERT COIN...)</p>
               </motion.div>
-            ) : stageFilter === "GROUP" ? (
-              <div className="w-full flex flex-col gap-12">
-                {Object.entries(
-                  filteredMatches.reduce((acc, match) => {
-                    const group = match.groupName || "UNASSIGNED GROUP";
-                    if (!acc[group]) acc[group] = [];
-                    acc[group].push(match);
-                    return acc;
-                  }, {} as Record<string, typeof filteredMatches>)
-                )
-                  .sort(([groupA], [groupB]) => groupA.localeCompare(groupB))
-                  .map(([groupName, groupMatches]) => (
-                    <div key={groupName} className="w-full">
-                      <h3 className="text-3xl font-black text-white mb-6 border-b-4 border-red-600 pb-2 inline-block transform skew-x-2 tracking-widest uppercase drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                        [ {groupName} ]
-                      </h3>
-                      <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
-                        <AnimatePresence>
-                          {groupMatches.map((match) => (
-                            <MatchCard
-                              key={match.id}
-                              match={match}
-                              userId={userId}
-                              points={points}
-                              fdShields={fdShields}
-                              fatalCounters={fatalCounters}
-                              sysSettings={sysSettings}
-                              fetchUserPoints={fetchUserPoints}
-                              fetchMatches={fetchMatches}
-                              setError={setError}
-                              setPoints={setPoints}
-                              setWelfareMsg={setWelfareMsg}
-                            />
-                          ))}
-                        </AnimatePresence>
-                      </motion.div>
-                    </div>
-                  ))}
-              </div>
             ) : (
               <motion.div className="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 w-full" layout>
                 <AnimatePresence>
@@ -1111,7 +1041,6 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Column: Leaderboard / Live Intel */}
-          {stageFilter !== "GROUP" && (
           <div className="lg:col-span-1 flex flex-col gap-6">
             {!isInitialLoad && (
               <div className="bg-black/80 border-4 border-red-600 p-6 shadow-[0_0_15px_rgba(239,68,68,0.6)] transform -skew-x-2 relative overflow-hidden">
@@ -1169,7 +1098,6 @@ export default function DashboardPage() {
             )}
 
           </div>
-          )}
         </div>
         </div>
       </AppLayout>
