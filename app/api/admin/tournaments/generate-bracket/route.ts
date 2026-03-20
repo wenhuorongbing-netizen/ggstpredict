@@ -96,24 +96,32 @@ export async function POST(request: Request) {
       // 8-player Double Elimination Bracket Topology
       const matchesToCreate = [
         // Winners Round 1 (Quarter-Finals)
-        { id: "W_QF_1", a: top2ByGroup["A"][0], b: "[ TBD ]", roundName: "Winners Quarter-Final 1" },
-        { id: "W_QF_2", a: top2ByGroup["D"][0], b: "[ TBD ]", roundName: "Winners Quarter-Final 2" },
+        { id: "W_QF_1", a: top2ByGroup["A"][0], b: "[ BYE ]", roundName: "Winners Quarter-Final 1" },
+        { id: "W_QF_2", a: top2ByGroup["D"][0], b: "[ BYE ]", roundName: "Winners Quarter-Final 2" },
         { id: "W_QF_3", a: top2ByGroup["B"][0], b: winnerE2, roundName: "Winners Quarter-Final 3" },
         { id: "W_QF_4", a: top2ByGroup["C"][0], b: winnerE1, roundName: "Winners Quarter-Final 4" },
 
         // Winners Semi-Finals
-        { id: "W_SF_1", a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Semi-Final 1" },
+        // W_SF_1 auto-advances A1 due to W_QF_1 bye
+        { id: "W_SF_1", a: top2ByGroup["A"][0], b: top2ByGroup["D"][0], roundName: "Winners Semi-Final 1" },
         { id: "W_SF_2", a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Semi-Final 2" },
 
         // Winners Final
         { id: "W_F", a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Final" },
 
         // Losers Round 1
-        { id: "L_R1_1", a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Round 1 (1)" },
+        // In a true 6-player bracket:
+        // W_QF_1 and W_QF_2 are BYES. Their "losers" are BYEs.
+        // W_QF_3 and W_QF_4 are real. Their losers are real.
+        // L_R1_1 connects loser W_QF_1 (BYE) and loser W_QF_2 (BYE). So L_R1_1 is purely a BYE.
+        // L_R1_2 connects loser W_QF_3 (Real) and loser W_QF_4 (Real). So L_R1_2 is a real match.
+        { id: "L_R1_1", a: "[ BYE ]", b: "[ BYE ]", roundName: "Losers Round 1 (1)" },
         { id: "L_R1_2", a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Round 1 (2)" },
 
         // Losers Quarter-Finals
-        { id: "L_QF_1", a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Quarter-Final 1" },
+        // L_QF_1 gets loser W_SF_1 (Real) vs winner L_R1_1 (BYE). So L_QF_1 is a BYE for the W_SF_1 loser.
+        { id: "L_QF_1", a: "[ TBD ]", b: "[ BYE ]", roundName: "Losers Quarter-Final 1" },
+        // L_QF_2 gets loser W_SF_2 (Real) vs winner L_R1_2 (Real). So L_QF_2 is a real match.
         { id: "L_QF_2", a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Quarter-Final 2" },
 
         // Losers Semi-Finals
@@ -154,6 +162,33 @@ export async function POST(request: Request) {
       let createdCount = 0;
       // First pass: create all matches to get their DB IDs
       for (const match of matchesToCreate) {
+        const isByeMatch = match.a === "[ BYE ]" || match.b === "[ BYE ]";
+        const isPlaceholder = match.a === "[ TBD ]" && match.b === "[ TBD ]";
+
+        let status = "OPEN";
+        let winner = null;
+
+        if (isPlaceholder) {
+            status = "LOCKED";
+        } else if (isByeMatch) {
+            // Wait, if it's L_QF_1 (TBD vs BYE), we shouldn't pre-settle it because the TBD is waiting for a real loser to arrive.
+            // If it's pre-settled, the real loser dropping in later will trigger logic that expects an OPEN/LOCKED match,
+            // or the tournament operator will never see it pop open.
+            // We should only pre-settle BYE matches where the actual combatant is ALREADY KNOWN,
+            // or if both are BYE (dead node).
+            const isCombatantKnown = (match.a !== "[ BYE ]" && match.a !== "[ TBD ]") || (match.b !== "[ BYE ]" && match.b !== "[ TBD ]");
+            const isDoubleBye = match.a === "[ BYE ]" && match.b === "[ BYE ]";
+
+            if (isCombatantKnown || isDoubleBye) {
+                status = "SETTLED"; // Auto-advance the bye
+                if (match.a !== "[ BYE ]" && match.a !== "[ TBD ]") winner = "A";
+                else if (match.b !== "[ BYE ]" && match.b !== "[ TBD ]") winner = "B";
+                // If both are BYE, winner remains null, it's a dead node.
+            } else {
+                status = "LOCKED"; // Waiting for the TBD to be filled by a real player
+            }
+        }
+
         const dbMatch = await tx.match.create({
           data: {
             tournamentId,
@@ -161,7 +196,8 @@ export async function POST(request: Request) {
             playerB: match.b,
             stageType: "BRACKET",
             roundName: match.roundName,
-            status: match.a === "[ TBD ]" ? "LOCKED" : "OPEN",
+            status,
+            winner,
             poolInjectA: 0,
             poolInjectB: 0,
           }

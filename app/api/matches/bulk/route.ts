@@ -54,10 +54,11 @@ export async function POST(request: Request) {
         playerB: normalizedMatch.playerB,
         charA: normalizedMatch.charA,
         charB: normalizedMatch.charB,
+        roundName: m.roundName || null,
         status: "LOCKED",
         tournamentId: activeTournamentId,
         stageType: stageType || "GROUP",
-        groupId: groupId || "A",
+        groupId: stageType === "GROUP" ? (groupId || "A") : null,
         groupName: stageType === "GROUP" ? (groupName || groupId || "A") : null,
       };
     });

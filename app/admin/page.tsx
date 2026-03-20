@@ -81,6 +81,7 @@ export default function AdminPage() {
   const [stageType, setStageType] = useState<"GROUP" | "EXTRA" | "BRACKET">("GROUP");
   const [groupId, setGroupId] = useState("A");
   const [groupName, setGroupName] = useState("Group A");
+  const [extraMatchName, setExtraMatchName] = useState("Extra Match 1");
   const [tournamentId, setTournamentId] = useState("");
   const [tournaments, setTournaments] = useState<{id: string, name: string}[]>([]);
   const [groupStatuses, setGroupStatuses] = useState<any[]>([]);
@@ -453,7 +454,12 @@ export default function AdminPage() {
     setError(null);
     setIsCreating(true);
     const parsed = parseBulkMatchInput(bulkInput, playerSuggestions);
-    const newMatches = parsed.matches;
+    const newMatches = parsed.matches.map(m => {
+        if (stageType === "EXTRA") {
+            return { ...m, roundName: extraMatchName };
+        }
+        return m;
+    });
 
     if (newMatches.length === 0) {
       setError("未检测到有效对决，请检查格式。");
@@ -816,7 +822,7 @@ export default function AdminPage() {
                 <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">赛制段 (STAGE TYPE)</label>
                 <select
                   value={stageType}
-                  onChange={(e) => setStageType(e.target.value as "GROUP" | "BRACKET")}
+                  onChange={(e) => setStageType(e.target.value as "GROUP" | "EXTRA" | "BRACKET")}
                   className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
                 >
                   <option value="GROUP">小组赛 (GROUP STAGE)</option>
@@ -824,6 +830,19 @@ export default function AdminPage() {
                   <option value="BRACKET">淘汰赛 (BRACKET)</option>
                 </select>
               </div>
+              {stageType === "EXTRA" && (
+                <div className="flex-1">
+                  <label className="block text-sm text-neutral-400 mb-1 font-bold tracking-widest">对阵名称 (ROUND)</label>
+                  <select
+                    value={extraMatchName}
+                    onChange={(e) => setExtraMatchName(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
+                  >
+                    <option value="Extra Match 1">Extra Match 1</option>
+                    <option value="Extra Match 2">Extra Match 2</option>
+                  </select>
+                </div>
+              )}
               {stageType === "GROUP" && (
                 <>
                   <div className="flex-1">
