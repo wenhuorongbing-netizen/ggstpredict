@@ -20,7 +20,7 @@ export default function BracketMatchNode({ match, isWinnersBracket }: { match: M
     <div
       onClick={handleNodeClick}
       className={`
-        w-full sm:w-64 flex flex-col bg-[#0a0a0a] border-2 cursor-pointer transition-all hover:scale-[1.02] relative transform -skew-x-2 clip-chamfer
+        w-full sm:w-72 md:w-80 flex flex-col bg-[#0a0a0a] border-2 cursor-pointer transition-all hover:scale-[1.02] relative transform -skew-x-2 clip-chamfer
         ${isWinnersBracket ? 'border-red-900/80 hover:border-red-500 shadow-[4px_4px_0px_rgba(239,68,68,0.3)]' : 'border-blue-900/80 hover:border-blue-500 shadow-[4px_4px_0px_rgba(59,130,246,0.3)]'}
       `}
     >

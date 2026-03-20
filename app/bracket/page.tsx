@@ -232,86 +232,123 @@ const { winnersMatches, losersMatches, grandFinalMatch, resetMatch, otherMatches
              <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待淘汰赛数据 (NO BRACKET MATCHES FOUND)</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-12 overflow-x-auto whitespace-normal break-words sm:whitespace-nowrap bg-neutral-950 p-4 sm:p-10 relative shadow-[inset_0_0_100px_rgba(0,0,0,1)] border-4 border-neutral-900 mx-2 sm:mx-4 custom-scrollbar pb-24 min-h-[600px]">
-
-            {/* Winners Bracket Row */}
-            {winnersRounds.length > 0 && (
-              <div className="flex gap-8 sm:gap-16 relative w-fit min-w-full">
-                <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
-                  WINNERS
-                </div>
-                {winnersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
-                    {/* Visual connection spacer line to next round */}
-                    {colIndex < winnersRounds.length - 1 && (
-                       <svg className="absolute -right-16 top-12 bottom-0 w-16 h-full pointer-events-none" style={{ zIndex: -1 }}>
-                          <path d="M 0 50 C 30 50, 30 100, 64 100" fill="transparent" stroke="rgba(220, 38, 38, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
-                       </svg>
-                    )}
-
-                    <h3 className="absolute top-0 left-0 right-0 text-red-500 font-bold text-sm tracking-widest text-center bg-red-950/30 py-1 mb-2 border border-red-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
-                      {round.roundName}
-                    </h3>
-
-                    <div className="flex flex-col gap-6 justify-around h-full py-4">
-                      {round.matches.map(m => (
-                        <div key={m.id} className="relative z-10 bracket-node">
-                          <BracketMatchNode match={m as Match} isWinnersBracket={true} />
-                        </div>
-                      ))}
-                    </div>
+          <>
+            {/* Knockout Stage Summary Strip */}
+            <div className="bg-neutral-900 border-y-4 border-red-600 p-4 mb-8 mx-4 transform -skew-x-2 shadow-[4px_4px_0px_rgba(239,68,68,0.3)] flex flex-wrap justify-between items-center gap-4">
+               <div className="flex flex-col">
+                  <span className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Event Status</span>
+                  <span className="text-white font-black text-2xl tracking-widest drop-shadow-[1px_1px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
+                    8-PLAYER DOUBLE ELIMINATION
+                  </span>
+               </div>
+               <div className="flex gap-6 sm:gap-12 text-center">
+                  <div className="flex flex-col">
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Progress</span>
+                     <span className="text-blue-400 font-mono font-bold text-xl">
+                       {bracketMatches.filter(m => m.status === 'SETTLED').length} / {bracketMatches.length}
+                     </span>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Losers Bracket Row */}
-            {losersRounds.length > 0 && (
-              <div className="flex gap-8 sm:gap-16 relative mt-16 border-t-2 border-dashed border-neutral-800/50 pt-16 w-fit min-w-full">
-                <div className="absolute -left-2 top-[60%] -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
-                  LOSERS
-                </div>
-                {losersRounds.map((round, colIndex) => (
-                  <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-56 sm:w-64 pt-8">
-                    {colIndex < losersRounds.length - 1 && (
-                       <svg className="absolute -right-16 top-12 bottom-0 w-16 h-full pointer-events-none" style={{ zIndex: -1 }}>
-                          <path d="M 0 50 C 30 50, 30 100, 64 100" fill="transparent" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
-                       </svg>
-                    )}
-                    <h3 className="absolute top-0 left-0 right-0 text-blue-500 font-bold text-sm tracking-widest text-center bg-blue-950/30 py-1 mb-2 border border-blue-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
-                      {round.roundName}
-                    </h3>
-                    <div className="flex flex-col gap-6 justify-around h-full py-4">
-                      {round.matches.map(m => (
-                        <div key={m.id} className="relative z-10 bracket-node">
-                          <BracketMatchNode match={m as Match} isWinnersBracket={false} />
-                        </div>
-                      ))}
-                    </div>
+                  <div className="flex flex-col">
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Open / Locked</span>
+                     <span className="text-yellow-500 font-mono font-bold text-xl">
+                       {bracketMatches.filter(m => m.status === 'OPEN').length} <span className="text-neutral-600">|</span> {bracketMatches.filter(m => m.status === 'LOCKED').length}
+                     </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex flex-col">
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Current Focus</span>
+                     <span className="text-white font-black text-xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
+                       {
+                         bracketMatches.some(m => (m.roundName === GRAND_FINAL || m.roundName === GRAND_FINAL_RESET) && m.status === 'OPEN') ? 'GRAND FINAL' :
+                         bracketMatches.some(m => m.status === 'OPEN' && WINNERS_ORDER.includes(m.roundName || '')) ? 'WINNERS' :
+                         bracketMatches.some(m => m.status === 'OPEN' && LOSERS_ORDER.includes(m.roundName || '')) ? 'LOSERS' :
+                         bracketMatches.every(m => m.status === 'SETTLED') ? 'CHAMPION CROWNED' : 'WAITING'
+                       }
+                     </span>
+                  </div>
+               </div>
+            </div>
 
-            {/* Other Bracket Row (If any unclassified bracket matches exist) */}
-            {otherMatches.length > 0 && (
-              <div className="flex gap-8 sm:gap-16 relative mt-12 border-t border-neutral-800/50 pt-12">
-                 <div className="flex flex-col gap-6 flex-shrink-0 relative w-56 sm:w-64 pt-8">
-                   <h3 className="absolute top-0 left-0 right-0 text-neutral-500 font-bold text-sm tracking-widest text-center bg-neutral-900/50 py-1 mb-2 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
-                     OTHER MATCHES
-                   </h3>
-                   <div className="flex flex-col gap-6 justify-around h-full">
-                     {otherMatches.map(m => (
-                       <div key={m.id} className="relative z-10">
-                         <BracketMatchNode match={m as Match} isWinnersBracket={true} />
-                       </div>
-                     ))}
+            <div className="flex flex-col gap-12 overflow-x-auto whitespace-normal break-words sm:whitespace-nowrap bg-neutral-950 p-4 sm:p-10 relative shadow-[inset_0_0_100px_rgba(0,0,0,1)] border-4 border-neutral-900 mx-2 sm:mx-4 custom-scrollbar pb-24 min-h-[600px]">
+
+              {/* Winners Bracket Row */}
+              {winnersRounds.length > 0 && (
+                <div className="flex gap-8 sm:gap-12 relative w-fit min-w-full">
+                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
+                    WINNERS
+                  </div>
+                  {winnersRounds.map((round, colIndex) => (
+                    <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-full sm:w-72 md:w-80 pt-8">
+                      {/* Visual connection spacer line to next round */}
+                      {colIndex < winnersRounds.length - 1 && (
+                         <svg className="absolute -right-12 top-12 bottom-0 w-12 h-full pointer-events-none" style={{ zIndex: -1 }}>
+                            <path d="M 0 50 C 24 50, 24 100, 48 100" fill="transparent" stroke="rgba(220, 38, 38, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
+                         </svg>
+                      )}
+
+                      <h3 className="absolute top-0 left-0 right-0 text-red-500 font-bold text-sm tracking-widest text-center bg-red-950/30 py-1 mb-2 border border-red-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
+                        {round.roundName}
+                      </h3>
+
+                      <div className="flex flex-col gap-6 justify-around h-full py-4">
+                        {round.matches.map(m => (
+                          <div key={m.id} className="relative z-10 bracket-node">
+                            <BracketMatchNode match={m as Match} isWinnersBracket={true} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Losers Bracket Row */}
+              {losersRounds.length > 0 && (
+                <div className="flex gap-8 sm:gap-12 relative mt-16 border-t-2 border-dashed border-neutral-800/50 pt-16 w-fit min-w-full">
+                  <div className="absolute -left-2 top-[60%] -translate-y-1/2 -rotate-90 text-neutral-800 font-black tracking-widest text-4xl select-none pointer-events-none opacity-50 z-0" style={{ fontFamily: "var(--font-bebas)" }}>
+                    LOSERS
+                  </div>
+                  {losersRounds.map((round, colIndex) => (
+                    <div key={round.roundName} className="flex flex-col flex-shrink-0 relative z-10 w-full sm:w-72 md:w-80 pt-8">
+                      {colIndex < losersRounds.length - 1 && (
+                         <svg className="absolute -right-12 top-12 bottom-0 w-12 h-full pointer-events-none" style={{ zIndex: -1 }}>
+                            <path d="M 0 50 C 24 50, 24 100, 48 100" fill="transparent" stroke="rgba(59, 130, 246, 0.3)" strokeWidth="2" vectorEffect="non-scaling-stroke" className="path-connector" />
+                         </svg>
+                      )}
+                      <h3 className="absolute top-0 left-0 right-0 text-blue-500 font-bold text-sm tracking-widest text-center bg-blue-950/30 py-1 mb-2 border border-blue-900/50" style={{ fontFamily: "var(--font-bebas)" }}>
+                        {round.roundName}
+                      </h3>
+                      <div className="flex flex-col gap-6 justify-around h-full py-4">
+                        {round.matches.map(m => (
+                          <div key={m.id} className="relative z-10 bracket-node">
+                            <BracketMatchNode match={m as Match} isWinnersBracket={false} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Other Bracket Row (If any unclassified bracket matches exist) */}
+              {otherMatches.length > 0 && (
+                <div className="flex gap-8 sm:gap-12 relative mt-12 border-t border-neutral-800/50 pt-12">
+                   <div className="flex flex-col gap-6 flex-shrink-0 relative w-full sm:w-72 md:w-80 pt-8">
+                     <h3 className="absolute top-0 left-0 right-0 text-neutral-500 font-bold text-sm tracking-widest text-center bg-neutral-900/50 py-1 mb-2 border border-neutral-800" style={{ fontFamily: "var(--font-bebas)" }}>
+                       OTHER MATCHES
+                     </h3>
+                     <div className="flex flex-col gap-6 justify-around h-full">
+                       {otherMatches.map(m => (
+                         <div key={m.id} className="relative z-10">
+                           <BracketMatchNode match={m as Match} isWinnersBracket={true} />
+                         </div>
+                       ))}
+                     </div>
                    </div>
-                 </div>
-              </div>
-            )}
+                </div>
+              )}
 
-          </div>
+            </div>
+          </>
         )}
 
       </AppLayout>

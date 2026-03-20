@@ -1042,7 +1042,7 @@ export default function DashboardPage() {
                          </h2>
                       </div>
                     )}
-                    <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 relative z-10 w-full" layout>
+                    <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-5 relative z-10 w-full" layout>
                       <AnimatePresence>
                         {groupMatches.map((match) => (
                            <MatchCard
@@ -1068,63 +1068,14 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Bottom Section: Leaderboard / Live Intel */}
-          <div className="w-full flex flex-col gap-6 max-w-4xl mx-auto">
-            {!isInitialLoad && (
-              <div className="bg-black/80 border-4 border-red-600 p-6 shadow-[0_0_15px_rgba(239,68,68,0.6)] transform -skew-x-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white pointer-events-none z-20"></div>
-                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white pointer-events-none z-20"></div>
-
-                <h3 className="text-3xl font-black text-white mb-6 tracking-widest transform skew-x-2 flex items-center gap-3 drop-shadow-[2px_2px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                  <span className="text-red-500 animate-pulse">🔥</span> 悬赏榜单 (HIGH SCORES)
-                </h3>
-
-                <div className="space-y-3 transform skew-x-2">
-                  {leaderboard.length === 0 ? (
-                    <p className="text-neutral-500 text-lg font-mono font-bold animate-pulse">INSERT COIN...</p>
-                  ) : (
-                    leaderboard.map((user, index) => {
-                      const isTop3 = index < 3;
-                      const isFirst = index === 0;
-                      const rankText = index === 0 ? '1ST' : index === 1 ? '2ND' : index === 2 ? '3RD' : `${index + 1}TH`;
-
-                      return (
-                        <div key={user.id} className={`flex justify-between items-center font-mono p-3 border-l-4 transition-all hover:translate-x-1 ${
-                          isFirst ? 'border-yellow-400 bg-yellow-900/20 shadow-[0_0_10px_rgba(250,204,21,0.3)]' :
-                          isTop3 ? 'border-red-500 bg-red-900/20' :
-                          'border-neutral-700 bg-neutral-900/40'
-                        }`}>
-                          <div className="flex items-center gap-3 truncate">
-                            <span className={`font-black tracking-widest ${
-                              isFirst ? 'text-yellow-400 text-2xl drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' :
-                              isTop3 ? 'text-red-400 text-xl' :
-                              'text-neutral-500 text-lg'
-                            }`} style={{ fontFamily: "var(--font-bebas)" }}>{rankText}</span>
-
-                            <span className={`truncate font-bold ${
-                              isFirst ? 'text-white text-xl' :
-                              isTop3 ? 'text-gray-100 text-lg' :
-                              'text-neutral-400'
-                            }`} style={user.nameColor && user.nameColor !== "#ffffff" ? { color: user.nameColor, textShadow: "0 0 5px currentColor" } : {}}>
-                              {user.displayName}
-                            </span>
-                          </div>
-
-                          <span className={`font-black ml-2 shrink-0 tracking-widest ${
-                            isFirst ? 'text-yellow-400 text-2xl drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]' :
-                            isTop3 ? 'text-red-400 text-xl' :
-                            'text-neutral-500 text-lg'
-                          }`} style={{ fontFamily: "var(--font-bebas)" }}>
-                            {user.points.toLocaleString()}
-                          </span>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-
+          {/* Bottom Section: Leaderboard Link */}
+          <div className="w-full flex justify-center mt-8">
+            <button
+              onClick={() => router.push('/leaderboard')}
+              className="ggst-button border-red-500 hover:bg-red-600/20 text-neutral-300 hover:text-white px-8 py-3 text-sm shadow-[4px_4px_0px_rgba(239,68,68,0.5)] transform -skew-x-2 flex items-center gap-2 transition-all"
+            >
+              <span className="text-red-500">🏆</span> VIEW FULL LEADERBOARD
+            </button>
           </div>
         </div>
         </div>
