@@ -553,8 +553,16 @@ export default function DashboardPage() {
           if (s.key === "GROUP_MAX") newSettings.GROUP_MAX = parseInt(s.value, 10);
           if (s.key === "KO_PERCENT") newSettings.KO_PERCENT = parseInt(s.value, 10);
           if (s.key === "KO_MIN") newSettings.KO_MIN = parseInt(s.value, 10);
-          if (s.key === "AWT_ADVANCED_PLAYERS" && s.value) {
-            newSettings.AWT_ADVANCED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);
+          if (s.key.startsWith("AWT_ADVANCED_PLAYERS") && s.value) {
+            let names = s.value;
+            // It might be stored as a JSON array by generate-bracket, so let's parse safely
+            try {
+               const parsed = JSON.parse(s.value);
+               if (Array.isArray(parsed)) {
+                 names = parsed.join(",");
+               }
+            } catch(e) {}
+            newSettings.AWT_ADVANCED_PLAYERS.push(...names.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean));
           }
           if (s.key === "AWT_ELIMINATED_PLAYERS" && s.value) {
             newSettings.AWT_ELIMINATED_PLAYERS = s.value.split(',').map((p: string) => p.trim().toLowerCase()).filter(Boolean);

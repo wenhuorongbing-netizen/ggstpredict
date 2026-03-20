@@ -27,9 +27,6 @@ export const PLAYER_ALIASES: Record<string, string> = {
   "baccpack": "Baccpack",
   "kyuniku": "Kyuniku",
   "tsurugi": "Tsurugi",
-  "churara": "TyuRaRa",
-  "tyurara": "TyuRaRa",
-  "tyurara ": "TyuRaRa",
   "umisho": "UMISHO",
   "umisho ": "UMISHO",
   "umısho": "UMISHO",
@@ -169,10 +166,9 @@ export function normalizePlayerName(value: NullableString): string {
     return PLAYER_ALIASES[lower];
   }
 
-  // Capitalize first letter of each word if not in alias dictionary
-  return normalizedWS.split(' ').map(word =>
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  ).join(' ');
+  // If not in alias dictionary, just return the normalized whitespace version
+  // to avoid mutating user-provided casing unintentionally.
+  return normalizedWS;
 }
 
 function normalizeCharacterInput(value: NullableString): string {

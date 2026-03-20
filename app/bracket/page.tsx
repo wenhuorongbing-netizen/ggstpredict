@@ -17,12 +17,23 @@ export default function BracketPage() {
 
   const fetchMatches = async () => {
     try {
+      let currentTournamentId = "";
+      try {
+        const resT = await fetch("/api/tournaments");
+        if (resT.ok) {
+          const tData = await resT.json();
+          if (tData.tournament?.id) currentTournamentId = tData.tournament.id;
+        }
+      } catch (err) {}
+
       const res = await fetch("/api/matches");
       if (res.ok) {
         const data = await res.json();
-        setMatches(data);
+        // Option to filter by tournament if we want strictly scoped views
+        const scopedData = currentTournamentId ? data.filter((m: any) => m.tournamentId === currentTournamentId) : data;
+        setMatches(scopedData);
 
-      const resGroups = await fetch("/api/groups/standings");
+      const resGroups = await fetch(`/api/groups/standings${currentTournamentId ? `?tournamentId=${currentTournamentId}` : ""}`);
       if (resGroups.ok) {
         const groupsData = await resGroups.json();
         setGroupStandings(groupsData);

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       top2ByGroup[group] = data.top2;
     }
 
-    // AWT Advanced list tracking (Side effect from original)
+    // AWT Advanced list tracking (Scoped to tournament)
     const advancedPlayers = [
       ...top2ByGroup["A"],
       ...top2ByGroup["B"],
@@ -52,9 +52,9 @@ export async function POST(request: Request) {
     await prisma.$transaction(async (tx) => {
       // Create bracket matches based on frozen top2 (this is a placeholder for actual generation which is Sprint 2, but we need to satisfy Sprint 1 bounds)
       await tx.systemSetting.upsert({
-        where: { key: "AWT_ADVANCED_PLAYERS" },
+        where: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}` },
         update: { value: JSON.stringify(advancedPlayers) },
-        create: { key: "AWT_ADVANCED_PLAYERS", value: JSON.stringify(advancedPlayers) }
+        create: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}`, value: JSON.stringify(advancedPlayers) }
       });
 
       // Check if bracket already exists for this tournament to prevent duplicate generation
@@ -70,34 +70,64 @@ export async function POST(request: Request) {
         throw new Error(`Bracket already generated for tournament ${tournamentId}`);
       }
 
-      // Exact seed template: A1-D2, B1-C2, C1-B2, D1-A2
-      const pairings = [
+      // 8-player Double Elimination Bracket Topology
+      const matchesToCreate = [
+        // Winners Round 1 (Quarter-Finals)
         { a: top2ByGroup["A"][0], b: top2ByGroup["D"][1], roundName: "Winners Quarter-Final 1" },
         { a: top2ByGroup["B"][0], b: top2ByGroup["C"][1], roundName: "Winners Quarter-Final 2" },
         { a: top2ByGroup["C"][0], b: top2ByGroup["B"][1], roundName: "Winners Quarter-Final 3" },
         { a: top2ByGroup["D"][0], b: top2ByGroup["A"][1], roundName: "Winners Quarter-Final 4" },
+
+        // Winners Semi-Finals
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Semi-Final 1" },
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Semi-Final 2" },
+
+        // Winners Final
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Final" },
+
+        // Losers Round 1
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Round 1 (1)" },
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Round 1 (2)" },
+
+        // Losers Quarter-Finals
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Quarter-Final 1" },
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Quarter-Final 2" },
+
+        // Losers Semi-Finals
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Semi-Final" },
+
+        // Losers Final
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Losers Final" },
+
+        // Grand Final
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Grand Final" },
+
+        // Grand Final - Reset (Hidden until needed)
+        { a: "[ TBD ]", b: "[ TBD ]", roundName: "Grand Final - Reset" }
       ];
 
-      for (const pair of pairings) {
+      let createdCount = 0;
+      for (const match of matchesToCreate) {
         await tx.match.create({
           data: {
             tournamentId,
-            playerA: pair.a,
-            playerB: pair.b,
+            playerA: match.a,
+            playerB: match.b,
             stageType: "BRACKET",
-            roundName: pair.roundName,
-            status: "OPEN",
+            roundName: match.roundName,
+            status: match.a === "[ TBD ]" ? "LOCKED" : "OPEN",
             poolInjectA: 0,
             poolInjectB: 0,
           }
         });
+        createdCount++;
       }
 
       await tx.actionLog.create({
         data: {
           actionType: "BRACKET_GENERATED",
           userId: userId,
-          details: JSON.stringify({ tournamentId, generatedMatches: pairings.length }),
+          details: JSON.stringify({ tournamentId, generatedMatches: createdCount }),
         }
       });
     });

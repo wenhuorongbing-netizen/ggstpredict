@@ -24,7 +24,7 @@ for (const testCase of whitespaceCases) {
 }
 
 const keyCases = [
-  { name: "buildCaseInsensitiveKey lowercases values", input: "Tyurara", expected: "tyurara" },
+  { name: "buildCaseInsensitiveKey lowercases values", input: "TyuRaRa", expected: "tyurara" },
   { name: "buildCaseInsensitiveKey trims before lowercasing", input: "  ABA  ", expected: "aba" },
   { name: "buildCaseInsensitiveKey collapses repeated whitespace", input: "A  B  A", expected: "a b a" },
 ] as const;
@@ -36,7 +36,7 @@ for (const testCase of keyCases) {
 }
 
 const playerNameCases = [
-  { name: "normalizePlayerName preserves input casing", input: "Tyurara", expected: "Tyurara" },
+  { name: "normalizePlayerName preserves input casing", input: "TyuRaRa", expected: "TyuRaRa" },
   { name: "normalizePlayerName preserves punctuation in tags", input: "A.B.A-Lover", expected: "A.B.A-Lover" },
 ] as const;
 
@@ -49,28 +49,28 @@ for (const testCase of playerNameCases) {
 const parseCases = [
   {
     name: "parsePlayerAndCharacter returns player name when character is missing",
-    input: "Tyurara",
-    expected: { player: "Tyurara", char: null },
+    input: "TyuRaRa",
+    expected: { player: "TyuRaRa", char: null },
   },
   {
     name: "parsePlayerAndCharacter extracts the character inside parentheses",
-    input: "Tyurara (Sol)",
-    expected: { player: "Tyurara", char: "Sol" },
+    input: "TyuRaRa (Sol)",
+    expected: { player: "TyuRaRa", char: "Sol" },
   },
   {
     name: "parsePlayerAndCharacter trims player and character text",
-    input: "  Tyurara   (  ramlethal valentine ) ",
-    expected: { player: "Tyurara", char: "Ramlethal" },
+    input: "  TyuRaRa   (  ramlethal valentine ) ",
+    expected: { player: "TyuRaRa", char: "Ramlethal" },
   },
   {
     name: "parsePlayerAndCharacter canonicalizes official character aliases",
-    input: "Tyurara (sol badguy)",
-    expected: { player: "Tyurara", char: "Sol" },
+    input: "TyuRaRa (sol badguy)",
+    expected: { player: "TyuRaRa", char: "Sol" },
   },
   {
     name: "parsePlayerAndCharacter keeps stylized characters",
-    input: "Tyurara (A.B.A)",
-    expected: { player: "Tyurara", char: "A.B.A" },
+    input: "TyuRaRa (A.B.A)",
+    expected: { player: "TyuRaRa", char: "A.B.A" },
   },
 ] as const;
 
@@ -83,28 +83,28 @@ for (const testCase of parseCases) {
 const lineCases = [
   {
     name: "formatMatchLine renders a simple versus line",
-    input: { playerA: "Tyurara", playerB: "Nage", charA: null, charB: null },
-    expected: "Tyurara vs Nage",
+    input: { playerA: "TyuRaRa", playerB: "Nage", charA: null, charB: null },
+    expected: "TyuRaRa vs Nage",
   },
   {
     name: "formatMatchLine includes only player A character when available",
-    input: { playerA: "Tyurara", playerB: "Nage", charA: "Sol", charB: null },
-    expected: "Tyurara (Sol) vs Nage",
+    input: { playerA: "TyuRaRa", playerB: "Nage", charA: "Sol", charB: null },
+    expected: "TyuRaRa (Sol) vs Nage",
   },
   {
     name: "formatMatchLine includes only player B character when available",
-    input: { playerA: "Tyurara", playerB: "Nage", charA: null, charB: "Ky" },
-    expected: "Tyurara vs Nage (Ky)",
+    input: { playerA: "TyuRaRa", playerB: "Nage", charA: null, charB: "Ky" },
+    expected: "TyuRaRa vs Nage (Ky)",
   },
   {
     name: "formatMatchLine includes both characters when available",
-    input: { playerA: "Tyurara", playerB: "Nage", charA: "Sol", charB: "Ky" },
-    expected: "Tyurara (Sol) vs Nage (Ky)",
+    input: { playerA: "TyuRaRa", playerB: "Nage", charA: "Sol", charB: "Ky" },
+    expected: "TyuRaRa (Sol) vs Nage (Ky)",
   },
   {
     name: "formatMatchLine keeps canonicalized character spellings intact",
-    input: { playerA: "Tyurara", playerB: "Nage", charA: "Jack-O'", charB: "Bedman?" },
-    expected: "Tyurara (Jack-O') vs Nage (Bedman?)",
+    input: { playerA: "TyuRaRa", playerB: "Nage", charA: "Jack-O'", charB: "Bedman?" },
+    expected: "TyuRaRa (Jack-O') vs Nage (Bedman?)",
   },
 ] as const;
 
