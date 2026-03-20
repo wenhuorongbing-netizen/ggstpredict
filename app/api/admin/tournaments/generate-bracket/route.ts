@@ -41,22 +41,39 @@ export async function POST(request: Request) {
       top2ByGroup[group] = data.top2;
     }
 
+    // Check Extra Stage matches
+    const extraMatches = await prisma.match.findMany({
+      where: {
+        tournamentId,
+        stageType: "EXTRA"
+      }
+    });
+
+    const matchE1 = extraMatches.find(m => m.roundName === "Extra Match 1");
+    const matchE2 = extraMatches.find(m => m.roundName === "Extra Match 2");
+
+    if (!matchE1 || !matchE2) {
+       return NextResponse.json({ error: "Extra Stage matches (Extra Match 1 & 2) must be created first" }, { status: 400 });
+    }
+
+    if (matchE1.status !== "SETTLED" || matchE2.status !== "SETTLED") {
+       return NextResponse.json({ error: "Both Extra Stage matches must be SETTLED before generating bracket" }, { status: 400 });
+    }
+
+    const winnerE1 = matchE1.winner === "A" ? matchE1.playerA : matchE1.playerB;
+    const winnerE2 = matchE2.winner === "A" ? matchE2.playerA : matchE2.playerB;
+
     // AWT Advanced list tracking (Scoped to tournament)
     const advancedPlayers = [
-      ...top2ByGroup["A"],
-      ...top2ByGroup["B"],
-      ...top2ByGroup["C"],
-      ...top2ByGroup["D"],
+      top2ByGroup["A"][0],
+      top2ByGroup["B"][0],
+      top2ByGroup["C"][0],
+      top2ByGroup["D"][0],
+      winnerE1,
+      winnerE2
     ];
 
     await prisma.$transaction(async (tx) => {
-      // Create bracket matches based on frozen top2 (this is a placeholder for actual generation which is Sprint 2, but we need to satisfy Sprint 1 bounds)
-      await tx.systemSetting.upsert({
-        where: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}` },
-        update: { value: JSON.stringify(advancedPlayers) },
-        create: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}`, value: JSON.stringify(advancedPlayers) }
-      });
-
       // Check if bracket already exists for this tournament to prevent duplicate generation
       const existingBracket = await tx.match.findFirst({
         where: {
@@ -70,13 +87,19 @@ export async function POST(request: Request) {
         throw new Error(`Bracket already generated for tournament ${tournamentId}`);
       }
 
+      await tx.systemSetting.upsert({
+        where: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}` },
+        update: { value: JSON.stringify(advancedPlayers) },
+        create: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}`, value: JSON.stringify(advancedPlayers) }
+      });
+
       // 8-player Double Elimination Bracket Topology
       const matchesToCreate = [
         // Winners Round 1 (Quarter-Finals)
-        { id: "W_QF_1", a: top2ByGroup["A"][0], b: top2ByGroup["D"][1], roundName: "Winners Quarter-Final 1" },
-        { id: "W_QF_2", a: top2ByGroup["B"][0], b: top2ByGroup["C"][1], roundName: "Winners Quarter-Final 2" },
-        { id: "W_QF_3", a: top2ByGroup["C"][0], b: top2ByGroup["B"][1], roundName: "Winners Quarter-Final 3" },
-        { id: "W_QF_4", a: top2ByGroup["D"][0], b: top2ByGroup["A"][1], roundName: "Winners Quarter-Final 4" },
+        { id: "W_QF_1", a: top2ByGroup["A"][0], b: "[ TBD ]", roundName: "Winners Quarter-Final 1" },
+        { id: "W_QF_2", a: top2ByGroup["D"][0], b: "[ TBD ]", roundName: "Winners Quarter-Final 2" },
+        { id: "W_QF_3", a: top2ByGroup["B"][0], b: winnerE2, roundName: "Winners Quarter-Final 3" },
+        { id: "W_QF_4", a: top2ByGroup["C"][0], b: winnerE1, roundName: "Winners Quarter-Final 4" },
 
         // Winners Semi-Finals
         { id: "W_SF_1", a: "[ TBD ]", b: "[ TBD ]", roundName: "Winners Semi-Final 1" },

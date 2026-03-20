@@ -81,56 +81,45 @@ export function generateFinalsDisplay(matches: Match[], groupStandings: any[]): 
 
 
   // 3. Knockout Stage Setup
-  // We need to ensure all WINNERS_ORDER, LOSERS_ORDER, GRAND_FINAL, GRAND_FINAL_RESET are present.
   const bracketMatches = matches.filter(m => m.stageType === "BRACKET");
 
-  // Create a map of existing real bracket matches by roundName
-  const realBracketMap = new Map<string, Match>();
-  for (const m of bracketMatches) {
-    if (m.roundName) {
-      realBracketMap.set(m.roundName, m);
-    }
-  }
+  let knockoutLayout: BracketLayout;
 
-  const combinedBracketMatches: Match[] = [...bracketMatches];
-
-  // Helper to safely add placeholder if real match doesn't exist
-  const addPlaceholderIfNotExists = (roundName: string, id: string, playerA: string, playerB: string) => {
-      if (!realBracketMap.has(roundName)) {
-          combinedBracketMatches.push(createPlaceholderMatch(id, roundName, playerA, playerB));
+  // If there are any actual bracket matches generated, we use the real bracket entirely.
+  // This prevents blending placeholder structural nodes with partially generated brackets.
+  if (bracketMatches.length > 0) {
+      knockoutLayout = groupBracketMatches(bracketMatches);
+  } else {
+      // Otherwise, generate the pure placeholder structural layout
+      const placeholderBracketMatches: Match[] = [];
+      const addPlaceholder = (roundName: string, id: string, playerA: string, playerB: string) => {
+          placeholderBracketMatches.push(createPlaceholderMatch(id, roundName, playerA, playerB));
       }
+
+      addPlaceholder("Winners Quarter-Final 1", "W_QF_1", groupWinners["A"], "Slot Pending");
+      addPlaceholder("Winners Quarter-Final 2", "W_QF_2", groupWinners["D"], "Slot Pending");
+      addPlaceholder("Winners Quarter-Final 3", "W_QF_3", groupWinners["B"], winnerE2); // C2 vs D2
+      addPlaceholder("Winners Quarter-Final 4", "W_QF_4", groupWinners["C"], winnerE1); // A2 vs B2
+
+      // Other Winners
+      addPlaceholder("Winners Semi-Final 1", "W_SF_1", "Pending Slot", "Pending Slot");
+      addPlaceholder("Winners Semi-Final 2", "W_SF_2", "Pending Slot", "Pending Slot");
+      addPlaceholder("Winners Final", "W_F", "Pending Slot", "Pending Slot");
+
+      // Losers
+      addPlaceholder("Losers Round 1 (1)", "L_R1_1", "Pending Slot", "Pending Slot");
+      addPlaceholder("Losers Round 1 (2)", "L_R1_2", "Pending Slot", "Pending Slot");
+      addPlaceholder("Losers Quarter-Final 1", "L_QF_1", "Pending Slot", "Pending Slot");
+      addPlaceholder("Losers Quarter-Final 2", "L_QF_2", "Pending Slot", "Pending Slot");
+      addPlaceholder("Losers Semi-Final", "L_SF", "Pending Slot", "Pending Slot");
+      addPlaceholder("Losers Final", "L_F", "Pending Slot", "Pending Slot");
+
+      // Grand Final
+      addPlaceholder("Grand Final", "GF", "Pending Slot", "Pending Slot");
+
+      knockoutLayout = groupBracketMatches(placeholderBracketMatches);
   }
 
-  // Inject standard 8-player DE placeholders based on our specific seeding:
-  // A1 vs D2(E2 winner?), B1 vs C2(E1 winner?) ... wait, the requirement says:
-  // Extra Stage: E1: A2 vs B2, E2: C2 vs D2
-  // Let's just put them into the standard WQF slots.
-  // The exact mapping for WQF:
-  addPlaceholderIfNotExists("Winners Quarter-Final 1", "W_QF_1", groupWinners["A"], "Slot Pending");
-  addPlaceholderIfNotExists("Winners Quarter-Final 2", "W_QF_2", groupWinners["D"], "Slot Pending");
-  addPlaceholderIfNotExists("Winners Quarter-Final 3", "W_QF_3", groupWinners["B"], winnerE2); // C2 vs D2
-  addPlaceholderIfNotExists("Winners Quarter-Final 4", "W_QF_4", groupWinners["C"], winnerE1); // A2 vs B2
-
-  // Other Winners
-  addPlaceholderIfNotExists("Winners Semi-Final 1", "W_SF_1", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Winners Semi-Final 2", "W_SF_2", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Winners Final", "W_F", "Pending Slot", "Pending Slot");
-
-  // Losers
-  addPlaceholderIfNotExists("Losers Round 1 (1)", "L_R1_1", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Losers Round 1 (2)", "L_R1_2", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Losers Quarter-Final 1", "L_QF_1", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Losers Quarter-Final 2", "L_QF_2", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Losers Semi-Final", "L_SF", "Pending Slot", "Pending Slot");
-  addPlaceholderIfNotExists("Losers Final", "L_F", "Pending Slot", "Pending Slot");
-
-  // Grand Final
-  addPlaceholderIfNotExists("Grand Final", "GF", "Pending Slot", "Pending Slot");
-
-  // We do NOT add Grand Final Reset placeholder automatically unless it exists or we want to hide it anyway.
-  // The existing logic hides it if it's [ TBD ], we can let the standard layout handle it if we don't inject it.
-
-  const knockoutLayout = groupBracketMatches(combinedBracketMatches);
 
   // 4. Calculate Summary
   const knockoutSettled = bracketMatches.filter(m => m.status === "SETTLED").length;

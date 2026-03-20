@@ -78,7 +78,7 @@ export default function AdminPage() {
   const [deletingMatchId, setDeletingMatchId] = useState<string | null>(null);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [stageType, setStageType] = useState<"GROUP" | "BRACKET">("GROUP");
+  const [stageType, setStageType] = useState<"GROUP" | "EXTRA" | "BRACKET">("GROUP");
   const [groupId, setGroupId] = useState("A");
   const [groupName, setGroupName] = useState("Group A");
   const [tournamentId, setTournamentId] = useState("");
@@ -424,7 +424,7 @@ export default function AdminPage() {
       return;
     }
 
-    if (!confirm("⚠️ 警告：这将根据当前所有已确认(CONFIRMED)的小组结果，自动生成8强淘汰赛！此操作将直接写入数据库。继续吗？")) {
+    if (!confirm("⚠️ 警告：生成淘汰赛需要 4个小组确认完毕，并且 2场附加赛(Extra Stage)已结算(SETTLED)！此操作将直接写入数据库。继续吗？")) {
       return;
     }
 
@@ -758,9 +758,9 @@ export default function AdminPage() {
           <div className="flex flex-col md:flex-row justify-between items-center transform -skew-x-2 relative z-10 gap-4">
             <div>
               <h2 className="text-2xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(192,38,211,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                 赛事自动流转引擎 (AUTO-TRANSITION)
+                 4. 生成淘汰赛 (GENERATE KNOCKOUT)
               </h2>
-              <p className="text-fuchsia-400 text-sm font-mono mt-1">一键结算所有小组赛积分，并基于标准交叉规则自动生成8强对决。</p>
+              <p className="text-fuchsia-400 text-sm font-mono mt-1">需满足：1.四组确认完毕 2.建立并结算两场Extra Stage，才可生成淘汰赛。</p>
             </div>
 
             <button
@@ -768,7 +768,7 @@ export default function AdminPage() {
               className="ggst-button border-fuchsia-500 hover:bg-fuchsia-600 bg-fuchsia-900/40 px-8 py-4 text-xl shadow-[4px_4px_0px_rgba(192,38,211,0.8)] font-black tracking-widest text-fuchsia-100 flex items-center gap-3 w-full md:w-auto"
               style={{ fontFamily: "var(--font-bebas)" }}
             >
-              <span className="animate-pulse">🚀</span> GENERATE TOP 8 BRACKET
+              <span className="animate-pulse">🚀</span> 5. GENERATE KNOCKOUT BRACKET
             </button>
           </div>
         </div>
@@ -820,6 +820,7 @@ export default function AdminPage() {
                   className="w-full bg-[#1a1a1a] border-2 border-neutral-700 p-2 text-white focus:outline-none focus:border-red-500"
                 >
                   <option value="GROUP">小组赛 (GROUP STAGE)</option>
+                  <option value="EXTRA">附加赛 (EXTRA)</option>
                   <option value="BRACKET">淘汰赛 (BRACKET)</option>
                 </select>
               </div>
