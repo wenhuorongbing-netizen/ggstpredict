@@ -1,75 +1,12 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { headers } from "next/headers";
+const fs = require('fs');
 
-export async function POST(request: Request) {
-  try {
-    const headerPayload = await headers();
-    const userId = headerPayload.get("x-user-id");
+const generatorPath = 'app/api/admin/tournaments/generate-bracket/route.ts';
+let generatorCode = fs.readFileSync(generatorPath, 'utf8');
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+// I will re-write the matchesToCreate loop in generate-bracket to track the created nodes
+// and link them together using their IDs.
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { tournamentId } = await request.json();
-
-    if (!tournamentId) {
-      return NextResponse.json({ error: "Tournament ID required" }, { status: 400 });
-    }
-
-    const groups = ["A", "B", "C", "D"];
-    const top2ByGroup: Record<string, string[]> = {};
-
-    for (const group of groups) {
-      const setting = await prisma.systemSetting.findUnique({
-        where: { key: `GROUP_CONFIRM::${tournamentId}::${group}` }
-      });
-
-      if (!setting) {
-        return NextResponse.json({ error: `Group ${group} not confirmed` }, { status: 400 });
-      }
-
-      const data = JSON.parse(setting.value);
-      top2ByGroup[group] = data.top2;
-    }
-
-    // AWT Advanced list tracking (Scoped to tournament)
-    const advancedPlayers = [
-      ...top2ByGroup["A"],
-      ...top2ByGroup["B"],
-      ...top2ByGroup["C"],
-      ...top2ByGroup["D"],
-    ];
-
-    await prisma.$transaction(async (tx) => {
-      // Create bracket matches based on frozen top2 (this is a placeholder for actual generation which is Sprint 2, but we need to satisfy Sprint 1 bounds)
-      await tx.systemSetting.upsert({
-        where: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}` },
-        update: { value: JSON.stringify(advancedPlayers) },
-        create: { key: `AWT_ADVANCED_PLAYERS::${tournamentId}`, value: JSON.stringify(advancedPlayers) }
-      });
-
-      // Check if bracket already exists for this tournament to prevent duplicate generation
-      const existingBracket = await tx.match.findFirst({
-        where: {
-          tournamentId,
-          stageType: "BRACKET",
-          roundName: { startsWith: "Winners Quarter-Final" }
-        }
-      });
-
-      if (existingBracket) {
-        throw new Error(`Bracket already generated for tournament ${tournamentId}`);
-      }
-
+const bracketLogic = `
       // 8-player Double Elimination Bracket Topology
       const matchesToCreate = [
         // Winners Round 1 (Quarter-Finals)
@@ -162,20 +99,17 @@ export async function POST(request: Request) {
           data: updateData
         });
       }
+`;
 
-      await tx.actionLog.create({
-        data: {
-          actionType: "BRACKET_GENERATED",
-          userId: userId,
-          details: JSON.stringify({ tournamentId, generatedMatches: createdCount }),
-        }
-      });
-    });
+// Replace from `// 8-player Double Elimination Bracket Topology` down to `createdCount++;\n      }`
+const startMarker = '// 8-player Double Elimination Bracket Topology';
+const endMarker = 'createdCount++;\n      }';
 
-    return NextResponse.json({ success: true });
+const startIndex = generatorCode.indexOf(startMarker);
+const endIndex = generatorCode.indexOf(endMarker, startIndex) + endMarker.length;
 
-  } catch (error) {
-    console.error("Generate bracket error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+if (startIndex !== -1 && endIndex !== -1) {
+  const before = generatorCode.substring(0, startIndex);
+  const after = generatorCode.substring(endIndex);
+  fs.writeFileSync(generatorPath, before + bracketLogic.trim() + after);
 }

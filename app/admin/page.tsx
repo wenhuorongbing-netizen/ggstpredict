@@ -398,12 +398,13 @@ export default function AdminPage() {
     alert("Scraping has been deprecated per manual override instruction. Please manually add matches.");
   };
 
-    const handleConfirmGroup = async (groupCode: string, action: "CONFIRM" | "UNCONFIRM") => {
+  const handleConfirmGroup = async (groupCode: string, action: "CONFIRM" | "UNCONFIRM") => {
     if (!confirm(`⚠️ 确定要 ${action === "CONFIRM" ? "确认" : "取消确认"} 小组 ${groupCode} 吗？`)) return;
     try {
+      const userId = localStorage.getItem("userId") || "";
       const res = await fetch("/api/admin/groups/confirm", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": userId },
         body: JSON.stringify({ tournamentId, groupCode, action }),
       });
       if (res.ok) {
@@ -428,9 +429,10 @@ export default function AdminPage() {
     }
 
     try {
+      const userId = localStorage.getItem("userId") || "";
       const res = await fetch("/api/admin/tournaments/generate-bracket", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": userId },
         body: JSON.stringify({ tournamentId }),
       });
       const data = await res.json();

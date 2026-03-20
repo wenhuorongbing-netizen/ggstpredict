@@ -151,37 +151,110 @@ export async function POST(request: Request) {
         data: updateData,
       });
 
-      // 4.5 Grand Final Reset Logic
-      // In a Double Elimination bracket, if the Losers Bracket winner (typically Player B)
-      // wins the first set of Grand Finals, a "Grand Final Reset" match is generated.
+// 4.6 Automatic Bracket Progression Engine
+      // Forward the winner and loser to their downstream matches if linked
+      const winnerName = winner === "A" ? match.playerA : match.playerB;
+      const loserName = winner === "A" ? match.playerB : match.playerA;
+
+      if (match.nextWinnerMatchId) {
+        const nextWinnerMatch = await tx.match.findUnique({ where: { id: match.nextWinnerMatchId } });
+        if (nextWinnerMatch) {
+          // Determine which slot to fill. For simplicity, if playerA is TBD, fill it. Else fill B.
+          let updateData: any = {};
+          if (nextWinnerMatch.playerA === "[ TBD ]") {
+            updateData.playerA = winnerName;
+          } else if (nextWinnerMatch.playerB === "[ TBD ]") {
+            updateData.playerB = winnerName;
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            // Check if this update fully populates the match
+            if ((updateData.playerA || nextWinnerMatch.playerA !== "[ TBD ]") &&
+                (updateData.playerB || nextWinnerMatch.playerB !== "[ TBD ]")) {
+              updateData.status = "OPEN"; // Unlock it
+            }
+            await tx.match.update({
+              where: { id: match.nextWinnerMatchId },
+              data: updateData
+            });
+          }
+        }
+      }
+
+      if (match.nextLoserMatchId) {
+        const nextLoserMatch = await tx.match.findUnique({ where: { id: match.nextLoserMatchId } });
+        if (nextLoserMatch) {
+          let updateData: any = {};
+          if (nextLoserMatch.playerA === "[ TBD ]") {
+            updateData.playerA = loserName;
+          } else if (nextLoserMatch.playerB === "[ TBD ]") {
+            updateData.playerB = loserName;
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            if ((updateData.playerA || nextLoserMatch.playerA !== "[ TBD ]") &&
+                (updateData.playerB || nextLoserMatch.playerB !== "[ TBD ]")) {
+              updateData.status = "OPEN";
+            }
+            await tx.match.update({
+              where: { id: match.nextLoserMatchId },
+              data: updateData
+            });
+          }
+        }
+      }
+
+      // Overwrite the Grand Final Reset logic to connect with the generated placeholder
       if (
         (match.roundName === "Grand Final" || match.roundName === "Grand Finals" || match.roundName === "GF") &&
         winner === "B"
       ) {
-        // Check if a reset hasn't already been created manually or somehow duplicated
         const existingReset = await tx.match.findFirst({
           where: {
             tournamentId: match.tournamentId,
             roundName: "Grand Final Reset",
-            playerA: match.playerA,
-            playerB: match.playerB,
+            playerA: "[ TBD ]",
+            playerB: "[ TBD ]"
           }
         });
 
-        if (!existingReset) {
+        if (existingReset) {
+          await tx.match.update({
+            where: { id: existingReset.id },
+            data: {
+              playerA: match.playerA,
+              playerB: match.playerB,
+              status: "OPEN"
+            }
+          });
+        } else {
+          // Fallback if not pre-generated
           await tx.match.create({
             data: {
               playerA: match.playerA,
               playerB: match.playerB,
               charA: match.charA,
               charB: match.charB,
-              status: "LOCKED",
+              status: "OPEN",
               tournamentId: match.tournamentId,
               stageType: match.stageType,
               groupId: match.groupId,
               roundName: "Grand Final Reset",
             }
           });
+        }
+      } else if (match.roundName === "Grand Final" && winner === "A") {
+         // If A wins, the reset is not needed. We can delete it or void it.
+         const existingReset = await tx.match.findFirst({
+          where: {
+            tournamentId: match.tournamentId,
+            roundName: "Grand Final Reset",
+            playerA: "[ TBD ]",
+            playerB: "[ TBD ]"
+          }
+        });
+        if (existingReset) {
+           await tx.match.delete({ where: { id: existingReset.id } });
         }
       }
 
@@ -193,11 +266,12 @@ export async function POST(request: Request) {
         }
       });
 
-      const winnerName = winner === "A" ? match.playerA : match.playerB;
+      // Note: winnerName is already defined earlier for progression logic, let's redefine differently or just use it.
+      const actionLogWinner = winner === "A" ? match.playerA : match.playerB;
       await tx.actionLog.create({
         data: {
           actionType: "ADMIN_SETTLE",
-          details: `[赛事播报] 比赛结算！【 ${match.playerA} vs ${match.playerB} 】 的获胜者是 ${winnerName}`
+          details: `[赛事播报] 比赛结算！【 ${match.playerA} vs ${match.playerB} 】 的获胜者是 ${actionLogWinner}`
         }
       });
 
