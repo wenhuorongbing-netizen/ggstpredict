@@ -984,9 +984,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 w-full">
-          {/* Main Matches Area (Left) */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="flex flex-col gap-10 relative z-10 w-full">
+          {/* Main Matches Area (Top) */}
+          <div className="w-full flex flex-col gap-6">
             {/* Balance Display & Filters */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="bg-black/80 border-2 border-yellow-500 p-3 transform -skew-x-2 shadow-[4px_4px_0px_rgba(234,179,8,1)]">
@@ -1042,7 +1042,7 @@ export default function DashboardPage() {
                          </h2>
                       </div>
                     )}
-                    <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 relative z-10 w-full" layout>
+                    <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 relative z-10 w-full" layout>
                       <AnimatePresence>
                         {groupMatches.map((match) => (
                            <MatchCard
@@ -1068,8 +1068,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Right Column: Leaderboard / Live Intel */}
-          <div className="lg:col-span-1 flex flex-col gap-6">
+          {/* Bottom Section: Leaderboard / Live Intel */}
+          <div className="w-full flex flex-col gap-6 max-w-4xl mx-auto">
             {!isInitialLoad && (
               <div className="bg-black/80 border-4 border-red-600 p-6 shadow-[0_0_15px_rgba(239,68,68,0.6)] transform -skew-x-2 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white pointer-events-none z-20"></div>

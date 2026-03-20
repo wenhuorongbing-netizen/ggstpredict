@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { groupBracketMatches, WINNERS_ORDER, LOSERS_ORDER, GRAND_FINAL, GRAND_FINAL_RESET } from "@/lib/bracket-layout";
 import AppLayout from "@/components/AppLayout";
 import { Match } from "@prisma/client";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,6 +14,7 @@ export default function BracketPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [stageFilter, setStageFilter] = useState<"GROUP" | "BRACKET">("GROUP");
+
   const [groupStandings, setGroupStandings] = useState<any[]>([]);
 
   const fetchMatches = async () => {
@@ -29,17 +31,18 @@ export default function BracketPage() {
       const res = await fetch("/api/matches");
       if (res.ok) {
         const data = await res.json();
-        // Option to filter by tournament if we want strictly scoped views
         const scopedData = currentTournamentId ? data.filter((m: any) => m.tournamentId === currentTournamentId) : data;
         setMatches(scopedData);
-
-      const resGroups = await fetch(`/api/groups/standings${currentTournamentId ? `?tournamentId=${currentTournamentId}` : ""}`);
-      if (resGroups.ok) {
-        const groupsData = await resGroups.json();
-        setGroupStandings(groupsData);
       }
 
+      // Fetch confirmed group standings from the new API
+      const url = currentTournamentId ? `/api/groups/standings?tournamentId=${currentTournamentId}` : `/api/groups/standings`;
+      const gsRes = await fetch(url);
+      if (gsRes.ok) {
+        const gsData = await gsRes.json();
+        setGroupStandings(gsData);
       }
+
     } catch (e) {
       console.error("Failed to fetch matches:", e);
     } finally {
@@ -56,50 +59,39 @@ export default function BracketPage() {
     return () => clearInterval(interval);
   }, []);
 
-
-
   const bracketMatches = useMemo(() => {
     return matches.filter((m: Match) => m.stageType === "BRACKET");
   }, [matches]);
 
-  // Structural sorting: We need a way to group rounds.
-  // Group logic: Winners / Losers, then by roundName.
-  const winnersMatches = bracketMatches.filter(m => m.roundName && m.roundName.toLowerCase().includes("winner") || m.roundName?.toLowerCase().includes("grand"));
-  const losersMatches = bracketMatches.filter(m => m.roundName && m.roundName.toLowerCase().includes("loser"));
-  const otherMatches = bracketMatches.filter(m => !winnersMatches.includes(m) && !losersMatches.includes(m));
+const { winnersMatches, losersMatches, grandFinalMatch, resetMatch, otherMatches } = useMemo(() => {
+    return groupBracketMatches(bracketMatches);
+  }, [bracketMatches]);
 
-  // A very simple grouping by exact round name string.
-  // In a real generic app, you'd parse round numbers and build an exact tree, but grouping vertically works visually for AWT style.
-  const groupMatchesByRound = (matchList: Match[]) => {
-    const groups: Record<string, Match[]> = {};
+  const groupMatchesByExactOrder = (matchList: any[], orderTemplate: string[]) => {
+    const groups: Record<string, any[]> = {};
+    orderTemplate.forEach(roundName => groups[roundName] = []);
     matchList.forEach(m => {
-      const r = m.roundName || "Unassigned";
-      if (!groups[r]) groups[r] = [];
-      groups[r].push(m);
+       if (groups[m.roundName]) {
+          groups[m.roundName].push(m);
+       } else {
+          groups[m.roundName] = [m];
+       }
     });
-    // Convert to array of arrays. Since we don't have explicit round numbers, we rely on the creation time heuristic or just alphabetical.
-    return Object.entries(groups).map(([roundName, roundMatches]) => ({
-      roundName,
-      matches: roundMatches.sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1))
-    })).sort((a, b) => {
-        // Simple sorting for common AWT round names if possible
-        const orderA = a.roundName.match(/\d+/) ? parseInt(a.roundName.match(/\d+/)![0]) : 99;
-        const orderB = b.roundName.match(/\d+/) ? parseInt(b.roundName.match(/\d+/)![0]) : 99;
-        if (a.roundName.toLowerCase().includes("quarter")) return -1;
-        if (b.roundName.toLowerCase().includes("quarter")) return 1;
-        if (a.roundName.toLowerCase().includes("semi")) return -1;
-        if (b.roundName.toLowerCase().includes("semi")) return 1;
-        if (a.roundName.toLowerCase().includes("final") && !a.roundName.toLowerCase().includes("grand")) return -1;
-        if (b.roundName.toLowerCase().includes("final") && !b.roundName.toLowerCase().includes("grand")) return 1;
-        if (a.roundName.toLowerCase().includes("grand")) return 1;
-        if (b.roundName.toLowerCase().includes("grand")) return -1;
-
-        return orderA - orderB;
-    });
+    return orderTemplate.map(roundName => ({
+       roundName,
+       matches: groups[roundName] || []
+    })).filter(g => g.matches.length > 0);
   };
 
-  const winnersRounds = groupMatchesByRound(winnersMatches);
-  const losersRounds = groupMatchesByRound(losersMatches);
+  const winnersRounds = groupMatchesByExactOrder(winnersMatches, WINNERS_ORDER);
+  const losersRounds = groupMatchesByExactOrder(losersMatches, LOSERS_ORDER);
+
+  if (grandFinalMatch) {
+     winnersRounds.push({ roundName: GRAND_FINAL, matches: [grandFinalMatch] });
+  }
+  if (resetMatch) {
+     winnersRounds.push({ roundName: GRAND_FINAL_RESET, matches: [resetMatch] });
+  }
 
   return (
     <ProtectedRoute>
@@ -156,32 +148,25 @@ export default function BracketPage() {
                 <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待小组赛数据 (NO GROUP MATCHES FOUND)</p>
               </div>
             ) : (
-              groupStandings.map((group) => (
-                <div key={group.groupName} className="w-full relative mb-12">
-                  <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 border-b-4 border-green-600 pb-2 tracking-widest">
-                    <h3 className="text-3xl font-black text-white inline-block transform skew-x-2 uppercase drop-shadow-[2px_2px_0px_rgba(22,163,74,1)] m-0" style={{ fontFamily: "var(--font-bebas)" }}>
+              groupStandings.map((group) => {
+                const s = group.status;
+                const statusLabel = s?.isConfirmed ? "已确认 (CONFIRMED)" : (s?.isComplete ? "可确认 (READY TO CONFIRM)" : "进行中 (IN PROGRESS)");
+                const statusColor = s?.isConfirmed ? "text-green-500 border-green-500" : (s?.isComplete ? "text-yellow-500 border-yellow-500" : "text-neutral-500 border-neutral-500");
+
+                return (
+                <div key={group.groupName} className="w-full relative">
+                  <div className="flex justify-between items-end mb-4 border-b-4 border-neutral-800 pb-2">
+                    <h3 className="text-3xl font-black text-white transform skew-x-2 tracking-widest uppercase drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
                       [ {group.groupName} ]
                     </h3>
-                    {group.status && (
-                      <div className="flex items-center gap-3 text-sm md:text-base font-sans drop-shadow-none transform skew-x-2">
-                        {group.status.isConfirmed ? (
-                          <span className="bg-green-900/80 text-green-300 px-3 py-1 border border-green-500 shadow-[2px_2px_0px_rgba(34,197,94,0.5)] font-bold">
-                            CONFIRMED (已确认出线)
-                          </span>
-                        ) : group.status.isComplete ? (
-                          <span className="bg-yellow-900/80 text-yellow-300 px-3 py-1 border border-yellow-500 shadow-[2px_2px_0px_rgba(234,179,8,0.5)] font-bold">
-                            READY TO CONFIRM (待确认)
-                          </span>
-                        ) : (
-                          <span className="bg-blue-900/80 text-blue-300 px-3 py-1 border border-blue-500 shadow-[2px_2px_0px_rgba(59,130,246,0.5)] font-bold">
-                            IN PROGRESS (进行中)
-                          </span>
-                        )}
-                        <span className="text-neutral-400 font-mono tracking-normal">
-                          {group.status.settledMatchCount} / {group.status.scheduledMatchCount} SETTLED
-                        </span>
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm font-bold text-neutral-400 font-mono">
+                        {s?.settledMatchCount || 0}/{s?.scheduledMatchCount || 0} MATCHES SETTLED
                       </div>
-                    )}
+                      <div className={`px-3 py-1 text-sm font-bold tracking-widest border-2 transform -skew-x-6 ${statusColor}`}>
+                        {statusLabel}
+                      </div>
+                    </div>
                   </div>
                   <div className="bg-neutral-900 border-2 border-neutral-700/50 clip-chamfer overflow-hidden">
                     <div className="overflow-x-auto">
@@ -198,23 +183,21 @@ export default function BracketPage() {
                         <tbody className="divide-y divide-neutral-800/50">
                           {group.standings.map((standing: any, index: number) => {
                             const isAdvanced = index < 2; // Typically top 2 advance
+                            const isProvisional = isAdvanced && !group.status?.isConfirmed;
+                            const isQualified = isAdvanced && group.status?.isConfirmed;
+
                             return (
-                              <tr key={standing.playerName} className={`transition-colors hover:bg-neutral-800/30 ${isAdvanced ? 'bg-green-950/10' : ''}`}>
+                              <tr key={standing.playerName} className={`transition-colors hover:bg-neutral-800/30 ${isAdvanced ? (isQualified ? 'bg-green-950/10' : 'bg-yellow-950/10') : ''}`}>
                                 <td className="p-4">
-                                  <span className={`font-black text-xl ${isAdvanced ? 'text-green-500' : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)" }}>
+                                  <span className={`font-black text-xl ${isAdvanced ? (isQualified ? 'text-green-500' : 'text-yellow-500') : 'text-neutral-500'}`} style={{ fontFamily: "var(--font-bebas)" }}>
                                     #{index + 1}
                                   </span>
                                 </td>
                                 <td className="p-4">
                                   <div className="flex items-center gap-3">
                                     <span className="font-bold text-white text-lg">{standing.playerName}</span>
-                                    {isAdvanced && (
-                                      group.status?.isConfirmed ? (
-                                        <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 border border-green-700/50 tracking-widest uppercase font-sans font-bold">Qualified 晋级</span>
-                                      ) : (
-                                        <span className="text-[10px] bg-yellow-900/50 text-yellow-400 px-2 py-0.5 border border-yellow-700/50 tracking-widest uppercase font-sans font-bold">Provisional 待定</span>
-                                      )
-                                    )}
+                                    {isQualified && <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 border border-green-700/50 tracking-widest uppercase font-sans font-bold">晋级 QUALIFIED</span>}
+                                    {isProvisional && <span className="text-[10px] bg-yellow-900/50 text-yellow-400 px-2 py-0.5 border border-yellow-700/50 tracking-widest uppercase font-sans font-bold">暂定 PROVISIONAL</span>}
                                   </div>
                                 </td>
                                 <td className="p-4 text-center">
@@ -240,7 +223,8 @@ export default function BracketPage() {
                     </div>
                   </div>
                 </div>
-              ))
+              );
+            })
             )}
           </div>
         ) : bracketMatches.length === 0 ? (
@@ -272,7 +256,7 @@ export default function BracketPage() {
                     <div className="flex flex-col gap-6 justify-around h-full py-4">
                       {round.matches.map(m => (
                         <div key={m.id} className="relative z-10 bracket-node">
-                          <BracketMatchNode match={m} isWinnersBracket={true} />
+                          <BracketMatchNode match={m as Match} isWinnersBracket={true} />
                         </div>
                       ))}
                     </div>
@@ -300,7 +284,7 @@ export default function BracketPage() {
                     <div className="flex flex-col gap-6 justify-around h-full py-4">
                       {round.matches.map(m => (
                         <div key={m.id} className="relative z-10 bracket-node">
-                          <BracketMatchNode match={m} isWinnersBracket={false} />
+                          <BracketMatchNode match={m as Match} isWinnersBracket={false} />
                         </div>
                       ))}
                     </div>
@@ -319,7 +303,7 @@ export default function BracketPage() {
                    <div className="flex flex-col gap-6 justify-around h-full">
                      {otherMatches.map(m => (
                        <div key={m.id} className="relative z-10">
-                         <BracketMatchNode match={m} isWinnersBracket={true} />
+                         <BracketMatchNode match={m as Match} isWinnersBracket={true} />
                        </div>
                      ))}
                    </div>
