@@ -13,6 +13,7 @@ export default function BracketPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [stageFilter, setStageFilter] = useState<"GROUP" | "BRACKET">("GROUP");
+  const [groupStandings, setGroupStandings] = useState<any[]>([]);
 
   const fetchMatches = async () => {
     try {
@@ -20,6 +21,13 @@ export default function BracketPage() {
       if (res.ok) {
         const data = await res.json();
         setMatches(data);
+
+      const resGroups = await fetch("/api/groups/standings");
+      if (resGroups.ok) {
+        const groupsData = await resGroups.json();
+        setGroupStandings(groupsData);
+      }
+
       }
     } catch (e) {
       console.error("Failed to fetch matches:", e);
@@ -37,10 +45,7 @@ export default function BracketPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const groupStandings = useMemo(() => {
-    if (matches.length === 0) return [];
-    return calculateGroupStandings(matches);
-  }, [matches]);
+
 
   const bracketMatches = useMemo(() => {
     return matches.filter((m: Match) => m.stageType === "BRACKET");
@@ -141,10 +146,32 @@ export default function BracketPage() {
               </div>
             ) : (
               groupStandings.map((group) => (
-                <div key={group.groupName} className="w-full relative">
-                  <h3 className="text-3xl font-black text-white mb-6 border-b-4 border-green-600 pb-2 inline-block transform skew-x-2 tracking-widest uppercase drop-shadow-[2px_2px_0px_rgba(22,163,74,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                    [ {group.groupName} ]
-                  </h3>
+                <div key={group.groupName} className="w-full relative mb-12">
+                  <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 border-b-4 border-green-600 pb-2 tracking-widest">
+                    <h3 className="text-3xl font-black text-white inline-block transform skew-x-2 uppercase drop-shadow-[2px_2px_0px_rgba(22,163,74,1)] m-0" style={{ fontFamily: "var(--font-bebas)" }}>
+                      [ {group.groupName} ]
+                    </h3>
+                    {group.status && (
+                      <div className="flex items-center gap-3 text-sm md:text-base font-sans drop-shadow-none transform skew-x-2">
+                        {group.status.isConfirmed ? (
+                          <span className="bg-green-900/80 text-green-300 px-3 py-1 border border-green-500 shadow-[2px_2px_0px_rgba(34,197,94,0.5)] font-bold">
+                            CONFIRMED (已确认出线)
+                          </span>
+                        ) : group.status.isComplete ? (
+                          <span className="bg-yellow-900/80 text-yellow-300 px-3 py-1 border border-yellow-500 shadow-[2px_2px_0px_rgba(234,179,8,0.5)] font-bold">
+                            READY TO CONFIRM (待确认)
+                          </span>
+                        ) : (
+                          <span className="bg-blue-900/80 text-blue-300 px-3 py-1 border border-blue-500 shadow-[2px_2px_0px_rgba(59,130,246,0.5)] font-bold">
+                            IN PROGRESS (进行中)
+                          </span>
+                        )}
+                        <span className="text-neutral-400 font-mono tracking-normal">
+                          {group.status.settledMatchCount} / {group.status.scheduledMatchCount} SETTLED
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <div className="bg-neutral-900 border-2 border-neutral-700/50 clip-chamfer overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left font-mono text-sm whitespace-nowrap">
@@ -158,7 +185,7 @@ export default function BracketPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-800/50">
-                          {group.standings.map((standing, index) => {
+                          {group.standings.map((standing: any, index: number) => {
                             const isAdvanced = index < 2; // Typically top 2 advance
                             return (
                               <tr key={standing.playerName} className={`transition-colors hover:bg-neutral-800/30 ${isAdvanced ? 'bg-green-950/10' : ''}`}>
@@ -170,7 +197,13 @@ export default function BracketPage() {
                                 <td className="p-4">
                                   <div className="flex items-center gap-3">
                                     <span className="font-bold text-white text-lg">{standing.playerName}</span>
-                                    {isAdvanced && <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 border border-green-700/50 tracking-widest uppercase font-sans font-bold">晋级 ADVANCED</span>}
+                                    {isAdvanced && (
+                                      group.status?.isConfirmed ? (
+                                        <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 border border-green-700/50 tracking-widest uppercase font-sans font-bold">Qualified 晋级</span>
+                                      ) : (
+                                        <span className="text-[10px] bg-yellow-900/50 text-yellow-400 px-2 py-0.5 border border-yellow-700/50 tracking-widest uppercase font-sans font-bold">Provisional 待定</span>
+                                      )
+                                    )}
                                   </div>
                                 </td>
                                 <td className="p-4 text-center">

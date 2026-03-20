@@ -91,6 +91,7 @@ export default function AdminPage() {
   const [selectedCharB, setSelectedCharB] = useState("");
   const [isSavingRoster, setIsSavingRoster] = useState(false);
   const [assetCatalog, setAssetCatalog] = useState(EMPTY_CLIENT_ASSET_CATALOG);
+  const [activeTab, setActiveTab] = useState("Core Ops");
 
   // GOD MODE STATES
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -692,7 +693,24 @@ export default function AdminPage() {
           )}
         </AnimatePresence>
 
-        {/* Tournament Auto-Transition Engine */}
+
+        <div className="flex flex-wrap gap-2 mb-8 border-b-2 border-red-900 pb-2">
+          {["Core Ops", "Users & Settings", "Legacy Tools"].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 transform -skew-x-6 text-xl font-bold tracking-widest transition-colors shadow-md ${
+                activeTab === tab ? "bg-red-600 text-white shadow-red-900/50" : "bg-neutral-900 text-neutral-400 hover:bg-neutral-800"
+              }`}
+              style={{ fontFamily: "var(--font-bebas)" }}
+            >
+              <div className="transform skew-x-6">{tab.toUpperCase()}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+{/* Tournament Auto-Transition Engine */}
         <div className="bg-black/90 border-2 border-fuchsia-600 p-6 shadow-[0_0_20px_rgba(192,38,211,0.5)] mb-10 relative overflow-hidden transform skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-fuchsia-500 pointer-events-none z-20"></div>
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-fuchsia-500 pointer-events-none z-20"></div>
@@ -715,7 +733,10 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Create Match Module */}
+        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Create Match Module */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-600 pointer-events-none z-20"></div>
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -935,7 +956,10 @@ export default function AdminPage() {
           </form>
         </div>
 
-        {/* Admin Logs Section */}
+        <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Admin Logs Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
             <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -958,7 +982,10 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Invite Codes Section */}
+        <div className={activeTab === 'Legacy Tools' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Invite Codes Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
@@ -1057,7 +1084,10 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Black Market Orders Section */}
+        <div className={activeTab === 'Legacy Tools' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Black Market Orders Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
@@ -1112,7 +1142,10 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Active Matches Section */}
+        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Active Matches Section */}
         <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 mt-12 relative z-10 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
            <span className="text-yellow-500 animate-pulse">●</span> ACTIVE OPERATIONS
         </h2>
@@ -1335,7 +1368,10 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Settled Matches Section */}
+        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Settled Matches Section */}
         <h2 className="text-3xl font-bold mb-6 text-neutral-500 flex items-center gap-2 border-t-2 border-neutral-800 pt-8 relative z-10 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
            ≡ ARCHIVED RECORDS
         </h2>
@@ -1373,7 +1409,10 @@ export default function AdminPage() {
 
         </div>
 
-        {/* God Mode Section Toggle */}
+        <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* God Mode Section Toggle */}
         <div className="mt-16 border-t-4 border-red-900 pt-8 relative z-10">
           <button
             onClick={() => setShowGodMode(!showGodMode)}
@@ -1576,7 +1615,10 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Users */}
+                  <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* Users */}
                   <div className="border border-red-900 p-6 bg-black/50 overflow-y-auto max-h-[500px]">
                     <div className="flex justify-between items-center mb-4 border-b border-red-900 pb-2">
                       <h3 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>👥 人事与数据库管理 (DATABASE MANAGER)</h3>
@@ -1614,7 +1656,10 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* System Action Logs Panel */}
+              <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+</div>
+{/* System Action Logs Panel */}
               <div className="bg-black border-2 border-neutral-700 p-6 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mt-10 relative overflow-hidden transform -skew-x-2">
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-600 pointer-events-none z-20"></div>
                 <h3 className="text-2xl font-bold mb-4 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -1652,6 +1697,8 @@ export default function AdminPage() {
           )}
         </AnimatePresence>
 
+
+</div>
       </AppLayout>
     </ProtectedRoute>
   );
