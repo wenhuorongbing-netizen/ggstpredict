@@ -106,26 +106,24 @@ export async function POST(request: Request) {
         { id: "GF_R", a: "[ TBD ]", b: "[ TBD ]", roundName: "Grand Final Reset" }
       ];
 
-      // Define progression linkages.
-      // Format: sourceMatchId: { winnerGoesTo: destMatchId, loserGoesTo: destMatchId }
-      const links: Record<string, { winner: string, loser: string }> = {
-        "W_QF_1": { winner: "W_SF_1", loser: "L_R1_1" },
-        "W_QF_2": { winner: "W_SF_1", loser: "L_R1_1" },
-        "W_QF_3": { winner: "W_SF_2", loser: "L_R1_2" },
-        "W_QF_4": { winner: "W_SF_2", loser: "L_R1_2" },
-        "W_SF_1": { winner: "W_F", loser: "L_QF_1" },
-        "W_SF_2": { winner: "W_F", loser: "L_QF_2" },
-        "W_F":    { winner: "GF", loser: "L_F" },
+      // Define explicit slot progression linkages.
+      type SlotTarget = { matchId: string; slot: "A" | "B" };
+      const links: Record<string, { winner?: SlotTarget, loser?: SlotTarget }> = {
+        "W_QF_1": { winner: { matchId: "W_SF_1", slot: "A" }, loser: { matchId: "L_R1_1", slot: "A" } },
+        "W_QF_2": { winner: { matchId: "W_SF_1", slot: "B" }, loser: { matchId: "L_R1_1", slot: "B" } },
+        "W_QF_3": { winner: { matchId: "W_SF_2", slot: "A" }, loser: { matchId: "L_R1_2", slot: "A" } },
+        "W_QF_4": { winner: { matchId: "W_SF_2", slot: "B" }, loser: { matchId: "L_R1_2", slot: "B" } },
 
-        "L_R1_1": { winner: "L_QF_1", loser: "" },
-        "L_R1_2": { winner: "L_QF_2", loser: "" },
-        "L_QF_1": { winner: "L_SF", loser: "" },
-        "L_QF_2": { winner: "L_SF", loser: "" },
-        "L_SF":   { winner: "L_F", loser: "" },
-        "L_F":    { winner: "GF", loser: "" },
+        "W_SF_1": { winner: { matchId: "W_F", slot: "A" }, loser: { matchId: "L_QF_1", slot: "A" } },
+        "W_SF_2": { winner: { matchId: "W_F", slot: "B" }, loser: { matchId: "L_QF_2", slot: "A" } },
+        "W_F":    { winner: { matchId: "GF", slot: "A" }, loser: { matchId: "L_F", slot: "A" } },
 
-        "GF":     { winner: "", loser: "" }, // GF handles reset differently
-        "GF_R":   { winner: "", loser: "" }
+        "L_R1_1": { winner: { matchId: "L_QF_1", slot: "B" } },
+        "L_R1_2": { winner: { matchId: "L_QF_2", slot: "B" } },
+        "L_QF_1": { winner: { matchId: "L_SF", slot: "A" } },
+        "L_QF_2": { winner: { matchId: "L_SF", slot: "B" } },
+        "L_SF":   { winner: { matchId: "L_F", slot: "B" } },
+        "L_F":    { winner: { matchId: "GF", slot: "B" } },
       };
 
       const createdMatchIds: Record<string, string> = {};
@@ -149,19 +147,40 @@ export async function POST(request: Request) {
         createdCount++;
       }
 
-      // Second pass: establish nextWinnerMatchId and nextLoserMatchId
-      for (const [sourceId, link] of Object.entries(links)) {
-        if (!link.winner && !link.loser) continue;
+      // Map the logical topology to the created database IDs
+      const dbTopology: Record<string, { winner?: { matchId: string, slot: "A" | "B" }, loser?: { matchId: string, slot: "A" | "B" } }> = {};
+
+      // Second pass: establish nextWinnerMatchId and nextLoserMatchId for fast traversal,
+      // and build the exact dbTopology mapping to save into SystemSetting
+      for (const [sourceLogicalId, link] of Object.entries(links)) {
+        const sourceDbId = createdMatchIds[sourceLogicalId];
 
         const updateData: any = {};
-        if (link.winner) updateData.nextWinnerMatchId = createdMatchIds[link.winner];
-        if (link.loser) updateData.nextLoserMatchId = createdMatchIds[link.loser];
+        dbTopology[sourceDbId] = {};
+
+        if (link.winner) {
+          const targetDbId = createdMatchIds[link.winner.matchId];
+          updateData.nextWinnerMatchId = targetDbId;
+          dbTopology[sourceDbId].winner = { matchId: targetDbId, slot: link.winner.slot };
+        }
+        if (link.loser) {
+          const targetDbId = createdMatchIds[link.loser.matchId];
+          updateData.nextLoserMatchId = targetDbId;
+          dbTopology[sourceDbId].loser = { matchId: targetDbId, slot: link.loser.slot };
+        }
 
         await tx.match.update({
-          where: { id: createdMatchIds[sourceId] },
+          where: { id: sourceDbId },
           data: updateData
         });
       }
+
+      // Store the topology exactly to allow precise placement during settlement
+      await tx.systemSetting.upsert({
+        where: { key: `BRACKET_TOPOLOGY::${tournamentId}` },
+        update: { value: JSON.stringify(dbTopology) },
+        create: { key: `BRACKET_TOPOLOGY::${tournamentId}`, value: JSON.stringify(dbTopology) }
+      });
 
       await tx.actionLog.create({
         data: {

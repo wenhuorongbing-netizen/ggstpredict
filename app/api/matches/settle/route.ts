@@ -152,26 +152,42 @@ export async function POST(request: Request) {
       });
 
 // 4.6 Automatic Bracket Progression Engine
-      // Forward the winner and loser to their downstream matches if linked
+      // Forward the winner and loser to their exact downstream slots
       const winnerName = winner === "A" ? match.playerA : match.playerB;
       const loserName = winner === "A" ? match.playerB : match.playerA;
 
-      if (match.nextWinnerMatchId) {
+      let topology: any = null;
+      if (match.tournamentId) {
+         const setting = await tx.systemSetting.findUnique({
+           where: { key: `BRACKET_TOPOLOGY::${match.tournamentId}` }
+         });
+         if (setting) {
+           topology = JSON.parse(setting.value);
+         }
+      }
+
+      const matchLinks = topology ? topology[match.id] : null;
+
+      if (match.nextWinnerMatchId && matchLinks?.winner) {
         const nextWinnerMatch = await tx.match.findUnique({ where: { id: match.nextWinnerMatchId } });
         if (nextWinnerMatch) {
-          // Determine which slot to fill. For simplicity, if playerA is TBD, fill it. Else fill B.
-          let updateData: any = {};
-          if (nextWinnerMatch.playerA === "[ TBD ]") {
-            updateData.playerA = winnerName;
-          } else if (nextWinnerMatch.playerB === "[ TBD ]") {
-            updateData.playerB = winnerName;
+          const targetSlot = matchLinks.winner.slot; // "A" or "B"
+
+          // Verify we aren't overwriting a different player
+          const currentOccupant = targetSlot === "A" ? nextWinnerMatch.playerA : nextWinnerMatch.playerB;
+          if (currentOccupant !== "[ TBD ]" && currentOccupant !== winnerName) {
+            throw new Error(`Progression Conflict: Target slot ${targetSlot} is already occupied by ${currentOccupant}`);
           }
 
+          let updateData: any = {};
+          if (targetSlot === "A") updateData.playerA = winnerName;
+          if (targetSlot === "B") updateData.playerB = winnerName;
+
           if (Object.keys(updateData).length > 0) {
-            // Check if this update fully populates the match
-            if ((updateData.playerA || nextWinnerMatch.playerA !== "[ TBD ]") &&
-                (updateData.playerB || nextWinnerMatch.playerB !== "[ TBD ]")) {
-              updateData.status = "OPEN"; // Unlock it
+            const finalPlayerA = updateData.playerA || nextWinnerMatch.playerA;
+            const finalPlayerB = updateData.playerB || nextWinnerMatch.playerB;
+            if (finalPlayerA !== "[ TBD ]" && finalPlayerB !== "[ TBD ]") {
+              updateData.status = "OPEN";
             }
             await tx.match.update({
               where: { id: match.nextWinnerMatchId },
@@ -181,19 +197,24 @@ export async function POST(request: Request) {
         }
       }
 
-      if (match.nextLoserMatchId) {
+      if (match.nextLoserMatchId && matchLinks?.loser) {
         const nextLoserMatch = await tx.match.findUnique({ where: { id: match.nextLoserMatchId } });
         if (nextLoserMatch) {
-          let updateData: any = {};
-          if (nextLoserMatch.playerA === "[ TBD ]") {
-            updateData.playerA = loserName;
-          } else if (nextLoserMatch.playerB === "[ TBD ]") {
-            updateData.playerB = loserName;
+          const targetSlot = matchLinks.loser.slot; // "A" or "B"
+
+          const currentOccupant = targetSlot === "A" ? nextLoserMatch.playerA : nextLoserMatch.playerB;
+          if (currentOccupant !== "[ TBD ]" && currentOccupant !== loserName) {
+            throw new Error(`Progression Conflict: Target slot ${targetSlot} is already occupied by ${currentOccupant}`);
           }
 
+          let updateData: any = {};
+          if (targetSlot === "A") updateData.playerA = loserName;
+          if (targetSlot === "B") updateData.playerB = loserName;
+
           if (Object.keys(updateData).length > 0) {
-            if ((updateData.playerA || nextLoserMatch.playerA !== "[ TBD ]") &&
-                (updateData.playerB || nextLoserMatch.playerB !== "[ TBD ]")) {
+            const finalPlayerA = updateData.playerA || nextLoserMatch.playerA;
+            const finalPlayerB = updateData.playerB || nextLoserMatch.playerB;
+            if (finalPlayerA !== "[ TBD ]" && finalPlayerB !== "[ TBD ]") {
               updateData.status = "OPEN";
             }
             await tx.match.update({
