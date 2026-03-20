@@ -7,9 +7,16 @@ export async function POST(request: Request) {
   try {
     const headerPayload = await headers();
     const userId = headerPayload.get("x-user-id");
-    const role = headerPayload.get("x-user-role");
 
-    if (!userId || role !== "ADMIN") {
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,7 +40,9 @@ export async function POST(request: Request) {
       where: {
         tournamentId,
         stageType: "GROUP",
-        groupName: groupCode
+        groupName: {
+          in: [groupCode, `Group ${groupCode}`]
+        }
       }
     });
 

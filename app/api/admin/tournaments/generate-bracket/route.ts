@@ -6,9 +6,16 @@ export async function POST(request: Request) {
   try {
     const headerPayload = await headers();
     const userId = headerPayload.get("x-user-id");
-    const role = headerPayload.get("x-user-role");
 
-    if (!userId || role !== "ADMIN") {
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -50,12 +57,25 @@ export async function POST(request: Request) {
         create: { key: "AWT_ADVANCED_PLAYERS", value: JSON.stringify(advancedPlayers) }
       });
 
-      // Simple implementation just creates 4 quarter final matches from the top 2
+      // Check if bracket already exists for this tournament to prevent duplicate generation
+      const existingBracket = await tx.match.findFirst({
+        where: {
+          tournamentId,
+          stageType: "BRACKET",
+          roundName: { startsWith: "Winners Quarter-Final" }
+        }
+      });
+
+      if (existingBracket) {
+        throw new Error(`Bracket already generated for tournament ${tournamentId}`);
+      }
+
+      // Exact seed template: A1-D2, B1-C2, C1-B2, D1-A2
       const pairings = [
-        { a: top2ByGroup["A"][0], b: top2ByGroup["B"][1] },
-        { a: top2ByGroup["C"][0], b: top2ByGroup["D"][1] },
-        { a: top2ByGroup["B"][0], b: top2ByGroup["A"][1] },
-        { a: top2ByGroup["D"][0], b: top2ByGroup["C"][1] },
+        { a: top2ByGroup["A"][0], b: top2ByGroup["D"][1], roundName: "Winners Quarter-Final 1" },
+        { a: top2ByGroup["B"][0], b: top2ByGroup["C"][1], roundName: "Winners Quarter-Final 2" },
+        { a: top2ByGroup["C"][0], b: top2ByGroup["B"][1], roundName: "Winners Quarter-Final 3" },
+        { a: top2ByGroup["D"][0], b: top2ByGroup["A"][1], roundName: "Winners Quarter-Final 4" },
       ];
 
       for (const pair of pairings) {
@@ -65,12 +85,21 @@ export async function POST(request: Request) {
             playerA: pair.a,
             playerB: pair.b,
             stageType: "BRACKET",
+            roundName: pair.roundName,
             status: "OPEN",
             poolInjectA: 0,
             poolInjectB: 0,
           }
         });
       }
+
+      await tx.actionLog.create({
+        data: {
+          actionType: "BRACKET_GENERATED",
+          userId: userId,
+          details: JSON.stringify({ tournamentId, generatedMatches: pairings.length }),
+        }
+      });
     });
 
     return NextResponse.json({ success: true });

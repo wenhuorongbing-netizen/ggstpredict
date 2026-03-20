@@ -386,13 +386,20 @@ export default function AdminPage() {
   };
 
   const handleGenerateTop8Bracket = async () => {
-    if (!confirm("⚠️ 警告：这将根据当前所有已结算的小组赛积分，自动生成8强淘汰赛！此操作将直接写入数据库。继续吗？")) {
+    if (!tournamentId) {
+      alert("请先在下方建赛模块中关联一个锦标赛(TOURNAMENT)！");
+      return;
+    }
+
+    if (!confirm("⚠️ 警告：这将根据当前所有已确认(CONFIRMED)的小组结果，自动生成8强淘汰赛！此操作将直接写入数据库。继续吗？")) {
       return;
     }
 
     try {
       const res = await fetch("/api/admin/tournaments/generate-bracket", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentId }),
       });
       const data = await res.json();
 
@@ -693,7 +700,6 @@ export default function AdminPage() {
           )}
         </AnimatePresence>
 
-
         <div className="flex flex-wrap gap-2 mb-8 border-b-2 border-red-900 pb-2">
           {["Core Ops", "Users & Settings", "Legacy Tools"].map(tab => (
             <button
@@ -710,7 +716,7 @@ export default function AdminPage() {
         </div>
 
         <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-{/* Tournament Auto-Transition Engine */}
+        {/* Tournament Auto-Transition Engine */}
         <div className="bg-black/90 border-2 border-fuchsia-600 p-6 shadow-[0_0_20px_rgba(192,38,211,0.5)] mb-10 relative overflow-hidden transform skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-fuchsia-500 pointer-events-none z-20"></div>
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-fuchsia-500 pointer-events-none z-20"></div>
@@ -733,10 +739,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* Create Match Module */}
+        {/* Create Match Module */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-red-600 pointer-events-none z-20"></div>
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -956,10 +959,19 @@ export default function AdminPage() {
           </form>
         </div>
 
-        <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+        </div>
 
-</div>
-{/* Admin Logs Section */}
+        <div className={activeTab === 'Legacy Tools' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+
+        {/* Legacy Warnings & Utilities */}
+        <div className="bg-red-950/20 border border-red-900 p-6 mb-8 transform -skew-x-2">
+          <h2 className="text-xl font-bold text-red-500 mb-2 transform skew-x-2">⚠️ LEGACY TOOLS</h2>
+          <p className="text-neutral-400 text-sm transform skew-x-2">
+            The tools in this section are deprecated for the current sprint. Scraping has been disabled in favor of manual operations. Use these tools at your own risk.
+          </p>
+        </div>
+
+        {/* Admin Logs Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
             <h2 className="text-3xl font-bold text-white flex items-center gap-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -982,10 +994,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className={activeTab === 'Legacy Tools' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* Invite Codes Section */}
+        {/* Invite Codes Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-yellow-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
@@ -1084,10 +1093,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className={activeTab === 'Legacy Tools' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* Black Market Orders Section */}
+        {/* Black Market Orders Section */}
         <div className="bg-black/80 border-2 border-neutral-700 p-8 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mb-10 relative overflow-hidden transform -skew-x-2">
           <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 pointer-events-none z-20"></div>
           <div className="flex justify-between items-center mb-6 transform skew-x-2">
@@ -1142,10 +1148,10 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+        </div>
 
-</div>
-{/* Active Matches Section */}
+        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+        {/* Active Matches Section */}
         <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-2 mt-12 relative z-10 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
            <span className="text-yellow-500 animate-pulse">●</span> ACTIVE OPERATIONS
         </h2>
@@ -1368,10 +1374,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className={activeTab === 'Core Ops' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* Settled Matches Section */}
+        {/* Settled Matches Section */}
         <h2 className="text-3xl font-bold mb-6 text-neutral-500 flex items-center gap-2 border-t-2 border-neutral-800 pt-8 relative z-10 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
            ≡ ARCHIVED RECORDS
         </h2>
@@ -1409,10 +1412,10 @@ export default function AdminPage() {
 
         </div>
 
-        <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+        </div>
 
-</div>
-{/* God Mode Section Toggle */}
+        <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
+        {/* God Mode Section Toggle */}
         <div className="mt-16 border-t-4 border-red-900 pt-8 relative z-10">
           <button
             onClick={() => setShowGodMode(!showGodMode)}
@@ -1424,14 +1427,7 @@ export default function AdminPage() {
         </div>
 
         {/* God Mode Content */}
-        <AnimatePresence>
-          {showGodMode && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mt-8 relative z-10"
-            >
+        <div className="overflow-hidden mt-8 relative z-10">
               <div className="bg-black/90 border-2 border-red-500 p-8 shadow-[8px_8px_0px_rgba(239,68,68,0.3)] transform -skew-x-2">
                 <h2 className="text-4xl font-black text-red-500 mb-6 transform skew-x-2 flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>
                   <span className="animate-pulse">⚙️</span> SYSTEM CONTROLS
@@ -1615,10 +1611,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* Users */}
+                  {/* Users */}
                   <div className="border border-red-900 p-6 bg-black/50 overflow-y-auto max-h-[500px]">
                     <div className="flex justify-between items-center mb-4 border-b border-red-900 pb-2">
                       <h3 className="text-2xl font-bold text-white flex items-center gap-2" style={{ fontFamily: "var(--font-bebas)" }}>👥 人事与数据库管理 (DATABASE MANAGER)</h3>
@@ -1656,10 +1649,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className={activeTab === 'Users & Settings' ? 'block animate-fadeIn space-y-8' : 'hidden'}>
-
-</div>
-{/* System Action Logs Panel */}
+              {/* System Action Logs Panel */}
               <div className="bg-black border-2 border-neutral-700 p-6 shadow-[8px_8px_0px_rgba(0,0,0,0.5)] mt-10 relative overflow-hidden transform -skew-x-2">
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-600 pointer-events-none z-20"></div>
                 <h3 className="text-2xl font-bold mb-4 text-white flex items-center gap-2 transform skew-x-2 tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
@@ -1693,12 +1683,9 @@ export default function AdminPage() {
                   )}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
 
-
-</div>
+        </div>
       </AppLayout>
     </ProtectedRoute>
   );
