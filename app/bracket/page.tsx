@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { groupBracketMatches, WINNERS_ORDER, LOSERS_ORDER, GRAND_FINAL, GRAND_FINAL_RESET } from "@/lib/bracket-layout";
+import { generateFinalsDisplay } from "@/lib/finals-display";
 import AppLayout from "@/components/AppLayout";
 import { Match } from "@prisma/client";
 import { AnimatePresence, motion } from "framer-motion";
@@ -59,13 +60,11 @@ export default function BracketPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const bracketMatches = useMemo(() => {
-    return matches.filter((m: Match) => m.stageType === "BRACKET");
-  }, [matches]);
+  const { extraMatches, knockoutLayout, summary } = useMemo(() => {
+    return generateFinalsDisplay(matches, groupStandings);
+  }, [matches, groupStandings]);
 
-const { winnersMatches, losersMatches, grandFinalMatch, resetMatch, otherMatches } = useMemo(() => {
-    return groupBracketMatches(bracketMatches);
-  }, [bracketMatches]);
+  const { winnersMatches, losersMatches, grandFinalMatch, resetMatch, otherMatches } = knockoutLayout;
 
   const groupMatchesByExactOrder = (matchList: any[], orderTemplate: string[]) => {
     const groups: Record<string, any[]> = {};
@@ -227,46 +226,59 @@ const { winnersMatches, losersMatches, grandFinalMatch, resetMatch, otherMatches
             })
             )}
           </div>
-        ) : bracketMatches.length === 0 ? (
-          <div className="text-center py-20 bg-black/50 border-2 border-neutral-800 border-dashed mx-4 transform -skew-x-2">
-             <p className="text-neutral-500 font-bold text-2xl tracking-widest">等待淘汰赛数据 (NO BRACKET MATCHES FOUND)</p>
-          </div>
         ) : (
           <>
             {/* Knockout Stage Summary Strip */}
             <div className="bg-neutral-900 border-y-4 border-red-600 p-4 mb-8 mx-4 transform -skew-x-2 shadow-[4px_4px_0px_rgba(239,68,68,0.3)] flex flex-wrap justify-between items-center gap-4">
                <div className="flex flex-col">
-                  <span className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Event Status</span>
+                  <span className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Event Stage</span>
                   <span className="text-white font-black text-2xl tracking-widest drop-shadow-[1px_1px_0px_rgba(239,68,68,1)]" style={{ fontFamily: "var(--font-bebas)" }}>
-                    8-PLAYER DOUBLE ELIMINATION
+                    {summary.stage.toUpperCase()}
                   </span>
                </div>
                <div className="flex gap-6 sm:gap-12 text-center">
                   <div className="flex flex-col">
-                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Progress</span>
-                     <span className="text-blue-400 font-mono font-bold text-xl">
-                       {bracketMatches.filter(m => m.status === 'SETTLED').length} / {bracketMatches.length}
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Groups Confirmed</span>
+                     <span className="text-green-400 font-mono font-bold text-xl">
+                       {summary.groupsConfirmed} / 4
                      </span>
                   </div>
                   <div className="flex flex-col">
-                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Open / Locked</span>
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Extra Stage Settled</span>
+                     <span className="text-blue-400 font-mono font-bold text-xl">
+                       {summary.extraSettled} / 2
+                     </span>
+                  </div>
+                  <div className="flex flex-col">
+                     <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Knockout Settled</span>
                      <span className="text-yellow-500 font-mono font-bold text-xl">
-                       {bracketMatches.filter(m => m.status === 'OPEN').length} <span className="text-neutral-600">|</span> {bracketMatches.filter(m => m.status === 'LOCKED').length}
+                       {summary.knockoutSettled} / {summary.knockoutTotal}
                      </span>
                   </div>
                   <div className="flex flex-col">
                      <span className="text-neutral-400 font-bold tracking-widest text-[10px] uppercase">Current Focus</span>
                      <span className="text-white font-black text-xl tracking-widest" style={{ fontFamily: "var(--font-bebas)" }}>
-                       {
-                         bracketMatches.some(m => (m.roundName === GRAND_FINAL || m.roundName === GRAND_FINAL_RESET) && m.status === 'OPEN') ? 'GRAND FINAL' :
-                         bracketMatches.some(m => m.status === 'OPEN' && WINNERS_ORDER.includes(m.roundName || '')) ? 'WINNERS' :
-                         bracketMatches.some(m => m.status === 'OPEN' && LOSERS_ORDER.includes(m.roundName || '')) ? 'LOSERS' :
-                         bracketMatches.every(m => m.status === 'SETTLED') ? 'CHAMPION CROWNED' : 'WAITING'
-                       }
+                       {summary.currentFocus.toUpperCase()}
                      </span>
                   </div>
                </div>
             </div>
+
+            {/* Extra Stage Row */}
+            {extraMatches && extraMatches.length > 0 && (
+              <div className="mx-2 sm:mx-4 mb-12">
+                <h2 className="text-3xl font-black text-white tracking-widest drop-shadow-[2px_2px_0px_rgba(37,99,235,1)] transform skew-x-2 mb-6 border-b-4 border-blue-900/50 pb-2" style={{ fontFamily: "var(--font-bebas)" }}>
+                  EXTRA STAGE
+                </h2>
+                <div className="flex flex-wrap gap-8 sm:gap-12 justify-center bg-neutral-950/80 p-8 border-2 border-neutral-800 clip-chamfer shadow-[inset_0_0_50px_rgba(0,0,0,1)]">
+                  {extraMatches.map(m => (
+                    <div key={m.id} className="relative z-10 bracket-node min-w-[300px]">
+                      <BracketMatchNode match={m as Match} isWinnersBracket={false} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col gap-12 overflow-x-auto whitespace-normal break-words sm:whitespace-nowrap bg-neutral-950 p-4 sm:p-10 relative shadow-[inset_0_0_100px_rgba(0,0,0,1)] border-4 border-neutral-900 mx-2 sm:mx-4 custom-scrollbar pb-24 min-h-[600px]">
 

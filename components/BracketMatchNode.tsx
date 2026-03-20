@@ -13,8 +13,19 @@ export default function BracketMatchNode({ match, isWinnersBracket }: { match: M
     router.push(`/dashboard#match-${match.id}`);
   };
 
-  const isTBDA = match.playerA === "[ TBD ]";
-  const isTBDB = match.playerB === "[ TBD ]";
+  const isPlaceholder = (name: string) => {
+    if (!name) return true;
+    const lowerName = name.toLowerCase();
+    return lowerName === "[ tbd ]" ||
+           lowerName.startsWith("winner") ||
+           lowerName.startsWith("runner-up") ||
+           lowerName.startsWith("awaiting") ||
+           lowerName.startsWith("pending") ||
+           lowerName.startsWith("slot");
+  };
+
+  const isTBDA = isPlaceholder(match.playerA);
+  const isTBDB = isPlaceholder(match.playerB);
 
   return (
     <div
